@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Laravel specific
+backend1/storage/*.key
+backend1/storage/framework/cache/data/*
+backend1/storage/framework/sessions/*
+backend1/storage/framework/testing/*
+backend1/storage/framework/views/*
+backend1/storage/logs/*
+
+# React specific
+frontend/build/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Misc
+.gemini/
+*.bak
+php.ini.bak
