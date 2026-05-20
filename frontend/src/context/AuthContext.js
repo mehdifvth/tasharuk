@@ -7,15 +7,15 @@ import api from '../services/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(() => {
+  const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('user');
       return saved ? JSON.parse(saved) : null;
     } catch { return null; }
   });
-  const [token,   setToken]   = useState(() => localStorage.getItem('token') || null);
+  const [token, setToken] = useState(() => localStorage.getItem('token') || null);
   const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState(null);
+  const [error, setError] = useState(null);
 
   // Récupère le profil frais si token présent (utile après un refresh de page)
   useEffect(() => {
@@ -37,7 +37,7 @@ export function AuthProvider({ children }) {
 
   const _saveSession = (data) => {
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user',  JSON.stringify(data.user));
+    localStorage.setItem('user', JSON.stringify(data.user));
     setToken(data.token);
     setUser(data.user);
   };
@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
       return { success: true };
     } catch (err) {
       // Gère les erreurs de validation Laravel (422) ET les autres erreurs
-      const errors  = err.response?.data?.errors;
+      const errors = err.response?.data?.errors;
       const message = err.response?.data?.message || 'Erreur lors de l\'inscription';
       const msg = errors ? Object.values(errors).flat().join(' — ') : message;
       setError(msg);
@@ -67,7 +67,7 @@ export function AuthProvider({ children }) {
       _saveSession(res.data);
       return { success: true };
     } catch (err) {
-      const errors  = err.response?.data?.errors;
+      const errors = err.response?.data?.errors;
       const message = err.response?.data?.message || 'Email ou mot de passe incorrect';
       const msg = errors ? Object.values(errors).flat().join(' — ') : message;
       setError(msg);
@@ -78,7 +78,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = useCallback(async () => {
-    try { await api.post('/auth/logout'); } catch (_) {}
+    try { await api.post('/auth/logout'); } catch (_) { }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setToken(null);
@@ -86,10 +86,26 @@ export function AuthProvider({ children }) {
     setError(null);
   }, []);
 
+  const updateRole = async (newRole) => {
+    setLoading(true);
+    try {
+      const res = await api.put('/user/role', { role: newRole });
+      const updatedUser = res.data.user;
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Erreur lors du changement de rôle';
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user, token, loading, error,
-      login, register, logout,
+      login, register, logout, updateRole,
     }}>
       {children}
     </AuthContext.Provider>

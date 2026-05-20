@@ -19,6 +19,7 @@ class AuthController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
+            'role'     => 'required|in:owner,borrower',
         ]);
 
         $user = User::create([
@@ -26,6 +27,7 @@ class AuthController extends Controller
             'email'    => $validated['email'],
             'password' => $validated['password'],
             'is_admin' => false,
+            'role'     => $validated['role'],
         ]);
 
         $token = $user->createToken('tasharuk-token')->plainTextToken;
@@ -80,5 +82,19 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json($request->user());
+    }
+    public function updateRole(Request $request)
+    {
+        $request->validate([
+            'role' => 'required|in:owner,borrower',
+        ]);
+
+        $user = $request->user();
+        $user->update(['role' => $request->role]);
+
+        return response()->json([
+            'message' => 'Rôle mis à jour avec succès',
+            'user'    => $user,
+        ]);
     }
 }

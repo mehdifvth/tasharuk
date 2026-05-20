@@ -27,7 +27,7 @@ class BookingController extends Controller
         ])
             ->where(function ($q) use ($userId) {
                 $q->where('borrower_id', $userId)
-                  ->orWhereHas('tool', fn($q2) => $q2->where('user_id', $userId));
+                    ->orWhereHas('tool', fn($q2) => $q2->where('user_id', $userId));
             })
             ->latest()
             ->get();
@@ -48,6 +48,11 @@ class BookingController extends Controller
 
         $tool = Tool::findOrFail($validated['tool_id']);
 
+        // Seul un borrower peut réserver
+        if ($request->user()->role !== 'borrower') {
+            return response()->json(['message' => 'Seuls les emprunteurs peuvent réserver'], 403);
+        }
+
         // Le proprietaire ne peut pas reserver son propre outil
         if ($tool->user_id === $request->user()->id) {
             return response()->json(['message' => 'Vous ne pouvez pas reserver votre propre outil'], 422);
@@ -58,11 +63,11 @@ class BookingController extends Controller
             ->whereIn('status', ['pending', 'approved'])
             ->where(function ($q) use ($validated) {
                 $q->whereBetween('start_date', [$validated['start_date'], $validated['end_date']])
-                  ->orWhereBetween('end_date',  [$validated['start_date'], $validated['end_date']])
-                  ->orWhere(function ($q2) use ($validated) {
-                      $q2->where('start_date', '<=', $validated['start_date'])
-                         ->where('end_date',   '>=', $validated['end_date']);
-                  });
+                    ->orWhereBetween('end_date',  [$validated['start_date'], $validated['end_date']])
+                    ->orWhere(function ($q2) use ($validated) {
+                        $q2->where('start_date', '<=', $validated['start_date'])
+                            ->where('end_date',   '>=', $validated['end_date']);
+                    });
             })
             ->exists();
 

@@ -7,23 +7,23 @@ import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import BookingForm from '../components/bookings/BookingForm';
 
-const CONDITION_LABEL = { 
-  new:  <span><i className="fas fa-circle text-success small me-1"></i> Neuf</span>, 
-  good: <span><i className="fas fa-circle text-warning small me-1"></i> Bon état</span>, 
-  fair: <span><i className="fas fa-circle text-danger small me-1"></i> Correct</span> 
+const CONDITION_LABEL = {
+  new: <span><i className="fas fa-circle text-success small me-1"></i> Neuf</span>,
+  good: <span><i className="fas fa-circle text-warning small me-1"></i> Bon état</span>,
+  fair: <span><i className="fas fa-circle text-danger small me-1"></i> Correct</span>
 };
 
 export default function ToolDetailPage() {
-  const { id }   = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [tool,    setTool]    = useState(null);
+  const [tool, setTool] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [avgRating, setAvgRating] = useState(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
-  const [booked,  setBooked]  = useState(false);
+  const [booked, setBooked] = useState(false);
 
   const loadTool = () => {
     setLoading(true);
@@ -44,7 +44,7 @@ export default function ToolDetailPage() {
 
   useEffect(() => { loadTool(); }, [id]);
 
-  if (loading)  return <p className="spinner">Chargement de l'outil...</p>;
+  if (loading) return <p className="spinner">Chargement de l'outil...</p>;
   if (notFound) return (
     <div className="container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
       <p style={{ fontSize: '1.2rem', color: '#64748b' }}>Outil introuvable.</p>
@@ -134,6 +134,13 @@ export default function ToolDetailPage() {
                   Gérer mes outils
                 </button>
               </div>
+            ) : user?.role !== 'borrower' ? (
+              <div style={{ textAlign: 'center', color: '#64748b' }}>
+                <p><i className="fas fa-info-circle me-2"></i>Seuls les emprunteurs peuvent réserver</p>
+                <button className="btn-outline" style={{ marginTop: '0.75rem', width: '100%' }} onClick={() => navigate('/profile')}>
+                  Changer mon rôle
+                </button>
+              </div>
             ) : booked ? (
               <div style={{ textAlign: 'center' }}>
                 <p style={{ color: '#16a34a', fontWeight: 700, fontSize: '1.1rem' }}>
@@ -161,11 +168,13 @@ export default function ToolDetailPage() {
 }
 
 const styles = {
-  layout:   { display: 'flex', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap' },
-  img:      { width: '100%', borderRadius: 10, maxHeight: 340, objectFit: 'cover', marginBottom: '1.25rem' },
-  placeholder: { height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                 fontSize: '5rem', background: '#f1f5f9', borderRadius: 10, marginBottom: '1.25rem' },
-  title:    { fontWeight: 800, fontSize: '1.6rem', marginBottom: '0.5rem' },
-  metaRow:  { display: 'flex', gap: '1rem', flexWrap: 'wrap', color: '#64748b', fontSize: '0.88rem', marginBottom: '0.5rem' },
-  price:    { fontWeight: 800, fontSize: '1.3rem', color: '#16a34a', marginTop: '0.25rem' },
+  layout: { display: 'flex', gap: '2rem', alignItems: 'flex-start', flexWrap: 'wrap' },
+  img: { width: '100%', borderRadius: 10, maxHeight: 340, objectFit: 'cover', marginBottom: '1.25rem' },
+  placeholder: {
+    height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontSize: '5rem', background: '#f1f5f9', borderRadius: 10, marginBottom: '1.25rem'
+  },
+  title: { fontWeight: 800, fontSize: '1.6rem', marginBottom: '0.5rem' },
+  metaRow: { display: 'flex', gap: '1rem', flexWrap: 'wrap', color: '#64748b', fontSize: '0.88rem', marginBottom: '0.5rem' },
+  price: { fontWeight: 800, fontSize: '1.3rem', color: '#16a34a', marginTop: '0.25rem' },
 };

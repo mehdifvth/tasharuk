@@ -7,7 +7,7 @@ export default function RegisterPage() {
   const { register, loading } = useAuth();
   const navigate = useNavigate();
 
-  const [form,  setForm]  = useState({ name: '', email: '', password: '', password_confirmation: '' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '', role: 'borrower' });
   const [error, setError] = useState(null);
 
   const handleChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -62,6 +62,13 @@ export default function RegisterPage() {
               onChange={handleChange} required placeholder="Répéter le mot de passe"
             />
           </div>
+          <div>
+            <label style={label}>Je suis</label>
+            <select name="role" value={form.role} onChange={handleChange} required>
+              <option value="borrower">Emprunteur — je cherche des outils</option>
+              <option value="owner">Propriétaire — je propose des outils</option>
+            </select>
+          </div>
 
           {error && <p className="error-msg">{error}</p>}
 
@@ -81,8 +88,8 @@ export default function RegisterPage() {
 const label = { display: 'block', fontSize: '0.88rem', fontWeight: 600, marginBottom: '0.3rem', color: '#374151' };
 const styles = {
   wrapper: { display: 'flex', justifyContent: 'center', paddingTop: '3rem' },
-  card:    { width: '100%', maxWidth: 420 },
-  title:   { fontWeight: 800, fontSize: '1.6rem', marginBottom: '0.25rem' },
-  sub:     { color: '#64748b', marginBottom: '1.5rem' },
-  form:    { display: 'flex', flexDirection: 'column', gap: '1rem' },
+  card: { width: '100%', maxWidth: 420 },
+  title: { fontWeight: 800, fontSize: '1.6rem', marginBottom: '0.25rem' },
+  sub: { color: '#64748b', marginBottom: '1.5rem' },
+  form: { display: 'flex', flexDirection: 'column', gap: '1rem' },
 };

@@ -183,7 +183,7 @@ export default function BookingsPage() {
                   )}
 
                   {/* Emprunteur : laisser un avis si completed ET pas encore reviewé */}
-                  {!isOwner && b.status === 'completed' && !hasReview && reviewFor !== b.id && (
+                  {!isOwner && user?.role === 'borrower' && b.status === 'completed' && !hasReview && reviewFor !== b.id && (
                     <button className="btn-primary" onClick={() => setReviewFor(b.id)}>
                       <i className="fas fa-star me-1"></i> Laisser un avis
                     </button>

@@ -20,7 +20,7 @@ class ToolController extends Controller
         if ($request->filled('keyword')) {
             $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->keyword . '%')
-                  ->orWhere('description', 'like', '%' . $request->keyword . '%');
+                    ->orWhere('description', 'like', '%' . $request->keyword . '%');
             });
         }
 
@@ -65,6 +65,10 @@ class ToolController extends Controller
      */
     public function store(Request $request)
     {
+        
+        if ($request->user()->role !== 'owner') {
+            return response()->json(['message' => 'Accès réservé aux propriétaires'], 403);
+        }
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',

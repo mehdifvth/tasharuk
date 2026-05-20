@@ -6,8 +6,8 @@ import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const { user, token, logout } = useAuth();
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -42,7 +42,9 @@ export default function Navbar() {
               <Link to="/my-tools" style={linkStyle('/my-tools')}>Mes Outils</Link>
               <Link to="/bookings" style={linkStyle('/bookings')}>Réservations</Link>
               <span style={styles.separator}>|</span>
-              <span style={styles.username}><i className="fas fa-user me-1"></i> {user?.name}</span>
+              <Link to="/profile" style={styles.username}>
+                <i className="fas fa-user me-1"></i> {user?.name}
+              </Link>
               <button onClick={handleLogout} className="btn-danger" style={{ padding: '0.35rem 0.85rem', fontSize: '0.85rem' }}>
                 Déconnexion
               </button>
@@ -64,11 +66,13 @@ export default function Navbar() {
 }
 
 const styles = {
-  nav:       { background: '#1e293b', padding: '0.8rem 0', position: 'sticky', top: 0, zIndex: 100,
-               borderBottom: '1px solid rgba(255,255,255,0.08)' },
-  inner:     { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  brand:     { color: '#fff', fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.3px' },
-  links:     { display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' },
+  nav: {
+    background: '#1e293b', padding: '0.8rem 0', position: 'sticky', top: 0, zIndex: 100,
+    borderBottom: '1px solid rgba(255,255,255,0.08)'
+  },
+  inner: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  brand: { color: '#fff', fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.3px' },
+  links: { display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap' },
   separator: { color: '#334155' },
-  username:  { color: '#94a3b8', fontSize: '0.88rem' },
+  username: { color: '#94a3b8', fontSize: '0.88rem' },
 };
