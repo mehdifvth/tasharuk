@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@tasharuk.com'],
             [
                 'name'     => 'Administrateur',
-                'password' => 'password123',
+                'password' => Hash::make('password123'),
                 'is_admin' => true,
             ]
         );
@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'sara@tasharuk.com'],
             [
                 'name'     => 'Sara El Idrissi',
-                'password' => 'password',
+                'password' => Hash::make('password'),
                 'is_admin' => false,
             ]
         );
