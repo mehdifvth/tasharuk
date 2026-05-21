@@ -106,7 +106,13 @@ class BookingController extends Controller
             return response()->json(['message' => 'La reservation n\'est pas en attente'], 422);
         }
 
-        $booking->update(['status' => 'approved']);
+        // Générer code unique TAS-XXXX
+        $code = 'TAS-' . strtoupper(substr(md5(uniqid()), 0, 4));
+
+        $booking->update([
+            'status'            => 'approved',
+            'confirmation_code' => $code,
+        ]);
 
         return response()->json([
             'message' => 'Reservation approuvée',
@@ -157,6 +163,79 @@ class BookingController extends Controller
 
         return response()->json([
             'message' => 'Réservation annulée',
+            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+        ]);
+    }
+    /**
+     * POST /api/bookings/{id}/confirm-pickup
+     */
+    public function confirmPickup(Request $request, $id)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $booking = Booking::findOrFail($id);
+
+        // Seul l'emprunteur
+        if ($booking->borrower_id !== $request->user()->id) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        if ($booking->status !== 'approved') {
+            return response()->json(['message' => 'La réservation doit être approuvée'], 422);
+        }
+
+        if ($booking->picked_up_at) {
+            return response()->json(['message' => 'Outil déjà récupéré'], 422);
+        }
+
+        if ($booking->confirmation_code !== $request->code) {
+            return response()->json(['message' => 'Code incorrect'], 422);
+        }
+
+        $booking->update(['picked_up_at' => now()]);
+
+        return response()->json([
+            'message' => 'Prise en charge confirmée — timer démarré',
+            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+        ]);
+    }
+    /**
+     * POST /api/bookings/{id}/confirm-return
+     */
+    public function confirmReturn(Request $request, $id)
+    {
+        $request->validate([
+            'code' => 'required|string',
+        ]);
+
+        $booking = Booking::findOrFail($id);
+
+        // Seul l'emprunteur
+        if ($booking->borrower_id !== $request->user()->id) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        if (!$booking->picked_up_at) {
+            return response()->json(['message' => 'L\'outil n\'a pas encore été récupéré'], 422);
+        }
+
+        if ($booking->returned_at) {
+            return response()->json(['message' => 'Outil déjà retourné'], 422);
+        }
+
+        if ($booking->confirmation_code !== $request->code) {
+            return response()->json(['message' => 'Code incorrect'], 422);
+        }
+
+        $booking->update([
+            'returned_at' => now(),
+            'status'      => 'completed',
+        ]);
+
+        return response()->json([
+            'message' => 'Retour confirmé — réservation terminée',
             'booking' => $booking->load(['tool.user', 'borrower', 'review']),
         ]);
     }
