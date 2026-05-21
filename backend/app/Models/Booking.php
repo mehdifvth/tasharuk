@@ -13,12 +13,12 @@ class Booking extends Model
         'end_date',
         'status',
         'confirmation_code',
-        'return_code', 
+        'return_code',
         'picked_up_at',
         'returned_at',
     ];
 
-    protected $appends = ['total_price'];
+    protected $appends = ['total_price', 'live_price', 'final_price'];
 
     public function tool()
     {
@@ -40,12 +40,35 @@ class Booking extends Model
     public function getTotalPriceAttribute()
     {
         if (!$this->tool) return 0;
-
         $start = \Carbon\Carbon::parse($this->start_date);
-        $end = \Carbon\Carbon::parse($this->end_date);
-
-        $days = $start->diffInDays($end) + 1; // On compte le jour de début et de fin
-
+        $end   = \Carbon\Carbon::parse($this->end_date);
+        $days  = $start->diffInDays($end) + 1;
         return $days * $this->tool->price;
+    }
+
+    // Prix en cours basé sur le temps réel écoulé depuis pickup
+    public function getLivePriceAttribute()
+    {
+        if (!$this->tool || !$this->picked_up_at) return 0;
+        $hours = \Carbon\Carbon::parse($this->picked_up_at)->diffInMinutes(now()) / 60;
+        $days  = max(1, ceil($hours / 24)); // minimum 1 jour
+        return $days * $this->tool->price;
+    }
+
+    // Prix final basé sur la durée réelle (pickup → return)
+    public function getFinalPriceAttribute()
+    {
+        if (!$this->tool || !$this->picked_up_at || !$this->returned_at) return 0;
+
+        $minutes = \Carbon\Carbon::parse($this->picked_up_at)->diffInMinutes($this->returned_at);
+
+        if ($minutes <= 24 * 60) {
+            // Moins de 24h → 1 jour minimum
+            return $this->tool->price;
+        }
+
+        // Au-delà → par minute
+        $pricePerMinute = $this->tool->price / 24 / 60;
+        return round($minutes * $pricePerMinute, 2);
     }
 }

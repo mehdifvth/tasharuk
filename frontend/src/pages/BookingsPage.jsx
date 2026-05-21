@@ -52,6 +52,32 @@ function ElapsedTimer({ startTime }) {
   );
 }
 
+function LivePrice({ startTime, pricePerDay }) {
+  const [price, setPrice] = useState(0);
+
+  useEffect(() => {
+    const update = () => {
+      const minutes = (Date.now() - new Date(startTime + 'Z')) / 60000;
+      const pricePerMinute = pricePerDay / 24 / 60;
+      setPrice((minutes * pricePerMinute).toFixed(2));
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [startTime, pricePerDay]);
+
+  return (
+    <div>
+      <span style={{ fontWeight: 800, color: '#f59e0b', fontSize: '1.1rem', fontFamily: 'monospace' }}>
+        💰 {price} MAD
+      </span>
+      {/* Ajouter ce commentaire */}
+      <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
+        ⚠️ Minimum 1 jour facturé ({pricePerDay} MAD) même en cas de retour anticipé
+      </p>
+    </div>
+  );
+}
 // Code input component
 // Composant CodeInput — ajouter prop `placeholder`
 function CodeInput({ label, onSubmit, loading, error, placeholder = 'TAS-XXXX' }) {
@@ -273,17 +299,27 @@ export default function BookingsPage() {
                         </div>
                       )}
 
-                      {/* Timer si outil récupéré */}
-                      {b.picked_up_at && !b.returned_at && (
+                      {/* Prix estimé avant pickup */}
+                      {!b.picked_up_at && b.status === 'approved' && (
                         <div style={{ marginTop: '0.5rem' }}>
-                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Durée en cours :</p>
-                          <ElapsedTimer startTime={b.picked_up_at} />
+                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Prix estimé :</p>
+                          <span style={{ fontWeight: 700, color: '#2563eb' }}>{b.total_price} MAD</span>
                         </div>
                       )}
 
-                      {/* Durée totale si retourné */}
+                      {/* Timer + prix en cours pendant l'emprunt */}
+                      {b.picked_up_at && !b.returned_at && (
+                        <div style={{ marginTop: '0.5rem', background: '#fffbeb', borderRadius: 8, padding: '0.6rem', border: '1px solid #fcd34d' }}>
+                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Durée en cours :</p>
+                          <ElapsedTimer startTime={b.picked_up_at} />
+                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.4rem 0 0.2rem' }}>Prix en cours :</p>
+                          <LivePrice startTime={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
+                        </div>
+                      )}
+
+                      {/* Durée totale + prix final après retour */}
                       {b.picked_up_at && b.returned_at && (
-                        <div style={{ marginTop: '0.5rem' }}>
+                        <div style={{ marginTop: '0.5rem', background: '#f0fdf4', borderRadius: 8, padding: '0.6rem', border: '1px solid #86efac' }}>
                           <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Durée totale :</p>
                           <span style={{ fontWeight: 700, color: '#16a34a' }}>
                             {(() => {
@@ -293,6 +329,8 @@ export default function BookingsPage() {
                               return `${h}h ${m}min`;
                             })()}
                           </span>
+                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.4rem 0 0.2rem' }}>💳 Prix final :</p>
+                          <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#16a34a' }}>{b.final_price} MAD</span>
                         </div>
                       )}
                     </div>
