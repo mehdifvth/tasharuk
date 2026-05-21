@@ -34,7 +34,7 @@ function ElapsedTimer({ startTime }) {
 
   useEffect(() => {
     const update = () => {
-      const diff = Math.floor((Date.now() - new Date(startTime)) / 1000);
+      const diff = Math.floor((Date.now() - new Date(startTime + 'Z')) / 1000);
       const h = Math.floor(diff / 3600);
       const m = Math.floor((diff % 3600) / 60);
       const s = diff % 60;
