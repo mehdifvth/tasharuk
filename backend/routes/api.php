@@ -18,16 +18,22 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 Route::get('/test-cloudinary', function () {
     try {
-        Cloudinary::config([
+        \Cloudinary\Configuration\Configuration::instance([
             'cloud' => [
                 'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
                 'api_key'    => env('CLOUDINARY_KEY'),
                 'api_secret' => env('CLOUDINARY_SECRET'),
-            ]
+            ],
+            'url' => ['secure' => true]
         ]);
-        return response()->json(['success' => true]);
+
+        return response()->json([
+            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+            'api_key'    => env('CLOUDINARY_KEY'),
+            'secret_ok'  => env('CLOUDINARY_SECRET') ? 'yes' : 'no',
+        ]);
     } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
     }
 });
 
