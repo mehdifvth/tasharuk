@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tool;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ToolController extends Controller
 {
@@ -85,7 +86,8 @@ class ToolController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('tools', 'public');
+            $uploaded  = Cloudinary::upload($request->file('image')->getRealPath());
+            $imagePath = $uploaded->getSecurePath();
         }
 
         $tool = Tool::create([
@@ -126,11 +128,8 @@ class ToolController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            // Supprimer l'ancienne image si elle existe
-            if ($tool->image) {
-                Storage::disk('public')->delete($tool->image);
-            }
-            $validated['image'] = $request->file('image')->store('tools', 'public');
+            $uploaded           = Cloudinary::upload($request->file('image')->getRealPath());
+            $validated['image'] = $uploaded->getSecurePath();
         }
 
         $tool->update($validated);
