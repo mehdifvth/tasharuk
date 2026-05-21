@@ -9,29 +9,31 @@ import api from '../services/api';
 import ReviewForm from '../components/reviews/ReviewForm';
 
 const STATUS_COLORS = {
-  pending:   { background: '#fef9c3', color: '#854d0e' },
-  approved:  { background: '#dcfce7', color: '#166534' },
-  rejected:  { background: '#fee2e2', color: '#991b1b' },
+  pending: { background: '#fef9c3', color: '#854d0e' },
+  approved: { background: '#dcfce7', color: '#166534' },
+  rejected: { background: '#fee2e2', color: '#991b1b' },
   completed: { background: '#dbeafe', color: '#1e40af' },
+  cancelled: { background: '#f1f5f9', color: '#64748b' },
 };
 
 const STATUS_LABEL = {
-  pending:   { icon: 'fa-hourglass-half', text: 'En attente' },
-  approved:  { icon: 'fa-check-circle', text: 'Approuvée' },
-  rejected:  { icon: 'fa-times-circle', text: 'Rejetée' },
+  pending: { icon: 'fa-hourglass-half', text: 'En attente' },
+  approved: { icon: 'fa-check-circle', text: 'Approuvée' },
+  rejected: { icon: 'fa-times-circle', text: 'Rejetée' },
   completed: { icon: 'fa-flag-checkered', text: 'Terminée' },
+  cancelled: { icon: 'fa-ban', text: 'Annulée' },
 };
 
 export default function BookingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [bookings,    setBookings]   = useState([]);
-  const [loading,     setLoading]    = useState(true);
-  const [tab,         setTab]        = useState('all');
-  const [reviewFor,   setReviewFor]  = useState(null);
-  const [actionLoad,  setActionLoad] = useState(null);
-  const [error,       setError]      = useState(null);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState('all');
+  const [reviewFor, setReviewFor] = useState(null);
+  const [actionLoad, setActionLoad] = useState(null);
+  const [error, setError] = useState(null);
 
   const loadBookings = () => {
     setLoading(true);
@@ -44,8 +46,8 @@ export default function BookingsPage() {
   useEffect(() => { loadBookings(); }, []);
 
   const filtered = bookings.filter((b) => {
-    if (tab === 'as_owner')    return b.tool?.user_id === user?.id;
-    if (tab === 'as_borrower') return b.borrower_id   === user?.id;
+    if (tab === 'as_owner') return b.tool?.user_id === user?.id;
+    if (tab === 'as_borrower') return b.borrower_id === user?.id;
     return true;
   });
 
@@ -74,6 +76,19 @@ export default function BookingsPage() {
     }
   };
 
+  const handleCancel = async (id) => {
+    if (!window.confirm('Annuler cette réservation ?')) return;
+    setActionLoad(id); setError(null);
+    try {
+      await api.put(`/bookings/${id}/cancel`);
+      loadBookings();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de l\'annulation');
+    } finally {
+      setActionLoad(null);
+    }
+  };
+
   return (
     <div className="container">
       <h1 style={{ fontWeight: 800, fontSize: '1.75rem', marginBottom: '1.25rem' }}>
@@ -85,9 +100,9 @@ export default function BookingsPage() {
       {/* Onglets */}
       <div style={styles.tabs}>
         {[
-          ['all',          'Toutes'],
-          ['as_owner',     'Proprietaire'],
-          ['as_borrower',  'Emprunteur'],
+          ['all', 'Toutes'],
+          ['as_owner', 'Proprietaire'],
+          ['as_borrower', 'Emprunteur'],
         ].map(([val, lbl]) => (
           <button
             key={val}
@@ -95,7 +110,7 @@ export default function BookingsPage() {
             style={{
               ...styles.tab,
               background: tab === val ? '#2563eb' : '#e2e8f0',
-              color:      tab === val ? '#fff'    : '#374151',
+              color: tab === val ? '#fff' : '#374151',
             }}
           >
             {lbl}
@@ -122,7 +137,7 @@ export default function BookingsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {filtered.map((b) => {
             const isOwner = b.tool?.user_id === user?.id;
-            const badge   = STATUS_COLORS[b.status] || {};
+            const badge = STATUS_COLORS[b.status] || {};
             const hasReview = !!b.review; // FIX: b.review est chargé par le backend
 
             return (
@@ -181,6 +196,16 @@ export default function BookingsPage() {
                       </button>
                     </>
                   )}
+                  {/* Emprunteur : annuler si pending */}
+                  {!isOwner && b.status === 'pending' && (
+                    <button
+                      className="btn-danger"
+                      disabled={actionLoad === b.id}
+                      onClick={() => handleCancel(b.id)}
+                    >
+                      {actionLoad === b.id ? '...' : <span><i className="fas fa-times me-1"></i> Annuler</span>}
+                    </button>
+                  )}
 
                   {/* Emprunteur : laisser un avis si completed ET pas encore reviewé */}
                   {!isOwner && user?.role === 'borrower' && b.status === 'completed' && !hasReview && reviewFor !== b.id && (
@@ -217,13 +242,15 @@ export default function BookingsPage() {
 }
 
 const styles = {
-  tabs:        { display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' },
-  tab:         { borderRadius: 6, padding: '0.4rem 1rem', border: 'none', cursor: 'pointer',
-                 fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.4rem' },
-  count:       { background: 'rgba(255,255,255,0.3)', borderRadius: 10, padding: '0 6px', fontSize: '0.78rem' },
+  tabs: { display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' },
+  tab: {
+    borderRadius: 6, padding: '0.4rem 1rem', border: 'none', cursor: 'pointer',
+    fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.4rem'
+  },
+  count: { background: 'rgba(255,255,255,0.3)', borderRadius: 10, padding: '0 6px', fontSize: '0.78rem' },
   bookingCard: { display: 'flex', gap: '1rem', alignItems: 'flex-start', flexWrap: 'wrap' },
-  bookingHeader:{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem', flexWrap: 'wrap' },
-  badge:       { padding: '0.2rem 0.7rem', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap' },
-  meta:        { color: '#64748b', fontSize: '0.88rem', marginBottom: '0.2rem' },
-  actionsCol:  { display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 150 },
+  bookingHeader: { display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem', flexWrap: 'wrap' },
+  badge: { padding: '0.2rem 0.7rem', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap' },
+  meta: { color: '#64748b', fontSize: '0.88rem', marginBottom: '0.2rem' },
+  actionsCol: { display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 150 },
 };

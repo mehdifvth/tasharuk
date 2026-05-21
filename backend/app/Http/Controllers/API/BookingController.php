@@ -136,4 +136,28 @@ class BookingController extends Controller
             'booking' => $booking->load(['tool.user', 'borrower', 'review']),
         ]);
     }
+    /**
+     * PUT /api/bookings/{id}/cancel
+     */
+    public function cancel(Request $request, $id)
+    {
+        $booking = Booking::findOrFail($id);
+
+        // Seul l'emprunteur peut annuler
+        if ($booking->borrower_id !== $request->user()->id) {
+            return response()->json(['message' => 'Non autorisé'], 403);
+        }
+
+        // Seulement si pending
+        if ($booking->status !== 'pending') {
+            return response()->json(['message' => 'Seules les réservations en attente peuvent être annulées'], 422);
+        }
+
+        $booking->update(['status' => 'cancelled']);
+
+        return response()->json([
+            'message' => 'Réservation annulée',
+            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+        ]);
+    }
 }

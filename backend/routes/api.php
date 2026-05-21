@@ -61,4 +61,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/admin/categories',      [AdminController::class, 'storeCategory']);
 
     Route::put('/user/role', [AuthController::class, 'updateRole']);
+    Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
 });
