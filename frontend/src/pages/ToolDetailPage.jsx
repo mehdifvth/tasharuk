@@ -123,14 +123,17 @@ export default function ToolDetailPage() {
         {/* ── Colonne droite : réservation ── */}
         <div style={{ width: 300, flexShrink: 0 }}>
           <div className="card">
-            {isOwner ? (
+            {!user ? (
+              <div style={{ textAlign: 'center', color: '#64748b' }}>
+                <p>Connectez-vous pour réserver</p>
+                <button className="btn-primary" style={{ marginTop: '0.75rem', width: '100%' }} onClick={() => navigate('/login')}>
+                  Se connecter
+                </button>
+              </div>
+            ) : isOwner ? (
               <div style={{ textAlign: 'center', color: '#64748b' }}>
                 <p><i className="fas fa-wrench me-2"></i>C'est votre outil</p>
-                <button
-                  className="btn-outline"
-                  style={{ marginTop: '0.75rem', width: '100%' }}
-                  onClick={() => navigate('/my-tools')}
-                >
+                <button className="btn-outline" style={{ marginTop: '0.75rem', width: '100%' }} onClick={() => navigate('/my-tools')}>
                   Gérer mes outils
                 </button>
               </div>
@@ -149,11 +152,7 @@ export default function ToolDetailPage() {
                 <p style={{ color: '#64748b', fontSize: '0.88rem', margin: '0.5rem 0 1rem' }}>
                   Le propriétaire doit approuver votre demande.
                 </p>
-                <button
-                  className="btn-primary"
-                  style={{ width: '100%' }}
-                  onClick={() => navigate('/bookings')}
-                >
+                <button className="btn-primary" style={{ width: '100%' }} onClick={() => navigate('/bookings')}>
                   Voir mes réservations
                 </button>
               </div>

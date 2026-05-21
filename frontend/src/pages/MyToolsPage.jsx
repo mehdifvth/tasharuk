@@ -6,16 +6,18 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import ToolForm from '../components/tools/ToolForm';
+import { useNavigate } from 'react-router-dom';
 
 export default function MyToolsPage() {
   const { user } = useAuth();
 
-  const [myTools,  setMyTools]  = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
-  const [editing,  setEditing]  = useState(null);
+  const [myTools, setMyTools] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [error,    setError]    = useState(null);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // FIX: appel direct à /my-tools — retourne uniquement les outils du user connecté
   const loadMyTools = () => {
@@ -81,6 +83,19 @@ export default function MyToolsPage() {
       alert(err.response?.data?.message || 'Erreur lors de la suppression');
     }
   };
+
+  if (user?.role !== 'owner') {
+    return (
+      <div className="container py-4" style={{ textAlign: 'center', paddingTop: '4rem' }}>
+        <p style={{ fontSize: '1.2rem', color: '#64748b' }}>
+          <i className="fas fa-lock me-2"></i>Accès réservé aux propriétaires
+        </p>
+        <button className="btn btn-primary mt-3" onClick={() => navigate('/profile')}>
+          Changer mon rôle
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-4">
@@ -168,18 +183,18 @@ export default function MyToolsPage() {
             <div key={tool.id} className="col">
               <div className="card h-100 shadow-sm border-0 overflow-hidden">
                 {tool.image_url ? (
-                  <img 
-                    src={tool.image_url} 
-                    alt={tool.title} 
-                    className="card-img-top" 
-                    style={{ height: '200px', objectFit: 'cover' }} 
+                  <img
+                    src={tool.image_url}
+                    alt={tool.title}
+                    className="card-img-top"
+                    style={{ height: '200px', objectFit: 'cover' }}
                   />
                 ) : (
                   <div className="bg-light d-flex align-items-center justify-content-center" style={{ height: '200px' }}>
                     <i className="fas fa-wrench fa-3x text-muted opacity-25"></i>
                   </div>
                 )}
-                
+
                 <div className="card-body">
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     <h5 className="card-title fw-bold mb-0 text-truncate" title={tool.title}>
@@ -190,7 +205,7 @@ export default function MyToolsPage() {
                   <p className="text-muted small mb-3">
                     <i className="fas fa-folder me-1"></i>{tool.category?.name}
                   </p>
-                  
+
                   <div className="d-flex gap-2">
                     <button
                       className="btn btn-sm btn-outline-primary flex-grow-1"
