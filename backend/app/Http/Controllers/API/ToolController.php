@@ -15,7 +15,12 @@ class ToolController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Tool::with(['user', 'category']);
+        $query = Tool::with(['user', 'category'])
+            ->whereDoesntHave('bookings', function ($q) {
+                $q->where('status', 'approved')
+                    ->whereNotNull('picked_up_at')
+                    ->whereNull('returned_at');
+            });
 
         if ($request->filled('keyword')) {
             $query->where(function ($q) use ($request) {
