@@ -15,6 +15,15 @@ use App\Http\Controllers\API\AdminController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/test-cloudinary', function () {
+    try {
+        $config = config('cloudinary.cloud_url');
+        return response()->json(['config' => $config ? 'OK' : 'MISSING', 'url' => $config]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});
+
 
 // ─── Auth (Public) ────────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
