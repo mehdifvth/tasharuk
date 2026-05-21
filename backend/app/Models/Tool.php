@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -6,8 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Tool extends Model
 {
     protected $fillable = [
-        'user_id', 'category_id', 'title',
-        'description', 'condition', 'price', 'image',
+        'user_id',
+        'category_id',
+        'title',
+        'description',
+        'condition',
+        'price',
+        'image',
     ];
 
     protected $appends = ['image_url'];
@@ -29,6 +35,10 @@ class Tool extends Model
 
     public function getImageUrlAttribute()
     {
-        return $this->image ? asset('storage/' . $this->image) : null;
+        if (!$this->image) return null;
+        // Si c'est déjà une URL complète (Cloudinary)
+        if (str_starts_with($this->image, 'http')) return $this->image;
+        // Sinon ancienne image locale
+        return asset('storage/' . $this->image);
     }
 }
