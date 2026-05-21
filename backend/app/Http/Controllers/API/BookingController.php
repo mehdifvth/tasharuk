@@ -171,63 +171,55 @@ class BookingController extends Controller
      */
     public function confirmPickup(Request $request, $id)
     {
-        $request->validate([
-            'code' => 'required|string',
-        ]);
+        $request->validate(['code' => 'required|string']);
 
         $booking = Booking::findOrFail($id);
 
-        // Seul l'emprunteur
-        if ($booking->borrower_id !== $request->user()->id) {
+        if ($booking->borrower_id !== $request->user()->id)
             return response()->json(['message' => 'Non autorisé'], 403);
-        }
 
-        if ($booking->status !== 'approved') {
+        if ($booking->status !== 'approved')
             return response()->json(['message' => 'La réservation doit être approuvée'], 422);
-        }
 
-        if ($booking->picked_up_at) {
+        if ($booking->picked_up_at)
             return response()->json(['message' => 'Outil déjà récupéré'], 422);
-        }
 
-        if ($booking->confirmation_code !== $request->code) {
+        // Vérifie le code d'emprunt (TAS-XXXX)
+        if ($booking->confirmation_code !== $request->code)
             return response()->json(['message' => 'Code incorrect'], 422);
-        }
 
-        $booking->update(['picked_up_at' => now()]);
+        // Génère un NOUVEAU code pour le retour (RET-XXXX)
+        $returnCode = 'RET-' . strtoupper(substr(md5(uniqid()), 0, 4));
+
+        $booking->update([
+            'picked_up_at' => now(),
+            'return_code'  => $returnCode,
+        ]);
 
         return response()->json([
             'message' => 'Prise en charge confirmée — timer démarré',
             'booking' => $booking->load(['tool.user', 'borrower', 'review']),
         ]);
     }
-    /**
-     * POST /api/bookings/{id}/confirm-return
-     */
+
     public function confirmReturn(Request $request, $id)
     {
-        $request->validate([
-            'code' => 'required|string',
-        ]);
+        $request->validate(['code' => 'required|string']);
 
         $booking = Booking::findOrFail($id);
 
-        // Seul l'emprunteur
-        if ($booking->borrower_id !== $request->user()->id) {
+        if ($booking->borrower_id !== $request->user()->id)
             return response()->json(['message' => 'Non autorisé'], 403);
-        }
 
-        if (!$booking->picked_up_at) {
-            return response()->json(['message' => 'L\'outil n\'a pas encore été récupéré'], 422);
-        }
+        if (!$booking->picked_up_at)
+            return response()->json(['message' => "L'outil n'a pas encore été récupéré"], 422);
 
-        if ($booking->returned_at) {
+        if ($booking->returned_at)
             return response()->json(['message' => 'Outil déjà retourné'], 422);
-        }
 
-        if ($booking->confirmation_code !== $request->code) {
+        // Vérifie le code de RETOUR (RET-XXXX), pas confirmation_code
+        if ($booking->return_code !== $request->code)
             return response()->json(['message' => 'Code incorrect'], 422);
-        }
 
         $booking->update([
             'returned_at' => now(),

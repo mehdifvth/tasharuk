@@ -13,6 +13,7 @@ class Booking extends Model
         'end_date',
         'status',
         'confirmation_code',
+        'return_code', 
         'picked_up_at',
         'returned_at',
     ];

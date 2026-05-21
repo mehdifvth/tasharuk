@@ -53,7 +53,8 @@ function ElapsedTimer({ startTime }) {
 }
 
 // Code input component
-function CodeInput({ label, onSubmit, loading, error }) {
+// Composant CodeInput — ajouter prop `placeholder`
+function CodeInput({ label, onSubmit, loading, error, placeholder = 'TAS-XXXX' }) {
   const [code, setCode] = useState('');
 
   return (
@@ -65,7 +66,7 @@ function CodeInput({ label, onSubmit, loading, error }) {
         <input
           value={code}
           onChange={e => setCode(e.target.value.toUpperCase())}
-          placeholder="TAS-XXXX"
+          placeholder={placeholder}   // ← dynamique
           style={{ flex: 1, fontFamily: 'monospace', fontWeight: 700, letterSpacing: 2 }}
           maxLength={8}
         />
@@ -244,13 +245,31 @@ export default function BookingsPage() {
                       {/* Code affiché au propriétaire */}
                       {isOwner && b.status === 'approved' && b.confirmation_code && (
                         <div style={styles.codeBox}>
-                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>Code de confirmation :</p>
-                          <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.3rem', color: '#2563eb', margin: 0, letterSpacing: 3 }}>
-                            {b.confirmation_code}
-                          </p>
-                          <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>
-                            Donnez ce code à l'emprunteur
-                          </p>
+                          {/* Avant récupération : affiche confirmation_code */}
+                          {!b.picked_up_at && (
+                            <>
+                              <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>Code de récupération :</p>
+                              <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.3rem', color: '#2563eb', margin: 0, letterSpacing: 3 }}>
+                                {b.confirmation_code}
+                              </p>
+                              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>
+                                Donnez ce code à l'emprunteur pour qu'il récupère l'outil
+                              </p>
+                            </>
+                          )}
+
+                          {/* Après récupération : affiche return_code */}
+                          {b.picked_up_at && !b.returned_at && b.return_code && (
+                            <>
+                              <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0 }}>Code de retour :</p>
+                              <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.3rem', color: '#16a34a', margin: 0, letterSpacing: 3 }}>
+                                {b.return_code}
+                              </p>
+                              <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>
+                                Donnez ce code à l'emprunteur lors du retour
+                              </p>
+                            </>
+                          )}
                         </div>
                       )}
 
@@ -319,26 +338,27 @@ export default function BookingsPage() {
                     </div>
                   </div>
 
-                  {/* Code input emprunteur — pickup */}
+                  {/* Emprunteur — pickup */}
                   {!isOwner && b.status === 'approved' && !b.picked_up_at && (
                     <CodeInput
                       label="Tapez le code pour confirmer la récupération de l'outil"
                       onSubmit={(code) => handlePickup(b.id, code)}
                       loading={codeLoad === b.id}
                       error={codeError[`pickup_${b.id}`]}
+                      placeholder="TAS-XXXX"   // ← code de récupération
                     />
                   )}
 
-                  {/* Code input emprunteur — return */}
+                  {/* Emprunteur — return */}
                   {!isOwner && b.status === 'approved' && b.picked_up_at && !b.returned_at && (
                     <CodeInput
                       label="Tapez le code pour confirmer le retour de l'outil"
                       onSubmit={(code) => handleReturn(b.id, code)}
                       loading={codeLoad === b.id}
                       error={codeError[`return_${b.id}`]}
+                      placeholder="RET-XXXX"   // ← code de retour
                     />
                   )}
-
                   {/* Formulaire avis */}
                   {reviewFor === b.id && (
                     <div style={{ marginTop: '0.75rem', borderTop: '1px solid #e2e8f0', paddingTop: '0.75rem' }}>
