@@ -16,32 +16,6 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/test-cloudinary', function () {
-    try {
-        \Cloudinary\Configuration\Configuration::instance([
-            'cloud' => [
-                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_KEY'),
-                'api_secret' => env('CLOUDINARY_SECRET'),
-            ],
-            'url' => ['secure' => true]
-        ]);
-
-        $uploaded = (new \Cloudinary\Api\Upload\UploadApi())->upload(
-            'https://res.cloudinary.com/demo/image/upload/sample.jpg'
-        );
-
-        return response()->json([
-            'success' => true,
-            'url'     => $uploaded['secure_url'],
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error'   => $e->getMessage(),
-            'class'   => get_class($e),
-        ]);
-    }
-});
 
 // ─── Auth (Public) ────────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
