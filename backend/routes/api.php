@@ -27,16 +27,21 @@ Route::get('/test-cloudinary', function () {
             'url' => ['secure' => true]
         ]);
 
+        $uploaded = (new \Cloudinary\Api\Upload\UploadApi())->upload(
+            'https://res.cloudinary.com/demo/image/upload/sample.jpg'
+        );
+
         return response()->json([
-            'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-            'api_key'    => env('CLOUDINARY_KEY'),
-            'secret_ok'  => env('CLOUDINARY_SECRET') ? 'yes' : 'no',
+            'success' => true,
+            'url'     => $uploaded['secure_url'],
         ]);
     } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        return response()->json([
+            'error'   => $e->getMessage(),
+            'class'   => get_class($e),
+        ]);
     }
 });
-
 
 // ─── Auth (Public) ────────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
