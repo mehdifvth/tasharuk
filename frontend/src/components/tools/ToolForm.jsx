@@ -50,7 +50,7 @@ export default function ToolForm({ initial = null, onSubmit, loading }) {
     fd.append('description', form.description);
     fd.append('category_id', form.category_id);
     fd.append('condition',   form.condition);
-    fd.append('price',       form.price);
+    fd.append('price', parseFloat(form.price).toFixed(2));
     if (form.image) {
       fd.append('image', form.image);
     }
