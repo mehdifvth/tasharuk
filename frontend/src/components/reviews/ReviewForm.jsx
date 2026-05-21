@@ -1,23 +1,23 @@
 // src/components/reviews/ReviewForm.jsx
-// FIX: ajout prop onCancel pour fermer le formulaire depuis BookingsPage
-
 import React, { useState } from 'react';
 import api from '../../services/api';
 
 export default function ReviewForm({ bookingId, onSuccess, onCancel }) {
-  const [rating,  setRating]  = useState(5);
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
   const [comment, setComment] = useState('');
-  const [error,   setError]   = useState(null);
+  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!rating) { setError('Veuillez sélectionner une note.'); return; }
     setLoading(true); setError(null);
     try {
       await api.post('/reviews', {
         booking_id: bookingId,
-        rating:     Number(rating),
-        comment:    comment || null,
+        rating: Number(rating),
+        comment: comment || null,
       });
       onSuccess && onSuccess();
     } catch (err) {
@@ -27,21 +27,42 @@ export default function ReviewForm({ bookingId, onSuccess, onCancel }) {
     }
   };
 
+  const labels = { 1: 'Décevant', 2: 'Passable', 3: 'Bien', 4: 'Très bien', 5: 'Excellent' };
+
   return (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-      <h4 style={{ fontWeight: 700, marginBottom: '0.1rem' }}><i className="fas fa-comment-dots text-primary me-2"></i>Laisser un avis</h4>
+      <h4 style={{ fontWeight: 700, marginBottom: '0.1rem' }}>
+        <i className="fas fa-comment-dots text-primary me-2"></i>Laisser un avis
+      </h4>
 
+      {/* Étoiles */}
       <div>
-        <label style={label}>Note</label>
-        <select value={rating} onChange={(e) => setRating(e.target.value)}>
-          <option value={5}>Excellent (5/5)</option>
-          <option value={4}>Très bien (4/5)</option>
-          <option value={3}>Bien (3/5)</option>
-          <option value={2}>Passable (2/5)</option>
-          <option value={1}>Décevant (1/5)</option>
-        </select>
+        <label style={label}>Note *</label>
+        <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <i
+              key={star}
+              className={`fas fa-star`}
+              onClick={() => setRating(star)}
+              onMouseEnter={() => setHover(star)}
+              onMouseLeave={() => setHover(0)}
+              style={{
+                fontSize: '1.75rem',
+                cursor: 'pointer',
+                color: star <= (hover || rating) ? '#f59e0b' : '#e2e8f0',
+                transition: 'color 0.15s',
+              }}
+            />
+          ))}
+          {(hover || rating) > 0 && (
+            <span style={{ color: '#64748b', fontSize: '0.88rem', marginLeft: '0.5rem' }}>
+              {labels[hover || rating]}
+            </span>
+          )}
+        </div>
       </div>
 
+      {/* Commentaire */}
       <div>
         <label style={label}>Commentaire (optionnel)</label>
         <textarea
