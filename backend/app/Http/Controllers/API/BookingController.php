@@ -42,7 +42,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'tool_id'    => 'required|exists:tools,id',
-            'start_date' => 'required|date|after_or_equal:today',
+            'start_date' => 'required|date|after_or_equal:now',
             'end_date'   => 'required|date|after:start_date',
         ]);
 

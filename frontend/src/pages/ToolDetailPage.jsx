@@ -157,7 +157,7 @@ export default function ToolDetailPage() {
                 </button>
               </div>
             ) : (
-              <BookingForm toolId={tool.id} onSuccess={() => setBooked(true)} />
+              <BookingForm toolId={tool.id} toolPrice={tool.price} onSuccess={() => setBooked(true)} />
             )}
           </div>
         </div>
