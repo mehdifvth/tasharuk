@@ -4,12 +4,39 @@ import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { Navigate } from 'react-router-dom';
 
+function AdminLivePrice({ pickedUpAt, pricePerDay }) {
+  const [price, setPrice] = useState('0.00');
+
+  useEffect(() => {
+    const update = () => {
+      const minutes = (Date.now() - new Date(pickedUpAt + 'Z')) / 60000;
+      const pricePerMinute = pricePerDay / 24 / 60;
+      setPrice((minutes * pricePerMinute).toFixed(2));
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [pickedUpAt, pricePerDay]);
+
+  return (
+    <span style={{ fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>
+      {price} MAD
+    </span>
+  );
+}
+
 export default function AdminDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState({ users: [], tools: [], categories: [], bookings: [] });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tools');
   const [newCat, setNewCat] = useState('');
+
+  const calcLivePrice = (pickedUpAt, pricePerDay) => {
+    const minutes = (Date.now() - new Date(pickedUpAt + 'Z')) / 60000;
+    const pricePerMinute = pricePerDay / 24 / 60;
+    return (minutes * pricePerMinute).toFixed(2);
+  };
 
   const fetchData = async () => {
     try {
@@ -221,25 +248,57 @@ export default function AdminDashboard() {
                     <th>Outil</th>
                     <th>Emprunteur</th>
                     <th>Dates</th>
-                    <th>Prix Total</th>
+                    <th>Prix</th>
                     <th>Statut</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.bookings.map(b => (
-                    <tr key={b.id}>
-                      <td>{b.id}</td>
-                      <td>{b.tool?.title}</td>
-                      <td>{b.borrower?.name}</td>
-                      <td>{b.start_date} au {b.end_date}</td>
-                      <td>{b.total_price} DH</td>
-                      <td>
-                        <span className={`badge ${b.status === 'approved' ? 'bg-success' : 'bg-warning text-dark'}`}>
-                          {b.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {data.bookings.map(b => {
+                    // Détermine le bon prix selon l'état
+                    const getPrice = () => {
+                      if (b.status === 'completed' && b.final_price != null) {
+                        return { label: '✅ Final', value: parseFloat(b.final_price).toFixed(2), color: '#16a34a' };
+                      }
+                      if (b.picked_up_at && !b.returned_at) {
+                        // ← calcul frontend, pas backend
+                        const live = calcLivePrice(b.picked_up_at, b.tool?.price || 0);
+                        return { label: '⏱ En cours', value: live, color: '#f59e0b' };
+                      }
+                      return { label: '💰 Estimé', value: parseFloat(b.total_price).toFixed(2), color: '#2563eb' };
+                    };
+                    const price = getPrice();
+
+                    return (
+                      <tr key={b.id}>
+                        <td>{b.id}</td>
+                        <td>{b.tool?.title}</td>
+                        <td>{b.borrower?.name}</td>
+                        <td style={{ fontSize: '0.85rem' }}>{b.start_date} au {b.end_date}</td>
+                        <td>
+                          <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block' }}>
+                            {b.status === 'completed' ? '✅ Final' : b.picked_up_at && !b.returned_at ? '⏱ En cours' : '💰 Estimé'}
+                          </span>
+                          {b.picked_up_at && !b.returned_at ? (
+                            <AdminLivePrice pickedUpAt={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
+                          ) : b.status === 'completed' ? (
+                            <span style={{ fontWeight: 700, color: '#16a34a' }}>{parseFloat(b.final_price).toFixed(2)} MAD</span>
+                          ) : (
+                            <span style={{ fontWeight: 700, color: '#2563eb' }}>{parseFloat(b.total_price).toFixed(2)} MAD</span>
+                          )}
+                        </td>
+                        <td>
+                          <span className={`badge ${b.status === 'approved' ? 'bg-success' :
+                            b.status === 'completed' ? 'bg-primary' :
+                              b.status === 'rejected' ? 'bg-danger' :
+                                b.status === 'cancelled' ? 'bg-secondary' :
+                                  'bg-warning text-dark'
+                            }`}>
+                            {b.status}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
