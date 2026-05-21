@@ -34,12 +34,12 @@ class AdminController extends Controller
     public function deleteUser(Request $request, $id)
     {
         if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
-        
+
         $user = User::findOrFail($id);
         if ($user->id === $request->user()->id) {
             return response()->json(['message' => 'Cannot delete yourself'], 400);
         }
-        
+
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
@@ -50,7 +50,7 @@ class AdminController extends Controller
     public function deleteTool(Request $request, $id)
     {
         if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
-        
+
         $tool = Tool::findOrFail($id);
         $tool->delete();
         return response()->json(['message' => 'Tool deleted successfully']);
@@ -62,7 +62,7 @@ class AdminController extends Controller
     public function storeCategory(Request $request)
     {
         if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255|unique:categories,name',
         ]);
@@ -73,5 +73,22 @@ class AdminController extends Controller
         ]);
 
         return response()->json($category, 201);
+    }
+    public function updateCategory(Request $request, $id)
+    {
+        $request->validate(['name' => 'required|string|unique:categories,name,' . $id]);
+        $category = \App\Models\Category::findOrFail($id);
+        $category->update(['name' => $request->name]);
+        return response()->json(['message' => 'Catégorie mise à jour', 'category' => $category]);
+    }
+
+    public function deleteCategory($id)
+    {
+        $category = \App\Models\Category::findOrFail($id);
+        if ($category->tools()->count() > 0) {
+            return response()->json(['message' => 'Impossible — cette catégorie contient des outils'], 422);
+        }
+        $category->delete();
+        return response()->json(['message' => 'Catégorie supprimée']);
     }
 }

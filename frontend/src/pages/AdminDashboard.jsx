@@ -31,6 +31,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('tools');
   const [newCat, setNewCat] = useState('');
+  const [editCat, setEditCat] = useState(null); // { id, name }
 
   const calcLivePrice = (pickedUpAt, pricePerDay) => {
     const minutes = (Date.now() - new Date(pickedUpAt + 'Z')) / 60000;
@@ -77,6 +78,22 @@ export default function AdminDashboard() {
       setNewCat('');
       fetchData();
     } catch (err) { alert('Cette catégorie existe déjà'); }
+  };
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/admin/categories/${editCat.id}`, { name: editCat.name });
+      setEditCat(null);
+      fetchData();
+    } catch (err) { alert(err.response?.data?.message || 'Erreur'); }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    if (!window.confirm('Supprimer cette catégorie ?')) return;
+    try {
+      await api.delete(`/admin/categories/${id}`);
+      fetchData();
+    } catch (err) { alert(err.response?.data?.message || 'Impossible de supprimer'); }
   };
 
   if (!user?.is_admin) return <Navigate to="/" />;
@@ -210,6 +227,7 @@ export default function AdminDashboard() {
           {/* Table Catégories */}
           {activeTab === 'categories' && (
             <div className="p-3">
+              {/* Ajouter */}
               <form onSubmit={handleAddCategory} className="d-flex gap-2 mb-4">
                 <input
                   type="text" className="form-control" placeholder="Nom de la nouvelle catégorie"
@@ -217,12 +235,28 @@ export default function AdminDashboard() {
                 />
                 <button type="submit" className="btn btn-primary text-nowrap">+ Ajouter</button>
               </form>
+
+              {/* Modifier inline */}
+              {editCat && (
+                <form onSubmit={handleUpdateCategory} className="d-flex gap-2 mb-3 p-2 bg-light rounded">
+                  <input
+                    type="text" className="form-control"
+                    value={editCat.name}
+                    onChange={(e) => setEditCat({ ...editCat, name: e.target.value })}
+                    required
+                  />
+                  <button type="submit" className="btn btn-success text-nowrap">✓ Sauvegarder</button>
+                  <button type="button" className="btn btn-secondary" onClick={() => setEditCat(null)}>Annuler</button>
+                </form>
+              )}
+
               <div className="table-responsive">
                 <table className="table table-hover mb-0 align-middle">
                   <thead className="table-light">
                     <tr>
                       <th>Nom</th>
                       <th>Nombre d'outils</th>
+                      <th className="text-end">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -230,6 +264,22 @@ export default function AdminDashboard() {
                       <tr key={c.id}>
                         <td>{c.name}</td>
                         <td>{c.tools_count} outils</td>
+                        <td className="text-end d-flex gap-2 justify-content-end">
+                          <button
+                            onClick={() => setEditCat({ id: c.id, name: c.name })}
+                            className="btn btn-sm btn-outline-primary"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(c.id)}
+                            className="btn btn-sm btn-outline-danger"
+                            disabled={c.tools_count > 0}
+                            title={c.tools_count > 0 ? 'Contient des outils' : 'Supprimer'}
+                          >
+                            <i className="fas fa-trash"></i>
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

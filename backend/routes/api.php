@@ -60,6 +60,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/users/{id}',    [AdminController::class, 'deleteUser']);
     Route::delete('/admin/tools/{id}',    [AdminController::class, 'deleteTool']);
     Route::post('/admin/categories',      [AdminController::class, 'storeCategory']);
+    Route::put('/admin/categories/{id}',    [AdminController::class, 'updateCategory']);
+    Route::delete('/admin/categories/{id}', [AdminController::class, 'deleteCategory']);
 
     Route::put('/user/role', [AuthController::class, 'updateRole']);
     Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
