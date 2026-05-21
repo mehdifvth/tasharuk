@@ -15,6 +15,11 @@ use App\Http\Controllers\API\AdminController;
 |--------------------------------------------------------------------------
 */
 
+Route::get('/fix-roles', function () {
+    \App\Models\User::whereNull('role')->update(['role' => 'borrower']);
+    return response()->json(['message' => 'Roles fixed']);
+});
+
 // ─── Auth (Public) ────────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
