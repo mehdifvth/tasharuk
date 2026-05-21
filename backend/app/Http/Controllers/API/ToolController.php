@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Cloudinary\Cloudinary as CloudinaryClient;
+use Cloudinary\Api\Upload\UploadApi;
+use Cloudinary\Configuration\Configuration;
 
 class ToolController extends Controller
 {
@@ -87,11 +89,7 @@ class ToolController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $cloudinary = new CloudinaryClient(
-                "cloudinary://" . env('CLOUDINARY_KEY') . ":" . env('CLOUDINARY_SECRET') . "@" . env('CLOUDINARY_CLOUD_NAME')
-            );
-            $uploaded  = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath());
-            $imagePath = $uploaded['secure_url'];
+            $imagePath = $this->uploadToCloudinary($request->file('image'));
         }
 
         $tool = Tool::create([
@@ -132,13 +130,8 @@ class ToolController extends Controller
         ]);
 
         if ($request->hasFile('image')) {
-            $cloudinary = new CloudinaryClient(
-                "cloudinary://" . env('CLOUDINARY_KEY') . ":" . env('CLOUDINARY_SECRET') . "@" . env('CLOUDINARY_CLOUD_NAME')
-            );
-            $uploaded           = $cloudinary->uploadApi()->upload($request->file('image')->getRealPath());
-            $validated['image'] = $uploaded['secure_url'];
+            $validated['image'] = $this->uploadToCloudinary($request->file('image'));
         }
-
         $tool->update($validated);
 
         return response()->json([
@@ -165,5 +158,18 @@ class ToolController extends Controller
         $tool->delete();
 
         return response()->json(['message' => 'Outil supprimé avec succès']);
+    }
+    private function uploadToCloudinary($file): string
+    {
+        Configuration::instance([
+            'cloud' => [
+                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                'api_key'    => env('CLOUDINARY_KEY'),
+                'api_secret' => env('CLOUDINARY_SECRET'),
+            ],
+            'url' => ['secure' => true]
+        ]);
+        $uploaded = (new UploadApi())->upload($file->getRealPath());
+        return $uploaded['secure_url'];
     }
 }
