@@ -169,7 +169,7 @@ class ToolController extends Controller
             ],
             'url' => ['secure' => true]
         ]);
-        $uploaded = (new UploadApi())->upload($file->getRealPath());
+        $uploaded = (new UploadApi())->upload($file->getPathname());
         return $uploaded['secure_url'];
     }
 }
