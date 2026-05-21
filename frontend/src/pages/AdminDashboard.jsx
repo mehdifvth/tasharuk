@@ -68,28 +68,28 @@ export default function AdminDashboard() {
           <div className="card text-center p-3 border-0 bg-light shadow-sm">
             <h1 className="mb-2 text-primary"><i className="fas fa-tools"></i></h1>
             <h4 className="mb-0">{data.tools.length}</h4>
-            <small className="text-muted text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>Outils</small>
+            <small className="text-muted text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Outils</small>
           </div>
         </div>
         <div className="col-md-3">
           <div className="card text-center p-3 border-0 bg-light shadow-sm">
             <h1 className="mb-2 text-success"><i className="fas fa-users"></i></h1>
             <h4 className="mb-0">{data.users.length}</h4>
-            <small className="text-muted text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>Utilisateurs</small>
+            <small className="text-muted text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Utilisateurs</small>
           </div>
         </div>
         <div className="col-md-3">
           <div className="card text-center p-3 border-0 bg-light shadow-sm">
             <h1 className="mb-2 text-info"><i className="fas fa-folder"></i></h1>
             <h4 className="mb-0">{data.categories.length}</h4>
-            <small className="text-muted text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>Catégories</small>
+            <small className="text-muted text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Catégories</small>
           </div>
         </div>
         <div className="col-md-3">
           <div className="card text-center p-3 border-0 bg-light shadow-sm">
             <h1 className="mb-2 text-warning"><i className="fas fa-calendar-alt"></i></h1>
             <h4 className="mb-0">{data.bookings.length}</h4>
-            <small className="text-muted text-uppercase fw-bold" style={{fontSize: '0.7rem'}}>Réservations</small>
+            <small className="text-muted text-uppercase fw-bold" style={{ fontSize: '0.7rem' }}>Réservations</small>
           </div>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
 
       <div className="card shadow-sm border-0">
         <div className="card-body p-0">
-          
+
           {/* Table Outils */}
           {activeTab === 'tools' && (
             <div className="table-responsive">
@@ -160,7 +160,14 @@ export default function AdminDashboard() {
                     <tr key={u.id}>
                       <td>{u.name}</td>
                       <td>{u.email}</td>
-                      <td>{u.is_admin ? <span className="badge bg-danger">Admin</span> : <span className="badge bg-secondary">User</span>}</td>
+                      <td>
+                        {u.is_admin
+                          ? <span className="badge bg-danger">Admin</span>
+                          : u.role === 'owner'
+                            ? <span className="badge bg-primary">Propriétaire</span>
+                            : <span className="badge bg-success">Emprunteur</span>
+                        }
+                      </td>
                       <td className="text-end">
                         {u.id !== user.id && (
                           <button onClick={() => handleDeleteUser(u.id)} className="btn btn-sm btn-outline-danger">Supprimer</button>
@@ -177,7 +184,7 @@ export default function AdminDashboard() {
           {activeTab === 'categories' && (
             <div className="p-3">
               <form onSubmit={handleAddCategory} className="d-flex gap-2 mb-4">
-                <input 
+                <input
                   type="text" className="form-control" placeholder="Nom de la nouvelle catégorie"
                   value={newCat} onChange={(e) => setNewCat(e.target.value)} required
                 />

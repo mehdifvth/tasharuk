@@ -49,7 +49,7 @@ class BookingController extends Controller
         $tool = Tool::findOrFail($validated['tool_id']);
 
         // Seul un borrower peut réserver
-        if ($request->user()->role !== 'borrower') {
+        if ($request->user()->role !== 'borrower' || $request->user()->is_admin) {
             return response()->json(['message' => 'Seuls les emprunteurs peuvent réserver'], 403);
         }
 

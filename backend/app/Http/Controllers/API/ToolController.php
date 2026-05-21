@@ -65,8 +65,8 @@ class ToolController extends Controller
      */
     public function store(Request $request)
     {
-        
-        if ($request->user()->role !== 'owner') {
+
+        if ($request->user()->role !== 'owner' || $request->user()->is_admin) {
             return response()->json(['message' => 'Accès réservé aux propriétaires'], 403);
         }
         $validated = $request->validate([

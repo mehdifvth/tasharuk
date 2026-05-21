@@ -32,33 +32,37 @@ export default function ProfilePage() {
                     <p><strong>Email :</strong> {user.email}</p>
                     <p>
                         <strong>Rôle actuel :</strong>{' '}
-                        <span style={user.role === 'owner' ? styles.owner : styles.borrower}>
-                            {user.role === 'owner' ? '🔧 Propriétaire' : '📦 Emprunteur'}
+                        <span style={user.is_admin ? styles.admin : user.role === 'owner' ? styles.owner : styles.borrower}>
+                            {user.is_admin ? '👑 Administrateur' : user.role === 'owner' ? '🔧 Propriétaire' : '📦 Emprunteur'}
                         </span>
                     </p>
                 </div>
 
-                <div style={styles.switchBox}>
-                    <p style={styles.switchText}>
-                        {user.role === 'owner'
-                            ? 'Vous voulez louer des outils ?'
-                            : 'Vous voulez proposer des outils ?'}
-                    </p>
-                    <button
-                        className="btn-primary"
-                        onClick={handleSwitch}
-                        disabled={loading}
-                    >
-                        {loading ? 'Changement...' : `Passer en ${user.role === 'owner' ? 'Emprunteur' : 'Propriétaire'}`}
-                    </button>
-                </div>
+                {user.is_admin ? (
+                    <div style={styles.switchBox}>
+                        <p style={styles.switchText}>
+                            <i className="fas fa-shield-alt me-2"></i>Accès complet à la plateforme
+                        </p>
+                        <button className="btn-primary" onClick={() => window.location.href = '/admin'}>
+                            <i className="fas fa-cog me-1"></i> Tableau de bord Admin
+                        </button>
+                    </div>
+                ) : (
+                    <div style={styles.switchBox}>
+                        <p style={styles.switchText}>
+                            {user.role === 'owner'
+                                ? 'Vous voulez louer des outils ?'
+                                : 'Vous voulez proposer des outils ?'}
+                        </p>
+                        <button className="btn-primary" onClick={handleSwitch} disabled={loading}>
+                            {loading ? 'Changement...' : `Passer en ${user.role === 'owner' ? 'Emprunteur' : 'Propriétaire'}`}
+                        </button>
+                    </div>
+                )}
 
                 {msg && <p style={styles.msg}>{msg}</p>}
 
-                <button
-                    onClick={logout}
-                    style={styles.logout}
-                >
+                <button onClick={logout} style={styles.logout}>
                     <i className="fas fa-sign-out-alt me-1"></i> Se déconnecter
                 </button>
             </div>
@@ -71,6 +75,7 @@ const styles = {
     card: { width: '100%', maxWidth: 450 },
     title: { fontWeight: 800, fontSize: '1.6rem', marginBottom: '1.5rem' },
     info: { display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' },
+    admin: { background: '#fef3c7', color: '#92400e', padding: '2px 10px', borderRadius: 20, fontWeight: 600 },
     owner: { background: '#dbeafe', color: '#1d4ed8', padding: '2px 10px', borderRadius: 20, fontWeight: 600 },
     borrower: { background: '#dcfce7', color: '#16a34a', padding: '2px 10px', borderRadius: 20, fontWeight: 600 },
     switchBox: { background: '#f8fafc', borderRadius: 10, padding: '1rem', marginBottom: '1rem', textAlign: 'center' },

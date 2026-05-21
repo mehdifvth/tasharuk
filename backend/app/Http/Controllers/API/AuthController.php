@@ -90,6 +90,11 @@ class AuthController extends Controller
         ]);
 
         $user = $request->user();
+
+        if ($user->is_admin) {
+            return response()->json(['message' => 'Les administrateurs ne peuvent pas changer de rôle'], 403);
+        }
+
         $user->update(['role' => $request->role]);
 
         return response()->json([
