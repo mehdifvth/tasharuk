@@ -8,6 +8,7 @@ use App\Http\Controllers\API\MessageController;
 use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\AdminController;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,6 +20,16 @@ Route::get('/test-cloudinary', function () {
     try {
         $config = config('cloudinary.cloud_url');
         return response()->json(['config' => $config ? 'OK' : 'MISSING', 'url' => $config]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});
+
+Route::get('/test-cloudinary', function () {
+    try {
+        $testUrl = 'https://res.cloudinary.com/dlwe26nq0/image/upload/sample.jpg';
+        $uploaded = Cloudinary::upload($testUrl);
+        return response()->json(['success' => true, 'url' => $uploaded->getSecurePath()]);
     } catch (\Exception $e) {
         return response()->json(['error' => $e->getMessage()]);
     }
