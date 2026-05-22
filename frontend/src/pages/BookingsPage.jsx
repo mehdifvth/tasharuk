@@ -35,10 +35,11 @@ function ElapsedTimer({ startTime }) {
   useEffect(() => {
     const update = () => {
       const diff = Math.floor((Date.now() - new Date(startTime + 'Z')) / 1000);
-      const h = Math.floor(diff / 3600);
-      const m = Math.floor((diff % 3600) / 60);
-      const s = diff % 60;
-      setElapsed(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+      const d = Math.floor(diff / 86400);
+      const hh = Math.floor((diff % 86400) / 3600);
+      const mm = Math.floor((diff % 3600) / 60);
+      const ss = diff % 60;
+      setElapsed(`${String(d).padStart(2, '0')}j ${String(hh).padStart(2, '0')}h ${String(mm).padStart(2, '0')}m ${String(ss).padStart(2, '0')}s`);
     };
     update();
     const interval = setInterval(update, 1000);
@@ -53,13 +54,26 @@ function ElapsedTimer({ startTime }) {
 }
 
 function LivePrice({ startTime, pricePerDay }) {
-  const [price, setPrice] = useState(0);
+  const [display, setDisplay] = useState({ price: '0.00', duration: '' });
 
   useEffect(() => {
     const update = () => {
-      const minutes = (Date.now() - new Date(startTime + 'Z')) / 60000;
-      const pricePerMinute = pricePerDay / 24 / 60;
-      setPrice((minutes * pricePerMinute).toFixed(2));
+      const diffMs = Date.now() - new Date(startTime + 'Z');
+      const totalSecs = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSecs / 86400);
+      const hours = Math.floor((totalSecs % 86400) / 3600);
+      const minutes = Math.floor((totalSecs % 3600) / 60);
+      const seconds = totalSecs % 60;
+
+      const duration = days > 0
+        ? `${days}j ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`
+        : `${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m ${String(seconds).padStart(2, '0')}s`;
+
+      const totalMins = diffMs / 60000;
+      const pricePerMin = pricePerDay / 24 / 60;
+      const price = (totalMins * pricePerMin).toFixed(2);
+
+      setDisplay({ price, duration });
     };
     update();
     const interval = setInterval(update, 1000);
@@ -68,13 +82,12 @@ function LivePrice({ startTime, pricePerDay }) {
 
   return (
     <div>
-      <span style={{ fontWeight: 800, color: '#f59e0b', fontSize: '1.1rem', fontFamily: 'monospace' }}>
-        💰 {price} MAD
-      </span>
-      {/* Ajouter ce commentaire */}
-      <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.25rem 0 0' }}>
-        ⚠️ Minimum 1 jour facturé ({pricePerDay} MAD) même en cas de retour anticipé
+      <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>
+        ⏱ Durée : <strong>{display.duration}</strong>
       </p>
+      <span style={{ fontWeight: 800, color: '#dc2626', fontSize: '1.1rem', fontFamily: 'monospace' }}>
+        💰 {display.price} MAD
+      </span>
     </div>
   );
 }
@@ -193,6 +206,22 @@ export default function BookingsPage() {
 
   const activeList = groups[activeBlock] || [];
 
+  const getPrice = (b) => {
+    const now = new Date();
+    const endDate = new Date(b.end_date + 'Z');
+
+    if (b.status === 'completed' && b.final_price) {
+      return { label: '✅ Final', value: parseFloat(b.final_price).toFixed(2), color: '#16a34a' };
+    }
+    if (b.picked_up_at && !b.returned_at && now > endDate) {
+      return { label: '⚠️ Prolongation active', value: null, color: '#dc2626' };
+    }
+    if (b.picked_up_at && !b.returned_at) {
+      return { label: '⏱ En cours', value: null, color: '#f59e0b' };
+    }
+    return { label: '💰 prix', value: parseFloat(b.total_price || 0).toFixed(2), color: '#2563eb' };
+  };
+
   if (loading) return <p className="spinner">Chargement...</p>;
 
   return (
@@ -271,6 +300,17 @@ export default function BookingsPage() {
                         </p>
                       )}
 
+                      {/* Prix */}
+                      {(() => {
+                        const price = getPrice(b);
+                        if (price.value === null) return null; // déjà affiché dans le bloc live
+                        return (
+                          <p style={{ ...styles.meta, color: price.color, fontWeight: 700, marginTop: '0.4rem' }}>
+                            <i className="fas fa-tag me-1"></i>{price.label} : {price.value} MAD
+                          </p>
+                        );
+                      })()}
+
                       {/* Code affiché au propriétaire */}
                       {isOwner && b.status === 'approved' && b.confirmation_code && (
                         <div style={styles.codeBox}>
@@ -302,23 +342,45 @@ export default function BookingsPage() {
                         </div>
                       )}
 
-                      {/* Prix estimé avant pickup */}
+                      {/* Avant pickup — prix estimé */}
                       {!b.picked_up_at && b.status === 'approved' && (
                         <div style={{ marginTop: '0.5rem' }}>
-                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Prix estimé :</p>
+                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>💰 Prix estimé :</p>
                           <span style={{ fontWeight: 700, color: '#2563eb' }}>{b.total_price} MAD</span>
                         </div>
                       )}
 
-                      {/* Timer + prix en cours pendant l'emprunt */}
-                      {b.picked_up_at && !b.returned_at && (
-                        <div style={{ marginTop: '0.5rem', background: '#fffbeb', borderRadius: 8, padding: '0.6rem', border: '1px solid #fcd34d' }}>
-                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Durée en cours :</p>
-                          <ElapsedTimer startTime={b.picked_up_at} />
-                          <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0.4rem 0 0.2rem' }}>Prix en cours :</p>
-                          <LivePrice startTime={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
-                        </div>
-                      )}
+                      {/* Après pickup — timer + prix live */}
+                      {b.picked_up_at && !b.returned_at && (() => {
+                        const isOverdue = new Date() > new Date(b.end_date + 'Z');
+                        return (
+                          <div style={{
+                            marginTop: '0.5rem', borderRadius: 8, padding: '0.6rem',
+                            background: isOverdue ? '#fef2f2' : '#fffbeb',
+                            border: `1px solid ${isOverdue ? '#fca5a5' : '#fcd34d'}`,
+                          }}>
+                            {isOverdue && (
+                              <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.85rem', margin: '0 0 0.4rem' }}>
+                                ⚠️ Prolongation active — date de fin dépassée
+                              </p>
+                            )}
+                            <p style={{ fontSize: '0.78rem', color: '#64748b', margin: '0 0 0.2rem' }}>Durée en cours :</p>
+                            <ElapsedTimer startTime={b.picked_up_at} />
+                            {isOverdue ? (
+                              <>
+                                <p style={{ fontSize: '0.78rem', color: '#dc2626', fontWeight: 700, margin: '0.4rem 0 0.2rem' }}>
+                                  ⚠️ Prix prolongation :
+                                </p>
+                                <LivePrice startTime={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
+                              </>
+                            ) : (
+                              <p style={{ fontSize: '0.78rem', color: '#16a34a', fontWeight: 600, margin: '0.4rem 0 0' }}>
+                                ✅ Retournez l'outil avant le {new Date(b.end_date + 'Z').toLocaleString('fr-FR')} pour éviter la prolongation
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })()}
 
                       {/* Durée totale + prix final après retour */}
                       {b.picked_up_at && b.returned_at && (
