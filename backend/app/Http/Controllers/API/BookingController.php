@@ -130,7 +130,7 @@ class BookingController extends Controller
             'user_id'        => $booking->borrower_id,
             'type'           => 'booking_approved',
             'title'          => 'Réservation approuvée ✅',
-            'message'        => 'Votre réservation pour "' . $booking->tool->title . '" a été approuvée.' ,
+            'message'        => 'Votre réservation pour "' . $booking->tool->title . '" a été approuvée.',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
@@ -271,11 +271,16 @@ class BookingController extends Controller
         if ($booking->return_code !== $request->code)
             return response()->json(['message' => 'Code incorrect'], 422);
 
+        $start    = new \DateTime($booking->picked_up_at);
+        $end      = new \DateTime();
+        $diffMins = ($end->getTimestamp() - $start->getTimestamp()) / 60;
+        $finalPrice = round(($diffMins / 60 / 24) * $booking->tool->price, 2);
+
         $booking->update([
             'returned_at' => now(),
             'status'      => 'completed',
+            'final_price' => $finalPrice,
         ]);
-
         Notification::create([
             'user_id'        => $booking->tool->user_id,
             'type'           => 'tool_returned',
