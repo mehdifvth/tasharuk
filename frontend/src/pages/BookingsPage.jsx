@@ -236,7 +236,7 @@ export default function BookingsPage() {
       {error && <p className="error-msg" style={{ marginBottom: '1rem' }}>{error}</p>}
 
       {/* 4 blocs statut */}
-      <div style={styles.blocksGrid}>
+      <div className="blocks-grid" style={styles.blocksGrid}>
         {BLOCKS.map(block => (
           <div
             key={block.key}
@@ -273,7 +273,7 @@ export default function BookingsPage() {
               const hasReview = !!b.review;
 
               return (
-                <div key={b.id} className="card" style={{ padding: '1rem' }}>
+                <div key={b.id} className="card booking-card" style={{ padding: '1rem' }}>
 
                   {/* Header */}
                   <div style={styles.bookingHeader}>
@@ -401,7 +401,7 @@ export default function BookingsPage() {
                     </div>
 
                     {/* Actions */}
-                    <div style={styles.actionsCol}>
+                    <div className="actions-col" style={styles.actionsCol}>
                       {(b.status === 'approved' || b.status === 'pending') && (
                         <button className="btn-outline" onClick={() => navigate(`/messages/${b.id}`)}>
                           <i className="fas fa-comments me-1"></i> Chat
@@ -497,3 +497,19 @@ const styles = {
     border: '1px dashed #93c5fd', textAlign: 'center'
   },
 };
+<style>{`
+  @media (max-width: 768px) {
+    .blocks-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .booking-card {
+      flex-direction: column !important;
+    }
+    .actions-col {
+      min-width: unset !important;
+      width: 100% !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+    }
+  }
+`}</style>
