@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function NotificationBell() {
+    const { user, updateRole } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unread, setUnread] = useState(0);
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
     const navigate = useNavigate();
-    
+
 
     const load = () => {
         api.get('/notifications')
@@ -50,7 +52,7 @@ export default function NotificationBell() {
         booking_cancelled: '🚫',
         tool_picked_up: '🔑',
         tool_returned: '🏁',
-        new_message:       '💬',
+        new_message: '💬',
     };
 
     return (
@@ -81,10 +83,32 @@ export default function NotificationBell() {
                                     ...styles.item,
                                     background: n.is_read ? 'transparent' : '#eff6ff',
                                 }}
-                                onClick={() => {
-                                    if (n.reference_type === 'booking') {
+                                onClick={async () => {
+                                    setOpen(false);
+
+                                    // Rôles requis par type
+                                    const ownerTypes = ['booking_received', 'booking_cancelled', 'tool_picked_up', 'tool_returned'];
+                                    const borrowerTypes = ['booking_approved', 'booking_rejected'];
+
+                                    const needsOwner = ownerTypes.includes(n.type);
+                                    const needsBorrower = borrowerTypes.includes(n.type);
+
+                                    // Vérifier si changement de rôle nécessaire
+                                    if (needsOwner && user?.role !== 'owner' && !user?.is_admin) {
+                                        if (window.confirm('Cette notification nécessite le rôle Propriétaire. Voulez-vous changer votre rôle ?')) {
+                                            await updateRole('owner');
+                                        }
+                                    } else if (needsBorrower && user?.role !== 'borrower' && !user?.is_admin) {
+                                        if (window.confirm('Cette notification nécessite le rôle Emprunteur. Voulez-vous changer votre rôle ?')) {
+                                            await updateRole('borrower');
+                                        }
+                                    }
+
+                                    // Redirection
+                                    if (n.type === 'new_message' && n.reference_id) {
+                                        navigate(`/messages/${n.reference_id}`);
+                                    } else {
                                         navigate('/bookings');
-                                        setOpen(false);
                                     }
                                 }}
                             >
