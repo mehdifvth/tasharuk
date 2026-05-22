@@ -48,7 +48,7 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
     const totalHours = diff / (1000 * 60 * 60);
     if (totalHours < 12) return null;
     const days = totalHours / 24;
-    return (days * toolPrice).toFixed(2);
+    return parseFloat((days * toolPrice).toFixed(2));
   };
 
   const handleSubmit = async (e) => {
@@ -125,7 +125,7 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
           </p>
           {getTotalPrice() && (
             <p style={{ color: '#2563eb', margin: '0.3rem 0 0', fontWeight: 700 }}>
-              <i className="fas fa-tag me-1"></i>Prix estimé : <strong>{getTotalPrice()} MAD</strong>
+              <i className="fas fa-tag me-1"></i>Prix estimé : <strong>{getTotalPrice().toFixed(2)} MAD</strong>
             </p>
           )}
         </div>
