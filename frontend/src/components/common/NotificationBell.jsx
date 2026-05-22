@@ -1,0 +1,143 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
+
+export default function NotificationBell() {
+    const [notifications, setNotifications] = useState([]);
+    const [unread, setUnread] = useState(0);
+    const [open, setOpen] = useState(false);
+    const ref = useRef(null);
+    const navigate = useNavigate();
+    
+
+    const load = () => {
+        api.get('/notifications')
+            .then(r => {
+                setNotifications(r.data.notifications);
+                setUnread(r.data.unread);
+            })
+            .catch(() => { });
+    };
+
+    useEffect(() => {
+        load();
+        const interval = setInterval(load, 10000); // poll 10s
+        return () => clearInterval(interval);
+    }, []);
+
+    // Fermer si clic dehors
+    useEffect(() => {
+        const handleClick = (e) => {
+            if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, []);
+
+    const handleOpen = async () => {
+        setOpen(!open);
+        if (!open && unread > 0) {
+            await api.put('/notifications/read');
+            setUnread(0);
+            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+        }
+    };
+
+    const ICONS = {
+        booking_received: '📦',
+        booking_approved: '✅',
+        booking_rejected: '❌',
+        booking_cancelled: '🚫',
+        tool_picked_up: '🔑',
+        tool_returned: '🏁',
+        new_message:       '💬',
+    };
+
+    return (
+        <div ref={ref} style={{ position: 'relative' }}>
+            {/* Icône cloche */}
+            <button onClick={handleOpen} style={styles.bell}>
+                <i className="fas fa-bell" style={{ fontSize: '1.1rem', color: '#cbd5e1' }}></i>
+                {unread > 0 && (
+                    <span style={styles.badge}>{unread}</span>
+                )}
+            </button>
+
+            {/* Dropdown */}
+            {open && (
+                <div style={styles.dropdown}>
+                    <div style={styles.dropdownHeader}>
+                        <strong>Notifications</strong>
+                        {unread === 0 && <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>Tout lu</span>}
+                    </div>
+
+                    {notifications.length === 0 ? (
+                        <p style={styles.empty}>Aucune notification</p>
+                    ) : (
+                        notifications.map(n => (
+                            <div
+                                key={n.id}
+                                style={{
+                                    ...styles.item,
+                                    background: n.is_read ? 'transparent' : '#eff6ff',
+                                }}
+                                onClick={() => {
+                                    if (n.reference_type === 'booking') {
+                                        navigate('/bookings');
+                                        setOpen(false);
+                                    }
+                                }}
+                            >
+                                <span style={{ fontSize: '1.2rem' }}>{ICONS[n.type] || '🔔'}</span>
+                                <div style={{ flex: 1 }}>
+                                    <p style={styles.itemTitle}>{n.title}</p>
+                                    <p style={styles.itemMsg}>{n.message}</p>
+                                    <p style={styles.itemTime}>
+                                        {new Date(n.created_at).toLocaleString('fr-FR', {
+                                            day: '2-digit', month: '2-digit',
+                                            hour: '2-digit', minute: '2-digit'
+                                        })}
+                                    </p>
+                                </div>
+                                {!n.is_read && <span style={styles.dot}></span>}
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
+
+const styles = {
+    bell: {
+        position: 'relative', background: 'none', border: 'none',
+        cursor: 'pointer', padding: '0.3rem'
+    },
+    badge: {
+        position: 'absolute', top: -4, right: -4,
+        background: '#dc2626', color: '#fff', borderRadius: '50%',
+        width: 18, height: 18, fontSize: '0.7rem', fontWeight: 700,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+    },
+    dropdown: {
+        position: 'absolute', right: 0, top: '2.2rem',
+        background: '#fff', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+        width: 320, maxHeight: 420, overflowY: 'auto', zIndex: 999,
+        border: '1px solid #e2e8f0',
+    },
+    dropdownHeader: {
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        padding: '0.75rem 1rem', borderBottom: '1px solid #e2e8f0',
+    },
+    empty: { textAlign: 'center', color: '#94a3b8', padding: '1.5rem', margin: 0 },
+    item: {
+        display: 'flex', gap: '0.75rem', padding: '0.75rem 1rem',
+        borderBottom: '1px solid #f1f5f9', cursor: 'pointer',
+        alignItems: 'flex-start', transition: 'background 0.15s',
+    },
+    itemTitle: { fontWeight: 700, fontSize: '0.88rem', margin: 0, color: '#1e293b' },
+    itemMsg: { fontSize: '0.82rem', color: '#64748b', margin: '0.2rem 0 0', lineHeight: 1.4 },
+    itemTime: { fontSize: '0.75rem', color: '#94a3b8', margin: '0.2rem 0 0' },
+    dot: { width: 8, height: 8, borderRadius: '50%', background: '#2563eb', flexShrink: 0, marginTop: 4 },
+};

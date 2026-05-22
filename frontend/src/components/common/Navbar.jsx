@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { user, token, logout } = useAuth();
@@ -41,7 +42,8 @@ export default function Navbar() {
               )}
               <Link to="/my-tools" style={linkStyle('/my-tools')}>Mes Outils</Link>
               <Link to="/bookings" style={linkStyle('/bookings')}>Réservations</Link>
-              <span style={styles.separator}>|</span>
+
+              <NotificationBell />
               <Link to="/profile" style={styles.username}>
                 <i className="fas fa-user me-1"></i> {user?.name}
               </Link>

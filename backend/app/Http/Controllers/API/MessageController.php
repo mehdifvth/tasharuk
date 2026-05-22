@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Message;
 use Illuminate\Http\Request;
+use App\Models\Notification;
 
 class MessageController extends Controller
 {
@@ -56,6 +57,19 @@ class MessageController extends Controller
             'booking_id' => $validated['booking_id'],
             'sender_id'  => $userId,
             'message'    => $validated['message'],
+        ]);
+
+        $recipientId = $userId === $booking->borrower_id
+            ? $booking->tool->user_id
+            : $booking->borrower_id;
+
+        Notification::create([
+            'user_id'        => $recipientId,
+            'type'           => 'new_message',
+            'title'          => 'Nouveau message 💬',
+            'message'        => $request->user()->name . ' vous a envoyé un message pour "' . $booking->tool->title . '"',
+            'reference_id'   => $validated['booking_id'],
+            'reference_type' => 'booking',
         ]);
 
         return response()->json([

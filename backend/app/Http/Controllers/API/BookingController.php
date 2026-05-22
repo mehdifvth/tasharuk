@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Tool;
 use Illuminate\Http\Request;
+use App\Models\Notification;
 
 class BookingController extends Controller
 {
@@ -85,6 +86,15 @@ class BookingController extends Controller
             'status'      => 'pending',
         ]);
 
+        Notification::create([
+            'user_id'        => $tool->user_id,
+            'type'           => 'booking_received',
+            'title'          => 'Nouvelle réservation',
+            'message'        => $request->user()->name . ' a réservé votre outil "' . $tool->title . '"',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
+
         return response()->json([
             'message' => 'Demande de reservation envoyée',
             'booking' => $booking->load(['tool.user', 'tool.category', 'borrower']),
@@ -97,6 +107,8 @@ class BookingController extends Controller
     public function approve(Request $request, $id)
     {
         $booking = Booking::with('tool')->findOrFail($id);
+
+
 
         if ($booking->tool->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Non autorisé'], 403);
@@ -114,6 +126,15 @@ class BookingController extends Controller
             'confirmation_code' => $code,
         ]);
 
+        Notification::create([
+            'user_id'        => $booking->borrower_id,
+            'type'           => 'booking_approved',
+            'title'          => 'Réservation approuvée ✅',
+            'message'        => 'Votre réservation pour "' . $booking->tool->title . '" a été approuvée.' ,
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
+
         return response()->json([
             'message' => 'Reservation approuvée',
             'booking' => $booking->load(['tool.user', 'borrower', 'review']),
@@ -127,6 +148,8 @@ class BookingController extends Controller
     {
         $booking = Booking::with('tool')->findOrFail($id);
 
+
+
         if ($booking->tool->user_id !== $request->user()->id) {
             return response()->json(['message' => 'Non autorisé'], 403);
         }
@@ -136,6 +159,15 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => 'rejected']);
+
+        Notification::create([
+            'user_id'        => $booking->borrower_id,
+            'type'           => 'booking_rejected',
+            'title'          => 'Réservation rejetée ❌',
+            'message'        => 'Votre réservation pour "' . $booking->tool->title . '" a été rejetée.',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
 
         return response()->json([
             'message' => 'Reservation rejetée',
@@ -160,6 +192,15 @@ class BookingController extends Controller
         }
 
         $booking->update(['status' => 'cancelled']);
+
+        Notification::create([
+            'user_id'        => $booking->tool->user_id,
+            'type'           => 'booking_cancelled',
+            'title'          => 'Réservation annulée ❌',
+            'message'        => $booking->borrower->name . ' a annulé sa réservation pour "' . $booking->tool->title . '"',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
 
         return response()->json([
             'message' => 'Réservation annulée',
@@ -196,6 +237,15 @@ class BookingController extends Controller
             'return_code'  => $returnCode,
         ]);
 
+        Notification::create([
+            'user_id'        => $booking->tool->user_id,
+            'type'           => 'tool_picked_up',
+            'title'          => 'Outil récupéré 🔑',
+            'message'        => $booking->borrower->name . ' a récupéré "' . $booking->tool->title . '"',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
+
         return response()->json([
             'message' => 'Prise en charge confirmée — timer démarré',
             'booking' => $booking->load(['tool.user', 'borrower', 'review']),
@@ -224,6 +274,15 @@ class BookingController extends Controller
         $booking->update([
             'returned_at' => now(),
             'status'      => 'completed',
+        ]);
+
+        Notification::create([
+            'user_id'        => $booking->tool->user_id,
+            'type'           => 'tool_returned',
+            'title'          => 'Outil retourné 🏁',
+            'message'        => 'Votre outil "' . $booking->tool->title . '" a été retourné.',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
         ]);
 
         return response()->json([

@@ -9,6 +9,7 @@ use App\Http\Controllers\API\ReviewController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\AdminController;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Http\Controllers\API\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,4 +69,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings/{id}/confirm-pickup', [BookingController::class, 'confirmPickup']);
     Route::post('/bookings/{id}/confirm-return', [BookingController::class, 'confirmReturn']);
+
+    Route::get('/notifications',          [NotificationController::class, 'index']);
+    Route::put('/notifications/read',     [NotificationController::class, 'markAllRead']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markRead']);
 });
