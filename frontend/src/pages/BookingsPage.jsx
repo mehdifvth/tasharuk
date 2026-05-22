@@ -1,9 +1,9 @@
 // src/pages/BookingsPage.jsx
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import ReviewForm from '../components/reviews/ReviewForm';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const STATUS_COLORS = {
   pending: { background: '#fef9c3', color: '#854d0e' },
@@ -113,10 +113,13 @@ function CodeInput({ label, onSubmit, loading, error, placeholder = 'TAS-XXXX' }
 export default function BookingsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeBlock, setActiveBlock] = useState('pending');
+  const [activeBlock, setActiveBlock] = useState(() => {
+    return location.state?.block || 'pending';
+  });
   const [reviewFor, setReviewFor] = useState(null);
   const [actionLoad, setActionLoad] = useState(null);
   const [codeLoad, setCodeLoad] = useState(null);

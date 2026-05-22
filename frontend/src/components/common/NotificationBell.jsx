@@ -105,10 +105,22 @@ export default function NotificationBell() {
                                     }
 
                                     // Redirection
+                                    // Déterminer le bloc selon le type
+                                    const getBlock = (type) => {
+                                        if (type === 'booking_received') return 'pending';
+                                        if (type === 'booking_approved') return 'approved';
+                                        if (type === 'booking_rejected') return 'rejected';
+                                        if (type === 'booking_cancelled') return 'rejected';
+                                        if (type === 'tool_picked_up') return 'approved';
+                                        if (type === 'tool_returned') return 'completed';
+                                        return 'pending';
+                                    };
+
+                                    // Redirection
                                     if (n.type === 'new_message' && n.reference_id) {
                                         navigate(`/messages/${n.reference_id}`);
                                     } else {
-                                        navigate('/bookings');
+                                        navigate('/bookings', { state: { block: getBlock(n.type) } });
                                     }
                                 }}
                             >
