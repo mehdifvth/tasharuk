@@ -185,19 +185,27 @@ export default function AdminBookings() {
                                             </div>
                                         </td>
                                         <td style={TD}>
-                                            <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '0 0 0.15rem' }}>
-                                                {b.status === 'completed' ? '✅ Final' : b.picked_up_at && !b.returned_at ? '⏱ En cours' : '💰 Estimé'}
-                                            </p>
-                                            {b.picked_up_at && !b.returned_at ? (
-                                                <LivePrice pickedUpAt={b.picked_up_at} pricePerHour={b.tool?.price || 0} />
-                                            ) : b.status === 'completed' ? (
-                                                <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.88rem' }}>
-                                                    {parseFloat(b.display_final_price || 0).toFixed(2)} MAD
-                                                </span>
+                                            {/* Si terminé et que le prix a changé (prolongation ou retour anticipé) */}
+                                            {b.status === 'completed' && Math.abs(parseFloat(b.display_final_price) - parseFloat(b.display_total_price)) > 0.01 ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                                                    <div style={{ background: '#f8fafc', padding: '0.3rem 0.5rem', borderRadius: 6, border: '1px solid #e2e8f0', width: 'fit-content' }}>
+                                                        <p style={{ fontSize: '0.6rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: 0.5 }}>Réservation</p>
+                                                        <span style={{ fontWeight: 700, color: '#64748b', fontSize: '0.82rem', textDecoration: 'line-through' }}>{parseFloat(b.display_total_price || 0).toFixed(2)} MAD</span>
+                                                    </div>
+                                                    <div style={{ background: '#f0fdf4', padding: '0.3rem 0.5rem', borderRadius: 6, border: '1px solid #dcfce7', width: 'fit-content' }}>
+                                                        <p style={{ fontSize: '0.6rem', color: '#16a34a', fontWeight: 800, textTransform: 'uppercase', margin: 0, letterSpacing: 0.5 }}>Ajusté / Final</p>
+                                                        <span style={{ fontWeight: 800, color: '#166534', fontSize: '0.92rem', fontFamily: 'monospace' }}>{parseFloat(b.display_final_price || 0).toFixed(2)} MAD</span>
+                                                    </div>
+                                                </div>
                                             ) : (
-                                                <span style={{ fontWeight: 700, color: '#6366f1', fontSize: '0.88rem' }}>
-                                                    {parseFloat(b.display_total_price || 0).toFixed(2)} MAD
-                                                </span>
+                                                <div style={{ background: '#f8fafc', padding: '0.4rem 0.6rem', borderRadius: 8, border: '1px solid #e2e8f0', width: 'fit-content' }}>
+                                                    <p style={{ fontSize: '0.62rem', color: '#64748b', fontWeight: 800, textTransform: 'uppercase', margin: '0 0 0.1rem', letterSpacing: 0.5 }}>
+                                                        {b.status === 'completed' ? 'Prix Final' : 'Prix Réservation'}
+                                                    </p>
+                                                    <span style={{ fontWeight: 800, color: '#0f172a', fontSize: '0.92rem', fontFamily: 'monospace' }}>
+                                                        {parseFloat(b.status === 'completed' ? b.display_final_price : b.display_total_price || 0).toFixed(2)} MAD
+                                                    </span>
+                                                </div>
                                             )}
                                         </td>
                                         <td style={TD}>
