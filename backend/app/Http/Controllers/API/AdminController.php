@@ -22,7 +22,7 @@ class AdminController extends Controller
         }
 
         return response()->json([
-            'users'      => User::orderBy('created_at', 'desc')->get(),
+            'users'      => User::withTrashed()->orderBy('created_at', 'desc')->get(),
             'tools'      => Tool::withTrashed()->with(['user', 'category'])->orderBy('created_at', 'desc')->get(),
             'categories' => Category::withCount('tools')->get(),
             'bookings'   => Booking::with(['tool', 'borrower'])->orderBy('created_at', 'desc')->get(),
@@ -44,6 +44,19 @@ class AdminController extends Controller
 
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
+    }
+
+    /**
+     * Restore a soft-deleted user
+     */
+    public function restoreUser(Request $request, $id)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $user = User::withTrashed()->findOrFail($id);
+        $user->restore();
+
+        return response()->json(['message' => 'Utilisateur restauré avec succès']);
     }
 
     /**

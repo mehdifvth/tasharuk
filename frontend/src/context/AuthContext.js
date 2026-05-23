@@ -102,10 +102,27 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const deleteAccount = async () => {
+    setLoading(true);
+    try {
+      await api.delete('/user');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Erreur lors de la suppression du compte';
+      return { success: false, error: message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user, token, loading, error,
-      login, register, logout, updateRole,
+      login, register, logout, updateRole, deleteAccount,
     }}>
       {children}
     </AuthContext.Provider>

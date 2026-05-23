@@ -61,6 +61,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin Data
     Route::get('/admin/data',             [AdminController::class, 'index']);
     Route::delete('/admin/users/{id}',    [AdminController::class, 'deleteUser']);
+    Route::post('/admin/users/{id}/restore', [AdminController::class, 'restoreUser']);
     Route::delete('/admin/tools/{id}',    [AdminController::class, 'deleteTool']);
     Route::delete('/admin/reviews/{id}',  [AdminController::class, 'deleteReview']);
     Route::post('/admin/categories',      [AdminController::class, 'storeCategory']);
@@ -68,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/categories/{id}', [AdminController::class, 'deleteCategory']);
 
     Route::put('/user/role', [AuthController::class, 'updateRole']);
+    Route::delete('/user',   [AuthController::class, 'destroy']);
     Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings/{id}/confirm-pickup', [BookingController::class, 'confirmPickup']);
     Route::post('/bookings/{id}/confirm-return', [BookingController::class, 'confirmReturn']);

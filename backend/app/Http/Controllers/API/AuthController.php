@@ -153,4 +153,22 @@ class AuthController extends Controller
             'user'    => $user,
         ]);
     }
+
+    /**
+     * DELETE /api/user
+     */
+    public function destroy(Request $request)
+    {
+        $user = $request->user();
+        
+        if ($user->is_admin) {
+            return response()->json(['message' => 'Les administrateurs ne peuvent pas être supprimés via cette route'], 403);
+        }
+
+        // Supprimer ses tokens avant la suppression du compte
+        $user->tokens()->delete();
+        $user->delete();
+
+        return response()->json(['message' => 'Compte supprimé avec succès']);
+    }
 }

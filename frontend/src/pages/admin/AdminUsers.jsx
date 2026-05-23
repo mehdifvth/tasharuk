@@ -26,12 +26,20 @@ export default function AdminUsers() {
         } catch (err) { alert(err.response?.data?.message || 'Erreur'); }
     };
 
+    const handleRestore = async (id) => {
+        try {
+            await api.post(`/admin/users/${id}/restore`);
+            fetchUsers();
+        } catch (err) { alert(err.response?.data?.message || 'Erreur'); }
+    };
+
     const filtered = users.filter(u => {
         const matchRole =
             filter === 'all' ||
             (filter === 'admin' && u.is_admin) ||
             (filter === 'owner' && !u.is_admin && u.role === 'owner') ||
-            (filter === 'borrower' && !u.is_admin && u.role === 'borrower');
+            (filter === 'borrower' && !u.is_admin && u.role === 'borrower') ||
+            (filter === 'deleted' && u.deleted_at);
         const matchSearch =
             u.name?.toLowerCase().includes(search.toLowerCase()) ||
             u.email?.toLowerCase().includes(search.toLowerCase());
@@ -43,6 +51,7 @@ export default function AdminUsers() {
         admin: users.filter(u => u.is_admin).length,
         owner: users.filter(u => !u.is_admin && u.role === 'owner').length,
         borrower: users.filter(u => !u.is_admin && u.role === 'borrower').length,
+        deleted: users.filter(u => u.deleted_at).length,
     };
 
     const FILTERS = [
@@ -50,6 +59,7 @@ export default function AdminUsers() {
         { key: 'admin', label: 'Admins', color: '#f59e0b', bg: '#fef9c3', icon: 'fa-crown' },
         { key: 'owner', label: 'Propriétaires', color: '#0ea5e9', bg: '#e0f2fe', icon: 'fa-tools' },
         { key: 'borrower', label: 'Emprunteurs', color: '#10b981', bg: '#d1fae5', icon: 'fa-user' },
+        { key: 'deleted', label: 'Supprimés', color: '#dc2626', bg: '#fee2e2', icon: 'fa-user-slash' },
     ];
 
     const ROLE_STYLE = {
@@ -148,7 +158,7 @@ export default function AdminUsers() {
                                 const role = getRoleKey(u);
                                 const rs = ROLE_STYLE[role];
                                 return (
-                                    <tr key={u.id} style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.1s' }}>
+                                    <tr key={u.id} style={{ borderBottom: '1px solid #f8fafc', transition: 'background 0.1s', opacity: u.deleted_at ? 0.6 : 1 }}>
                                         <td style={TD}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
                                                 <div style={{
@@ -166,17 +176,39 @@ export default function AdminUsers() {
                                             <span style={{ color: '#64748b', fontSize: '0.82rem' }}>{u.email}</span>
                                         </td>
                                         <td style={TD}>
-                                            <span style={{
-                                                background: rs.bg, color: rs.color,
-                                                padding: '0.2rem 0.65rem', borderRadius: 20,
-                                                fontSize: '0.72rem', fontWeight: 700,
-                                                display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
-                                            }}>
-                                                <i className={`fas ${rs.icon}`}></i> {rs.label}
-                                            </span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <span style={{
+                                                    background: rs.bg, color: rs.color,
+                                                    padding: '0.2rem 0.65rem', borderRadius: 20,
+                                                    fontSize: '0.72rem', fontWeight: 700,
+                                                    display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
+                                                }}>
+                                                    <i className={`fas ${rs.icon}`}></i> {rs.label}
+                                                </span>
+                                                {u.deleted_at && (
+                                                    <span style={{
+                                                        background: '#fee2e2', color: '#dc2626',
+                                                        padding: '0.2rem 0.5rem', borderRadius: 20, fontSize: '0.65rem', fontWeight: 800,
+                                                        textTransform: 'uppercase'
+                                                    }}>
+                                                        Supprimé
+                                                    </span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td style={TD}>
-                                            {!u.is_admin && (
+                                            {u.deleted_at ? (
+                                                <button
+                                                    onClick={() => handleRestore(u.id)}
+                                                    style={{
+                                                        padding: '0.3rem 0.75rem', borderRadius: 6,
+                                                        border: '1px solid #10b981', background: '#fff',
+                                                        color: '#10b981', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600
+                                                    }}
+                                                >
+                                                    <i className="fas fa-undo me-1"></i>Restaurer
+                                                </button>
+                                            ) : !u.is_admin && (
                                                 <button
                                                     onClick={() => setConfirm(u)}
                                                     style={{
@@ -212,7 +244,7 @@ export default function AdminUsers() {
                                 Supprimer {confirm.name} ?
                             </h3>
                             <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>
-                                Cette action est irréversible.
+                                Cette action déplacera l'utilisateur dans la liste des supprimés.
                             </p>
                         </div>
                         <div style={{ display: 'flex', gap: '0.75rem' }}>

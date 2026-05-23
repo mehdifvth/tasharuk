@@ -3,10 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProfilePage() {
-    const { user, updateRole, logout } = useAuth();
+    const { user, updateRole, logout, deleteAccount } = useAuth();
     const navigate = useNavigate();
     const [msg, setMsg] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleSwitch = async () => {
         const newRole = user.role === 'owner' ? 'borrower' : 'owner';
@@ -16,6 +17,17 @@ export default function ProfilePage() {
         if (res.success) {
             setMsg(<><i className="fas fa-check-circle me-1"></i>Rôle changé en {newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'}</>);
             setTimeout(() => setMsg(null), 3000);
+        } else {
+            setMsg(res.error);
+        }
+    };
+
+    const handleDelete = async () => {
+        setLoading(true);
+        const res = await deleteAccount();
+        setLoading(false);
+        if (res.success) {
+            navigate('/login');
         } else {
             setMsg(res.error);
         }
@@ -55,6 +67,24 @@ export default function ProfilePage() {
         }
         .switch-btn:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-1px); }
         .switch-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .delete-btn {
+          width: 100%;
+          padding: 0.7rem;
+          margin-top: 0.75rem;
+          border-radius: 10px;
+          border: none;
+          background: #fff;
+          color: #94a3b8;
+          font-weight: 600;
+          cursor: pointer;
+          font-size: 0.82rem;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+        }
+        .delete-btn:hover { color: #dc2626; background: #fef2f2; }
       `}</style>
 
             <div className="profile-card">
@@ -136,6 +166,37 @@ export default function ProfilePage() {
                     >
                         <i className="fas fa-sign-out-alt"></i> Se déconnecter
                     </button>
+
+                    {!user.is_admin && (
+                        <>
+                            {showDeleteConfirm ? (
+                                <div style={{ marginTop: '1rem', padding: '1rem', background: '#fef2f2', borderRadius: 12, border: '1px solid #fee2e2' }}>
+                                    <p style={{ color: '#991b1b', fontSize: '0.82rem', fontWeight: 700, textAlign: 'center', marginBottom: '0.75rem' }}>
+                                        Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.
+                                    </p>
+                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                        <button 
+                                            onClick={handleDelete}
+                                            disabled={loading}
+                                            style={{ flex: 1, padding: '0.5rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                                        >
+                                            {loading ? '...' : 'Confirmer'}
+                                        </button>
+                                        <button 
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            style={{ flex: 1, padding: '0.5rem', background: '#fff', color: '#374151', border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                                        >
+                                            Annuler
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button className="delete-btn" onClick={() => setShowDeleteConfirm(true)}>
+                                    <i className="fas fa-trash-alt"></i> Supprimer mon compte
+                                </button>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
         </div>
