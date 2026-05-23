@@ -75,7 +75,8 @@ export default function ToolsPage() {
         }
         @media (max-width: 640px) {
           .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
-          .filters-desktop { display: none; }
+          .filters-desktop { display: block; margin-bottom: 1.5rem; }
+          .hide-mobile { display: none !important; }
           .filter-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: #fff; border-top: 1px solid #e2e8f0;
@@ -122,19 +123,19 @@ export default function ToolsPage() {
           )}
         </div>
 
-        {/* Filters Desktop */}
+        {/* Filters Desktop & Search Mobile */}
         <div className="filters-desktop">
           <div style={{ position: 'relative' }}>
             <i className="fas fa-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
             <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Que cherchez-vous ?" style={{ paddingLeft: '2.75rem' }} />
           </div>
 
-          <select value={category} onChange={e => setCategory(e.target.value)}>
+          <select className="hide-mobile" value={category} onChange={e => setCategory(e.target.value)}>
             <option value="">Toutes les catégories</option>
             {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
 
-          <div style={{ position: 'relative' }}>
+          <div className="hide-mobile" style={{ position: 'relative' }}>
             <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
             <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." style={{ paddingLeft: '2.5rem' }} />
           </div>
@@ -142,7 +143,7 @@ export default function ToolsPage() {
           <button 
             onClick={handleNearMe} 
             disabled={gpsLoading}
-            className={nearMe ? "btn-primary" : "btn-outline"}
+            className={`hide-mobile ${nearMe ? "btn-primary" : "btn-outline"}`}
             style={{ whiteSpace: 'nowrap' }}
           >
             <i className={`fas ${gpsLoading ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'}`}></i>
@@ -150,7 +151,7 @@ export default function ToolsPage() {
           </button>
 
           {(keyword || category || city || nearMe) && (
-            <button onClick={clearFilters} style={{ background: '#f1f5f9', color: '#64748b', borderRadius: '50%', width: 42, height: 42, padding: 0 }} title="Effacer les filtres">
+            <button className="hide-mobile" onClick={clearFilters} style={{ background: '#f1f5f9', color: '#64748b', borderRadius: '50%', width: 42, height: 42, padding: 0 }} title="Effacer les filtres">
               <i className="fas fa-times"></i>
             </button>
           )}
@@ -159,33 +160,44 @@ export default function ToolsPage() {
         {/* Mobile Filter Panel */}
         {showMobileFilters && (
           <div className="filters-panel">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <h3>Filtres</h3>
-              <button onClick={() => setShowMobileFilters(false)} style={{ background: 'none', fontSize: '1.5rem' }}>×</button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>Filtres</h3>
+              <button onClick={() => setShowMobileFilters(false)} style={{ background: '#f1f5f9', border: 'none', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fas fa-times" style={{ color: '#64748b' }}></i>
+              </button>
             </div>
             
-            <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Recherche</label>
-            <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Perceuse, tondeuse..." />
-            
-            <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Catégorie</label>
-            <select value={category} onChange={e => setCategory(e.target.value)}>
-              <option value="">Toutes les catégories</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-            
-            <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Ville</label>
-            <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ex: Casablanca" />
-            
-            <button 
-              onClick={() => { handleNearMe(); setShowMobileFilters(false); }} 
-              className={nearMe ? "btn-primary" : "btn-outline"}
-              style={{ padding: '1rem' }}
-            >
-              <i className="fas fa-location-arrow"></i> Outils à moins de 30km
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1 }}>
+              <div>
+                <label style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Catégorie</label>
+                <select value={category} onChange={e => setCategory(e.target.value)} style={{ fontSize: '1rem', padding: '0.85rem' }}>
+                  <option value="">Toutes les catégories</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              
+              <div>
+                <label style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Ville</label>
+                <div style={{ position: 'relative' }}>
+                  <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+                  <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ex: Casablanca" style={{ paddingLeft: '2.5rem', fontSize: '1rem', padding: '0.85rem 0.85rem 0.85rem 2.5rem' }} />
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Localisation</label>
+                <button 
+                  onClick={handleNearMe} 
+                  className={nearMe ? "btn-primary" : "btn-outline"}
+                  style={{ width: '100%', padding: '1rem', justifyContent: 'center' }}
+                >
+                  <i className="fas fa-location-arrow"></i> {nearMe ? 'Rayon 30km actif ✓' : 'Chercher à moins de 30km'}
+                </button>
+              </div>
+            </div>
 
-            <div style={{ marginTop: 'auto', display: 'flex', gap: '1rem' }}>
-              <button className="btn-outline" style={{ flex: 1 }} onClick={clearFilters}>Réinitialiser</button>
+            <div style={{ marginTop: 'auto', display: 'flex', gap: '1rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+              <button className="btn-outline" style={{ flex: 1 }} onClick={() => { clearFilters(); setShowMobileFilters(false); }}>Réinitialiser</button>
               <button className="btn-primary" style={{ flex: 1 }} onClick={() => setShowMobileFilters(false)}>Appliquer</button>
             </div>
           </div>
@@ -193,12 +205,12 @@ export default function ToolsPage() {
 
         {/* Mobile Sticky Bar */}
         <div className="filter-bar">
-          <button className="btn-outline" style={{ flex: 1 }} onClick={() => setShowMobileFilters(true)}>
-            <i className="fas fa-sliders"></i> Filtres {(keyword || category || city || nearMe) ? '•' : ''}
+          <button className="btn-outline" style={{ flex: 1, height: '3.5rem' }} onClick={() => setShowMobileFilters(true)}>
+            <i className="fas fa-sliders" style={{ color: '#2563eb' }}></i> Filtres {(category || city || nearMe) ? '•' : ''}
           </button>
           <button 
             className={nearMe ? "btn-primary" : "btn-outline"} 
-            style={{ flex: 1 }} 
+            style={{ flex: 1, height: '3.5rem' }} 
             onClick={handleNearMe}
           >
             <i className="fas fa-location-arrow"></i> {nearMe ? 'Proche ✓' : 'Près de moi'}
