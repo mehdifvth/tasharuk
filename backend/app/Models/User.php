@@ -41,6 +41,16 @@ class User extends Authenticatable
         return $this->hasMany(Booking::class, 'borrower_id');
     }
 
+    public function reviewsReceived()
+    {
+        return $this->hasMany(Review::class, 'reviewee_id');
+    }
+
+    public function reviewsGiven()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
     /**
      * Note en tant que PROPRIÉTAIRE (reçue des emprunteurs)
      */

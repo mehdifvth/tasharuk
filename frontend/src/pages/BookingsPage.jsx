@@ -98,6 +98,11 @@ export default function BookingsPage() {
   const [activeBlock, setActiveBlock] = useState(location.state?.block || 'pending');
   const [reviewFor, setReviewFor] = useState(null);
   const [actionLoad, setActionLoad] = useState(null);
+  const [showBorrowerReviews, setShowBorrowerReviews] = useState({}); // { bookingId: bool }
+
+  const toggleBorrowerReviews = (id) => {
+    setShowBorrowerReviews(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   // Sync active block with navigation state (from notification clicks)
   useEffect(() => {
@@ -249,9 +254,17 @@ export default function BookingsPage() {
                           <i className={`fas ${s.icon}`}></i> {s.text}
                         </span>
                         <h4 style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', margin: 0 }}>{b.tool?.title || 'Outil supprimé'}</h4>
-                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.82rem', color: '#64748b' }}>
-                          {isOwner ? <><i className="fas fa-user me-1"></i>Emprunteur : <strong>{b.borrower?.name}</strong></> : <><i className="fas fa-user-tie me-1"></i>Propriétaire : <strong>{b.tool?.user?.name}</strong></>}
-                        </p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
+                          <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
+                            {isOwner ? <><i className="fas fa-user me-1"></i>Emprunteur : <strong>{b.borrower?.name}</strong></> : <><i className="fas fa-user-tie me-1"></i>Propriétaire : <strong>{b.tool?.user?.name}</strong></>}
+                          </p>
+                          {isOwner && b.borrower?.borrower_rating && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', background: '#fef9c3', padding: '0.1rem 0.4rem', borderRadius: 6 }}>
+                              <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
+                              <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#854d0e' }}>{b.borrower.borrower_rating}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                     
@@ -362,6 +375,56 @@ export default function BookingsPage() {
                       )}
                     </div>
                   </div>
+
+                  {/* Borrower Reputation (Decision Support for Owner) */}
+                  {isOwner && (b.status === 'pending' || b.status === 'approved') && b.borrower && (
+                    <div style={{ marginTop: '1rem', borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                            <h5 style={{ margin: 0, fontSize: '0.8rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                                <i className="fas fa-shield-check me-1" style={{ color: '#10b981' }}></i>Réputation de l'emprunteur
+                            </h5>
+                            {b.borrower.reviews_received?.length > 0 && (
+                                <button 
+                                    onClick={() => toggleBorrowerReviews(b.id)}
+                                    style={{ background: 'none', border: 'none', color: '#2563eb', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                                >
+                                    {showBorrowerReviews[b.id] ? 'Masquer les avis' : `Voir les ${b.borrower.borrower_reviews_count} avis`}
+                                </button>
+                            )}
+                        </div>
+                        
+                        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                             <div style={{ background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: 12, border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{ textAlign: 'center', borderRight: '1.5px solid #e2e8f0', paddingRight: '0.75rem' }}>
+                                    <span style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f172a' }}>{b.borrower.borrower_rating || 'N/A'}</span>
+                                    <p style={{ margin: 0, fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700 }}>NOTE MOYENNE</p>
+                                </div>
+                                <div>
+                                    <p style={{ margin: 0, fontSize: '0.82rem', fontWeight: 600, color: '#475569' }}>
+                                        {b.borrower.borrower_reviews_count > 0 ? `${b.borrower.borrower_reviews_count} évaluation(s) reçue(s)` : "Aucune évaluation en tant qu'emprunteur"}
+                                    </p>
+                                    <div style={{ display: 'flex', gap: '2px', marginTop: '2px' }}>
+                                        {[1,2,3,4,5].map(i => <i key={i} className="fas fa-star" style={{ fontSize: '0.65rem', color: i <= Math.round(b.borrower.borrower_rating || 0) ? '#f59e0b' : '#e2e8f0' }}></i>)}
+                                    </div>
+                                </div>
+                             </div>
+                        </div>
+
+                        {showBorrowerReviews[b.id] && b.borrower.reviews_received?.length > 0 && (
+                            <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', background: '#fff', borderRadius: 12, padding: '0.75rem', border: '1.5px dashed #e2e8f0' }}>
+                                {b.borrower.reviews_received.map(rev => (
+                                    <div key={rev.id} style={{ fontSize: '0.8rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
+                                            <span style={{ fontWeight: 700 }}>Note: {rev.rating}/5</span>
+                                            <span style={{ color: '#94a3b8', fontSize: '0.7rem' }}>{new Date(rev.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                        <p style={{ margin: 0, color: '#64748b', fontStyle: 'italic' }}>"{rev.comment}"</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                  )}
 
                   {/* Codes (Owner sees them, Borrower enters them) */}
                   {isOwner && b.status === 'approved' && (

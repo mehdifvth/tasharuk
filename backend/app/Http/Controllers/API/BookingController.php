@@ -21,10 +21,12 @@ class BookingController extends Controller
         $userId = $request->user()->id;
 
         $bookings = Booking::with([
-            'tool.user',        // FIX: charge aussi l'user du tool (proprietaire)
-            'tool.category',    // FIX: charge la categorie du tool
-            'borrower',         // l'emprunteur
-            'reviews',           // FIX: charge les reviews
+            'tool.user',
+            'tool.category',
+            'borrower.reviewsReceived' => function($q) {
+                $q->latest()->take(5);
+            },
+            'reviews',
         ])
             ->where(function ($q) use ($userId) {
                 $q->where('borrower_id', $userId)
