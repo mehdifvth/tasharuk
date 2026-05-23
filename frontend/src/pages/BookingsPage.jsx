@@ -363,12 +363,38 @@ export default function BookingsPage() {
                     </div>
                   </div>
 
-                  {/* Code inputs */}
+                  {/* Codes (Owner sees them, Borrower enters them) */}
+                  {isOwner && b.status === 'approved' && (
+                    <div style={{ marginTop: '1.25rem', background: '#eff6ff', borderRadius: 16, padding: '1rem 1.25rem', border: '1.5px solid #dbeafe', boxShadow: '0 4px 12px rgba(37,99,235,0.06)' }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div>
+                            <p style={{ margin: 0, fontSize: '0.7rem', color: '#1d4ed8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                              {b.picked_up_at ? 'Code de retour' : 'Code de récupération'}
+                            </p>
+                            <p style={{ margin: '0.3rem 0 0', fontSize: '1.5rem', fontWeight: 900, color: '#1e3a8a', fontFamily: 'monospace', letterSpacing: 3 }}>
+                              {b.picked_up_at ? b.return_code : b.confirmation_code}
+                            </p>
+                          </div>
+                          <button 
+                            onClick={() => { navigator.clipboard.writeText(b.picked_up_at ? b.return_code : b.confirmation_code); alert('Code copié !'); }}
+                            style={{ background: '#fff', border: '1px solid #dbeafe', width: 44, height: 44, borderRadius: 12, color: '#2563eb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                            title="Copier le code"
+                          >
+                            <i className="fas fa-copy"></i>
+                          </button>
+                       </div>
+                       <p style={{ margin: '0.8rem 0 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <i className="fas fa-shield-halved" style={{ color: '#2563eb' }}></i>
+                          Donnez ce code à l'emprunteur pour confirmer la {b.picked_up_at ? 'restitution' : 'réception'}.
+                       </p>
+                    </div>
+                  )}
+
                   {!isOwner && b.status === 'approved' && !b.picked_up_at && (
-                    <CodeInput label="Code de récupération" onSubmit={code => handlePickup(b.id, code)} loading={codeLoad === b.id} error={codeError[`pickup_${b.id}`]} placeholder="TAS-XXXX" />
+                    <CodeInput label="Entrez le code de récupération" onSubmit={code => handlePickup(b.id, code)} loading={codeLoad === b.id} error={codeError[`pickup_${b.id}`]} placeholder="TAS-XXXX" />
                   )}
                   {!isOwner && b.status === 'approved' && b.picked_up_at && !b.returned_at && (
-                    <CodeInput label="Code de retour" onSubmit={code => handleReturn(b.id, code)} loading={codeLoad === b.id} error={codeError[`return_${b.id}`]} placeholder="RET-XXXX" />
+                    <CodeInput label="Entrez le code de retour" onSubmit={code => handleReturn(b.id, code)} loading={codeLoad === b.id} error={codeError[`return_${b.id}`]} placeholder="RET-XXXX" />
                   )}
 
                   {/* Review form */}
