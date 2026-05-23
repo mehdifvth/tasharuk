@@ -18,7 +18,11 @@ export default function LoginPage() {
     setError(null);
     const res = await login(form);
     if (res.success) {
-      navigate('/');
+      if (res.user?.is_admin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     } else {
       setError(res.error);
     }

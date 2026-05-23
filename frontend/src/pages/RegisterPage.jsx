@@ -22,7 +22,11 @@ export default function RegisterPage() {
     }
     const res = await register(form);
     if (res.success) {
-      navigate('/');
+      if (res.user?.is_admin) {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/');
+      }
     } else {
       setError(res.error);
     }
