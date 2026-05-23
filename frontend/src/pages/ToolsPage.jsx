@@ -12,6 +12,7 @@ export default function ToolsPage() {
   const [categories, setCategories] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState('');
+  const [city, setCity] = useState('');
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -28,6 +29,7 @@ export default function ToolsPage() {
     const params = { page };
     if (keyword) params.keyword = keyword;
     if (category) params.category = category;
+    if (city) params.city = city;
     if (nearMe && userCoords) {
       params.lat = userCoords.lat;
       params.lng = userCoords.lng;
@@ -36,9 +38,9 @@ export default function ToolsPage() {
       .then(r => { setTools(r.data.data || []); setLastPage(r.data.last_page || 1); })
       .catch(() => setTools([]))
       .finally(() => setLoading(false));
-  }, [keyword, category, page, nearMe, userCoords]);
+  }, [keyword, category, city, page, nearMe, userCoords]);
 
-  useEffect(() => { setPage(1); }, [keyword, category, nearMe]);
+  useEffect(() => { setPage(1); }, [keyword, category, city, nearMe]);
   useEffect(() => { loadTools(); }, [loadTools]);
 
   const handleNearMe = () => {
@@ -117,6 +119,12 @@ export default function ToolsPage() {
             {categories.map(c => <option key={c.id} value={c.id}>{c.name} ({c.tools_count})</option>)}
           </select>
 
+          {/* City */}
+          <div style={{ position: 'relative', minWidth: 150 }}>
+            <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}></i>
+            <input className="filter-input" value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." style={{ width: '100%', paddingLeft: 34, boxSizing: 'border-box' }} />
+          </div>
+
           {/* Bouton Près de moi */}
           <button
             onClick={handleNearMe}
@@ -137,9 +145,9 @@ export default function ToolsPage() {
           </button>
 
           {/* Effacer */}
-          {(keyword || category || nearMe) && (
+          {(keyword || category || city || nearMe) && (
             <button
-              onClick={() => { setKeyword(''); setCategory(''); setNearMe(false); }}
+              onClick={() => { setKeyword(''); setCategory(''); setCity(''); setNearMe(false); }}
               style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1rem', borderRadius: 10, border: 'none', background: '#fee2e2', color: '#dc2626', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
             >
               <i className="fas fa-times"></i> Effacer

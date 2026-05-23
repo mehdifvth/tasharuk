@@ -33,37 +33,26 @@ class ToolController extends Controller
             $query->where('category_id', $request->category);
         }
 
-        // Filtre ville
+        // Filtre par ville (recherche exacte ou partielle)
         if ($request->filled('city')) {
             $query->where('city', 'like', '%' . $request->city . '%');
         }
 
-        $perPage = min((int) $request->get('per_page', 12), 100);
-        $tools   = $query->latest()->paginate($perPage);
-
-        // Calcul distance si coordonnées fournies
+        // Filtrage par localisation (rayon de 30km par défaut)
         if ($request->filled('lat') && $request->filled('lng')) {
             $lat = (float) $request->lat;
             $lng = (float) $request->lng;
+            $radius = (float) $request->get('radius', 30);
 
-            $tools->getCollection()->transform(function ($tool) use ($lat, $lng) {
-                if ($tool->latitude && $tool->longitude) {
-                    $tool->distance = $this->haversine(
-                        $lat,
-                        $lng,
-                        (float) $tool->latitude,
-                        (float) $tool->longitude
-                    );
-                } else {
-                    $tool->distance = null;
-                }
-                return $tool;
-            });
-
-            // Trier par distance croissante
-            $sorted = $tools->getCollection()->sortBy('distance')->values();
-            $tools->setCollection($sorted);
+            $query->selectRaw("*, ROUND(( 6371 * acos( cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) ), 1) AS distance", [$lat, $lng, $lat])
+                ->having('distance', '<=', $radius)
+                ->orderBy('distance');
+        } else {
+            $query->latest();
         }
+
+        $perPage = min((int) $request->get('per_page', 12), 100);
+        $tools = $query->paginate($perPage);
 
         return response()->json($tools);
     }

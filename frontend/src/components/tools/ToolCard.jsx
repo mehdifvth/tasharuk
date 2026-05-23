@@ -59,7 +59,7 @@ export default function ToolCard({ tool, onClick }) {
               {tool.distance != null && (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1', background: '#eef2ff', padding: '0.1rem 0.5rem', borderRadius: 20 }}>
                   <i className="fas fa-location-arrow" style={{ fontSize: '0.65rem' }}></i>
-                  {tool.distance} km
+                  {parseFloat(tool.distance).toFixed(1)} km
                 </span>
               )}
             </div>
