@@ -15,6 +15,9 @@ export default function ToolsPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
+  const [userCoords, setUserCoords] = useState(null); // { lat, lng }
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [nearMe, setNearMe] = useState(false);
 
   useEffect(() => {
     api.get('/categories').then(r => setCategories(r.data));
@@ -25,41 +28,48 @@ export default function ToolsPage() {
     const params = { page };
     if (keyword) params.keyword = keyword;
     if (category) params.category = category;
+    if (nearMe && userCoords) {
+      params.lat = userCoords.lat;
+      params.lng = userCoords.lng;
+    }
     api.get('/tools', { params })
       .then(r => { setTools(r.data.data || []); setLastPage(r.data.last_page || 1); })
       .catch(() => setTools([]))
       .finally(() => setLoading(false));
-  }, [keyword, category, page]);
+  }, [keyword, category, page, nearMe, userCoords]);
 
-  useEffect(() => { setPage(1); }, [keyword, category]);
+  useEffect(() => { setPage(1); }, [keyword, category, nearMe]);
   useEffect(() => { loadTools(); }, [loadTools]);
+
+  const handleNearMe = () => {
+    if (nearMe) { setNearMe(false); return; }
+    if (userCoords) { setNearMe(true); return; }
+    setGpsLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setNearMe(true);
+        setGpsLoading(false);
+      },
+      () => { alert('Impossible d\'obtenir votre position'); setGpsLoading(false); }
+    );
+  };
 
   return (
     <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '3rem' }}>
       <style>{`
         .filter-input {
-          background: #fff;
-          border: 1.5px solid #e2e8f0;
-          border-radius: 10px;
-          padding: 0.6rem 0.85rem;
-          font-size: 0.88rem;
-          color: #374151;
-          transition: border-color 0.15s;
-          outline: none;
+          background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
+          padding: 0.6rem 0.85rem; font-size: 0.88rem; color: #374151;
+          transition: border-color 0.15s; outline: none;
         }
-        .filter-input:focus { border-color: #2563eb; }
+        .filter-input:focus { border-color: #6366f1; }
         .page-btn {
-          padding: 0.5rem 1.1rem;
-          border-radius: 8px;
-          border: 1.5px solid #e2e8f0;
-          background: #fff;
-          color: #374151;
-          font-weight: 600;
-          font-size: 0.88rem;
-          cursor: pointer;
-          transition: all 0.15s;
+          padding: 0.5rem 1.1rem; border-radius: 8px; border: 1.5px solid #e2e8f0;
+          background: #fff; color: #374151; font-weight: 600; font-size: 0.88rem;
+          cursor: pointer; transition: all 0.15s;
         }
-        .page-btn:hover:not(:disabled) { border-color: #2563eb; color: #2563eb; }
+        .page-btn:hover:not(:disabled) { border-color: #6366f1; color: #6366f1; }
         .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         @media (max-width: 768px) {
           .tools-filters { flex-direction: column !important; }
@@ -80,12 +90,13 @@ export default function ToolsPage() {
             </h1>
             <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0.25rem 0 0' }}>
               {loading ? 'Chargement...' : `${tools.length} outil${tools.length !== 1 ? 's' : ''} disponible${tools.length !== 1 ? 's' : ''}`}
+              {nearMe && userCoords && <span style={{ color: '#6366f1', fontWeight: 600, marginLeft: '0.5rem' }}>· Triés par distance</span>}
             </p>
           </div>
           {user?.role === 'owner' && (
             <button
               onClick={() => navigate('/my-tools')}
-              style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
             >
               <i className="fas fa-plus"></i> Publier un outil
             </button>
@@ -94,32 +105,41 @@ export default function ToolsPage() {
 
         {/* Filters */}
         <div className="tools-filters" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+          {/* Search */}
           <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
             <i className="fas fa-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}></i>
-            <input
-              className="filter-input"
-              value={keyword}
-              onChange={e => setKeyword(e.target.value)}
-              placeholder="Rechercher un outil..."
-              style={{ width: '100%', paddingLeft: 34, boxSizing: 'border-box' }}
-            />
+            <input className="filter-input" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Rechercher un outil..." style={{ width: '100%', paddingLeft: 34, boxSizing: 'border-box' }} />
           </div>
-          <select
-            className="filter-input"
-            value={category}
-            onChange={e => setCategory(e.target.value)}
-            style={{ minWidth: 200 }}
-          >
+
+          {/* Category */}
+          <select className="filter-input" value={category} onChange={e => setCategory(e.target.value)} style={{ minWidth: 190 }}>
             <option value="">Toutes les catégories</option>
-            {categories.map(c => (
-              <option key={c.id} value={c.id}>
-                {c.name} ({c.tools_count})
-              </option>
-            ))}
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name} ({c.tools_count})</option>)}
           </select>
-          {(keyword || category) && (
+
+          {/* Bouton Près de moi */}
+          <button
+            onClick={handleNearMe}
+            disabled={gpsLoading}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.6rem 1rem', borderRadius: 10, fontWeight: 600, fontSize: '0.85rem',
+              cursor: 'pointer', transition: 'all 0.15s',
+              border: `1.5px solid ${nearMe ? '#6366f1' : '#e2e8f0'}`,
+              background: nearMe ? '#eef2ff' : '#fff',
+              color: nearMe ? '#6366f1' : '#64748b',
+            }}
+          >
+            {gpsLoading
+              ? <><i className="fas fa-spinner fa-spin"></i> Localisation...</>
+              : <><i className="fas fa-location-arrow"></i> {nearMe ? 'Près de moi ✓' : 'Près de moi'}</>
+            }
+          </button>
+
+          {/* Effacer */}
+          {(keyword || category || nearMe) && (
             <button
-              onClick={() => { setKeyword(''); setCategory(''); }}
+              onClick={() => { setKeyword(''); setCategory(''); setNearMe(false); }}
               style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1rem', borderRadius: 10, border: 'none', background: '#fee2e2', color: '#dc2626', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
             >
               <i className="fas fa-times"></i> Effacer
@@ -130,7 +150,7 @@ export default function ToolsPage() {
         {/* Grid */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
-            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}></i>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#6366f1', marginBottom: '0.75rem', display: 'block' }}></i>
             <p>Chargement des outils...</p>
           </div>
         ) : tools.length === 0 ? (
@@ -140,7 +160,7 @@ export default function ToolsPage() {
             </div>
             <p style={{ fontWeight: 700, color: '#374151', marginBottom: '0.25rem' }}>Aucun outil trouvé</p>
             <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>
-              {keyword ? `Aucun résultat pour "${keyword}"` : 'Aucun outil disponible pour le moment'}
+              {nearMe ? 'Aucun outil avec localisation près de vous' : keyword ? `Aucun résultat pour "${keyword}"` : 'Aucun outil disponible'}
             </p>
           </div>
         ) : (
@@ -157,9 +177,7 @@ export default function ToolsPage() {
             <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
               <i className="fas fa-chevron-left me-1"></i>Précédent
             </button>
-            <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 600 }}>
-              Page {page} / {lastPage}
-            </span>
+            <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 600 }}>Page {page} / {lastPage}</span>
             <button className="page-btn" disabled={page === lastPage} onClick={() => setPage(p => p + 1)}>
               Suivant<i className="fas fa-chevron-right ms-1"></i>
             </button>
