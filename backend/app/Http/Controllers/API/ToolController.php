@@ -44,12 +44,14 @@ class ToolController extends Controller
             $lng = (float) $request->lng;
             $radius = (float) $request->get('radius', 30);
 
-            // Version plus robuste de la formule de Haversine
-            // 6371 = Rayon de la Terre en km
-            $query->selectRaw("*, ( 6371 * acos( LEAST(1.0, cos( radians(?) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(?) ) + sin( radians(?) ) * sin( radians( latitude ) ) ) ) ) AS distance", [$lat, $lng, $lat])
+            // Formule de Haversine (6371 = rayon terre)
+            $formula = "(6371 * acos(GREATEST(-1, LEAST(1, cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))))";
+
+            $query->select('*')
+                ->selectRaw("ROUND($formula, 1) AS distance", [$lat, $lng, $lat])
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
-                ->having('distance', '<=', $radius)
+                ->whereRaw("$formula <= ?", [$lat, $lng, $lat, $radius])
                 ->orderBy('distance');
         } else {
             $query->latest();
