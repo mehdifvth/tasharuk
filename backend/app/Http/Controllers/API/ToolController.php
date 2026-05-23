@@ -38,17 +38,17 @@ class ToolController extends Controller
             $query->where('city', 'like', '%' . $request->city . '%');
         }
 
-        // Filtrage par localisation (rayon de 30km par défaut)
+        // Filtrage par localisation (rayon de 50km par défaut pour plus de flexibilité)
         if ($request->filled('lat') && $request->filled('lng')) {
             $lat = (float) $request->lat;
             $lng = (float) $request->lng;
-            $radius = (float) $request->get('radius', 30);
+            $radius = (float) $request->get('radius', 50);
 
-            // Formule de Haversine (6371 = rayon terre)
-            $formula = "(6371 * acos(GREATEST(-1, LEAST(1, cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))))";
+            // Formule de Haversine compatible MySQL & PostgreSQL
+            $formula = "(6371 * acos(LEAST(1, GREATEST(-1, cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))))";
 
             $query->select('*')
-                ->selectRaw("ROUND($formula, 1) AS distance", [$lat, $lng, $lat])
+                ->selectRaw("$formula AS distance", [$lat, $lng, $lat])
                 ->whereNotNull('latitude')
                 ->whereNotNull('longitude')
                 ->whereRaw("$formula <= ?", [$lat, $lng, $lat, $radius])
