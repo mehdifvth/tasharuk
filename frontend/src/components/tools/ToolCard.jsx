@@ -19,75 +19,115 @@ export default function ToolCard({ tool, onClick }) {
   return (
     <>
       <style>{`
-        .tool-card { background: #fff; border-radius: 14px; border: 1px solid #f1f5f9; overflow: hidden; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-        .tool-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.09); }
-        .owner-link:hover { text-decoration: underline; color: #6366f1; }
-      `}</style>
-      <div className="tool-card" onClick={onClick}>
-        {tool.image_url
-          ? <img src={tool.image_url} alt={tool.title} style={{ width: '100%', height: 176, objectFit: 'cover' }} />
-          : <div style={{ height: 176, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)', fontSize: '3rem', color: '#94a3b8' }}>
-            <i className="fas fa-wrench"></i>
-          </div>
+        .tool-card { 
+          background: #fff; 
+          border-radius: 20px; 
+          border: 1px solid rgba(226, 232, 240, 0.7); 
+          overflow: hidden; 
+          cursor: pointer; 
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          flex-direction: column;
+          height: 100%;
         }
+        .tool-card:hover { 
+          transform: translateY(-6px); 
+          box-shadow: 0 12px 30px rgba(0,0,0,0.08); 
+          border-color: #2563eb;
+        }
+        .tool-image-container {
+          position: relative;
+          height: 200px;
+          overflow: hidden;
+          background: #f1f5f9;
+        }
+        .tool-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
+        .tool-card:hover .tool-image {
+          transform: scale(1.05);
+        }
+        .distance-badge {
+          position: absolute;
+          bottom: 12px;
+          right: 12px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(4px);
+          padding: 0.35rem 0.75rem;
+          border-radius: 12px;
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: #2563eb;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+        }
+      `}</style>
+      
+      <div className="tool-card" onClick={onClick}>
+        <div className="tool-image-container">
+          {tool.image_url ? (
+            <img src={tool.image_url} alt={tool.title} className="tool-image" loading="lazy" />
+          ) : (
+            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', color: '#cbd5e1' }}>
+              <i className="fas fa-wrench"></i>
+            </div>
+          )}
+          
+          {tool.distance != null && (
+            <div className="distance-badge">
+              <i className="fas fa-location-arrow"></i>
+              {parseFloat(tool.distance).toFixed(1)} km
+            </div>
+          )}
 
-        <div style={{ padding: '1rem' }}>
-          {/* Category + condition */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-              {tool.category?.name}
-            </span>
-            <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '0.15rem 0.55rem', borderRadius: 20, background: cond.bg, color: cond.color }}>
+          <div style={{ position: 'absolute', top: 12, left: 12 }}>
+            <span style={{ fontSize: '0.7rem', fontWeight: 800, padding: '0.3rem 0.7rem', borderRadius: 10, background: cond.bg, color: cond.color, textTransform: 'uppercase' }}>
               {cond.label}
             </span>
           </div>
+        </div>
 
-          {/* Title */}
-          <h3 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0f172a', margin: '0 0 0.5rem', lineHeight: 1.3, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+        <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '0.5rem' }}>
+            {tool.category?.name}
+          </div>
+
+          <h3 style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b', margin: '0 0 0.75rem', lineHeight: 1.4, height: '2.8rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
             {tool.title}
           </h3>
 
-          {/* Localisation */}
-          {(tool.city || tool.distance != null) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-              {tool.city && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', color: '#64748b' }}>
-                  <i className="fas fa-map-marker-alt" style={{ color: '#6366f1', fontSize: '0.7rem' }}></i>
-                  {tool.city}
-                </span>
-              )}
-              {tool.distance != null && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.75rem', fontWeight: 700, color: '#6366f1', background: '#eef2ff', padding: '0.1rem 0.5rem', borderRadius: 20 }}>
-                  <i className="fas fa-location-arrow" style={{ fontSize: '0.65rem' }}></i>
-                  {parseFloat(tool.distance).toFixed(1)} km
-                </span>
-              )}
-            </div>
-          )}
-{/* Footer */}
-<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
-  <div>
-    <span style={{ fontWeight: 800, fontSize: '1rem', color: tool.price > 0 ? '#2563eb' : '#16a34a', display: 'block' }}>
-      {tool.price > 0 ? `${parseFloat(tool.price).toFixed(2)} MAD/h` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
-    </span>
-    {tool.city && (
-      <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.1rem' }}>
-        <i className="fas fa-location-dot"></i> {tool.city}
-      </span>
-    )}
-  </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
+            <i className="fas fa-location-dot" style={{ color: '#2563eb' }}></i>
+            {tool.city || 'Localisation non précisée'}
+          </div>
 
-  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-              <span onClick={handleProfileClick} style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eef2ff', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
+          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontWeight: 900, fontSize: '1.25rem', color: tool.price > 0 ? '#1e293b' : '#16a34a' }}>
+                {tool.price > 0 ? `${parseFloat(tool.price).toFixed(0)} MAD` : 'Gratuit'}
+              </span>
+              <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>par heure</span>
+            </div>
+
+            <div 
+              onClick={handleProfileClick}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800 }}>
                   {tool.user?.name?.charAt(0).toUpperCase()}
                 </div>
-                <span className="owner-link">{tool.user?.name}</span>
-              </span>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>{tool.user?.name?.split(' ')[0]}</span>
+              </div>
               {tool.user?.owner_rating > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem', marginTop: '0.1rem' }}>
-                  <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.62rem' }}></i>
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b' }}>{tool.user.owner_rating}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b' }}>{tool.user.owner_rating}</span>
                 </div>
               )}
             </div>

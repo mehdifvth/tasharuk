@@ -16,9 +16,10 @@ export default function ToolsPage() {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
-  const [userCoords, setUserCoords] = useState(null); // { lat, lng }
+  const [userCoords, setUserCoords] = useState(null); 
   const [gpsLoading, setGpsLoading] = useState(false);
   const [nearMe, setNearMe] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   useEffect(() => {
     api.get('/categories').then(r => setCategories(r.data));
@@ -57,122 +58,171 @@ export default function ToolsPage() {
     );
   };
 
+  const clearFilters = () => {
+    setKeyword('');
+    setCategory('');
+    setCity('');
+    setNearMe(false);
+  };
+
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '3rem' }}>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '5rem' }}>
       <style>{`
-        .filter-input {
-          background: #fff; border: 1.5px solid #e2e8f0; border-radius: 10px;
-          padding: 0.6rem 0.85rem; font-size: 0.88rem; color: #374151;
-          transition: border-color 0.15s; outline: none;
+        .tools-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 1.5rem;
         }
-        .filter-input:focus { border-color: #6366f1; }
-        .page-btn {
-          padding: 0.5rem 1.1rem; border-radius: 8px; border: 1.5px solid #e2e8f0;
-          background: #fff; color: #374151; font-weight: 600; font-size: 0.88rem;
-          cursor: pointer; transition: all 0.15s;
+        @media (max-width: 640px) {
+          .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .filter-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #fff; border-top: 1px solid #e2e8f0;
+            padding: 1rem; z-index: 50; display: flex; gap: 0.5rem;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+          }
+          .filters-panel {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #fff; z-index: 100; padding: 1.5rem;
+            display: ${showMobileFilters ? 'flex' : 'none'};
+            flex-direction: column; gap: 1rem;
+            animation: slideUp 0.3s ease;
+          }
         }
-        .page-btn:hover:not(:disabled) { border-color: #6366f1; color: #6366f1; }
-        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        @media (max-width: 768px) {
-          .tools-filters { flex-direction: column !important; }
-          .tools-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        @media (min-width: 641px) {
+          .filter-bar { display: none; }
+          .filters-desktop {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr auto auto;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            align-items: center;
+          }
+          .filters-panel { display: contents; }
         }
-        @media (max-width: 480px) {
-          .tools-grid { grid-template-columns: 1fr !important; }
-        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
       `}</style>
 
-      <div className="container" style={{ paddingTop: '2rem' }}>
+      <div className="container" style={{ paddingTop: '2.5rem' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h1 style={{ fontWeight: 800, fontSize: '1.75rem', color: '#0f172a', margin: 0 }}>
-              Parcourir les outils
-            </h1>
-            <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0.25rem 0 0' }}>
-              {loading ? 'Chargement...' : `${tools.length} outil${tools.length !== 1 ? 's' : ''} disponible${tools.length !== 1 ? 's' : ''}`}
-              {nearMe && userCoords && <span style={{ color: '#6366f1', fontWeight: 600, marginLeft: '0.5rem' }}>· Triés par distance</span>}
+            <h1 style={{ margin: 0 }}>Explorer les outils</h1>
+            <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '0.5rem' }}>
+              {loading ? 'Recherche en cours...' : `${tools.length} outil(s) trouvé(s)`}
+              {nearMe && <span style={{ color: '#2563eb', fontWeight: 700, marginLeft: '0.5rem' }}>• <i className="fas fa-location-arrow me-1"></i>Rayon 30km</span>}
             </p>
           </div>
           {user?.role === 'owner' && (
-            <button
-              onClick={() => navigate('/my-tools')}
-              style={{ background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            >
+            <button className="btn-primary" onClick={() => navigate('/my-tools')}>
               <i className="fas fa-plus"></i> Publier un outil
             </button>
           )}
         </div>
 
-        {/* Filters */}
-        <div className="tools-filters" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
-          {/* Search */}
-          <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
-            <i className="fas fa-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}></i>
-            <input className="filter-input" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Rechercher un outil..." style={{ width: '100%', paddingLeft: 34, boxSizing: 'border-box' }} />
+        {/* Filters Desktop */}
+        <div className="filters-desktop">
+          <div style={{ position: 'relative' }}>
+            <i className="fas fa-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+            <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Que cherchez-vous ?" style={{ paddingLeft: '2.75rem' }} />
           </div>
 
-          {/* Category */}
-          <select className="filter-input" value={category} onChange={e => setCategory(e.target.value)} style={{ minWidth: 190 }}>
+          <select value={category} onChange={e => setCategory(e.target.value)}>
             <option value="">Toutes les catégories</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name} ({c.tools_count})</option>)}
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
 
-          {/* City */}
-          <div style={{ position: 'relative', minWidth: 150 }}>
-            <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}></i>
-            <input className="filter-input" value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." style={{ width: '100%', paddingLeft: 34, boxSizing: 'border-box' }} />
+          <div style={{ position: 'relative' }}>
+            <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+            <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." style={{ paddingLeft: '2.5rem' }} />
           </div>
 
-          {/* Bouton Près de moi */}
-          <button
-            onClick={handleNearMe}
+          <button 
+            onClick={handleNearMe} 
             disabled={gpsLoading}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.6rem 1rem', borderRadius: 10, fontWeight: 600, fontSize: '0.85rem',
-              cursor: 'pointer', transition: 'all 0.15s',
-              border: `1.5px solid ${nearMe ? '#6366f1' : '#e2e8f0'}`,
-              background: nearMe ? '#eef2ff' : '#fff',
-              color: nearMe ? '#6366f1' : '#64748b',
-            }}
+            className={nearMe ? "btn-primary" : "btn-outline"}
+            style={{ whiteSpace: 'nowrap' }}
           >
-            {gpsLoading
-              ? <><i className="fas fa-spinner fa-spin"></i> Localisation...</>
-              : <><i className="fas fa-location-arrow"></i> {nearMe ? 'Près de moi ✓' : 'Près de moi'}</>
-            }
+            <i className={`fas ${gpsLoading ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'}`}></i>
+            {nearMe ? 'À proximité' : 'Près de moi'}
           </button>
 
-          {/* Effacer */}
           {(keyword || category || city || nearMe) && (
-            <button
-              onClick={() => { setKeyword(''); setCategory(''); setCity(''); setNearMe(false); }}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1rem', borderRadius: 10, border: 'none', background: '#fee2e2', color: '#dc2626', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
-            >
-              <i className="fas fa-times"></i> Effacer
+            <button onClick={clearFilters} style={{ background: '#f1f5f9', color: '#64748b', borderRadius: '50%', width: 42, height: 42, padding: 0 }} title="Effacer les filtres">
+              <i className="fas fa-times"></i>
             </button>
           )}
         </div>
 
+        {/* Mobile Filter Panel */}
+        {showMobileFilters && (
+          <div className="filters-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3>Filtres</h3>
+              <button onClick={() => setShowMobileFilters(false)} style={{ background: 'none', fontSize: '1.5rem' }}>×</button>
+            </div>
+            
+            <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Recherche</label>
+            <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Perceuse, tondeuse..." />
+            
+            <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Catégorie</label>
+            <select value={category} onChange={e => setCategory(e.target.value)}>
+              <option value="">Toutes les catégories</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+            
+            <label style={{ fontWeight: 700, fontSize: '0.9rem' }}>Ville</label>
+            <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ex: Casablanca" />
+            
+            <button 
+              onClick={() => { handleNearMe(); setShowMobileFilters(false); }} 
+              className={nearMe ? "btn-primary" : "btn-outline"}
+              style={{ padding: '1rem' }}
+            >
+              <i className="fas fa-location-arrow"></i> Outils à moins de 30km
+            </button>
+
+            <div style={{ marginTop: 'auto', display: 'flex', gap: '1rem' }}>
+              <button className="btn-outline" style={{ flex: 1 }} onClick={clearFilters}>Réinitialiser</button>
+              <button className="btn-primary" style={{ flex: 1 }} onClick={() => setShowMobileFilters(false)}>Appliquer</button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Sticky Bar */}
+        <div className="filter-bar">
+          <button className="btn-outline" style={{ flex: 1 }} onClick={() => setShowMobileFilters(true)}>
+            <i className="fas fa-sliders"></i> Filtres {(keyword || category || city || nearMe) ? '•' : ''}
+          </button>
+          <button 
+            className={nearMe ? "btn-primary" : "btn-outline"} 
+            style={{ flex: 1 }} 
+            onClick={handleNearMe}
+          >
+            <i className="fas fa-location-arrow"></i> {nearMe ? 'Proche ✓' : 'Près de moi'}
+          </button>
+        </div>
+
         {/* Grid */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
-            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#6366f1', marginBottom: '0.75rem', display: 'block' }}></i>
-            <p>Chargement des outils...</p>
+          <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '3rem', color: '#2563eb' }}></i>
+            <p style={{ marginTop: '1rem', color: '#64748b' }}>Recherche des meilleurs outils...</p>
           </div>
         ) : tools.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '4rem', background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '0.75rem', color: '#e2e8f0' }}>
+          <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#fff', borderRadius: 24, border: '1px solid #f1f5f9' }} className="animate-up">
+            <div style={{ fontSize: '4rem', marginBottom: '1.5rem', color: '#e2e8f0' }}>
               <i className="fas fa-search"></i>
             </div>
-            <p style={{ fontWeight: 700, color: '#374151', marginBottom: '0.25rem' }}>Aucun outil trouvé</p>
-            <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>
-              {nearMe ? 'Aucun outil avec localisation près de vous' : keyword ? `Aucun résultat pour "${keyword}"` : 'Aucun outil disponible'}
+            <h3>Aucun résultat</h3>
+            <p style={{ color: '#64748b', maxWidth: 400, margin: '0.5rem auto 2rem' }}>
+              Nous n'avons pas trouvé d'outils correspondant à vos critères. Essayez d'élargir votre recherche.
             </p>
+            <button className="btn-outline" onClick={clearFilters}>Effacer tous les filtres</button>
           </div>
         ) : (
-          <div className="tools-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' }}>
+          <div className="tools-grid animate-up">
             {tools.map(tool => (
               <ToolCard key={tool.id} tool={tool} onClick={() => navigate(`/tools/${tool.id}`)} />
             ))}
@@ -181,13 +231,13 @@ export default function ToolsPage() {
 
         {/* Pagination */}
         {lastPage > 1 && (
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2.5rem' }}>
-            <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-              <i className="fas fa-chevron-left me-1"></i>Précédent
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '4rem' }}>
+            <button className="btn-outline" disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '0.6rem 1rem' }}>
+              <i className="fas fa-chevron-left"></i>
             </button>
-            <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 600 }}>Page {page} / {lastPage}</span>
-            <button className="page-btn" disabled={page === lastPage} onClick={() => setPage(p => p + 1)}>
-              Suivant<i className="fas fa-chevron-right ms-1"></i>
+            <span style={{ fontWeight: 700, color: '#1e293b' }}>Page {page} sur {lastPage}</span>
+            <button className="btn-outline" disabled={page === lastPage} onClick={() => setPage(p => p + 1)} style={{ padding: '0.6rem 1rem' }}>
+              <i className="fas fa-chevron-right"></i>
             </button>
           </div>
         )}

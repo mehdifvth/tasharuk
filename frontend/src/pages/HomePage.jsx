@@ -24,9 +24,9 @@ const FEATURES = [
 ];
 
 const STATS = [
-  { value: '500+', label: 'Outils disponibles' },
-  { value: '200+', label: 'Utilisateurs actifs' },
-  { value: '98%', label: 'Satisfaction' },
+  { value: '500+', label: 'Outils' },
+  { value: '200+', label: 'Voisins' },
+  { value: '98%', label: 'Confiance' },
 ];
 
 export default function HomePage() {
@@ -40,66 +40,80 @@ export default function HomePage() {
   }, [user, navigate]);
 
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh' }}>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', overflowX: 'hidden' }}>
       <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
+        .hero-section {
+          padding: clamp(3rem, 10vw, 6rem) 0 clamp(2rem, 8vw, 4rem);
+          text-align: center;
         }
-        .hero-animate { animation: fadeUp 0.5s ease forwards; }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          background: #fff;
+          border-radius: 20px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+          overflow: hidden;
+        }
+        @media (max-width: 640px) {
+          .stats-grid { grid-template-columns: 1fr; }
+          .stat-item { border-right: none !important; border-bottom: 1px solid #f1f5f9; }
+          .stat-item:last-child { border-bottom: none; }
+        }
+        .feature-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 1.5rem;
+        }
         .feature-card {
-          background: #fff; border-radius: 16px;
-          padding: 2rem 1.5rem;
+          background: #fff;
+          border-radius: 24px;
+          padding: 2rem;
           border: 1px solid #f1f5f9;
-          box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-          transition: transform 0.2s, box-shadow 0.2s;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          height: 100%;
         }
         .feature-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+          transform: translateY(-8px);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+          border-color: #2563eb;
         }
-        .cta-primary {
-          background: #2563eb; color: #fff; border: none;
-          padding: 0.8rem 2rem; border-radius: 10px;
-          font-weight: 700; font-size: 1rem; cursor: pointer;
-          transition: background 0.15s, transform 0.1s;
-          display: inline-flex; align-items: center; gap: 0.5rem;
-        }
-        .cta-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
-        .cta-outline {
-          background: #fff; color: #374151;
-          border: 1.5px solid #e2e8f0;
-          padding: 0.8rem 2rem; border-radius: 10px;
-          font-weight: 600; font-size: 1rem; cursor: pointer;
-          transition: all 0.15s;
-          display: inline-flex; align-items: center; gap: 0.5rem;
-        }
-        .cta-outline:hover { border-color: #2563eb; color: #2563eb; }
       `}</style>
 
       {/* Hero */}
-      <section style={{ padding: '5rem 1rem 4rem', textAlign: 'center' }}>
-        <div className="container hero-animate">
-          <span style={{ display: 'inline-block', background: '#dbeafe', color: '#1d4ed8', fontSize: '0.8rem', fontWeight: 700, padding: '0.3rem 0.85rem', borderRadius: 20, marginBottom: '1.25rem', letterSpacing: 0.5 }}>
-            <i className="fas fa-seedling me-1"></i> Consommation collaborative
+      <section className="hero-section">
+        <div className="container animate-up">
+          <span style={{ 
+            display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+            background: '#eef2ff', color: '#2563eb', 
+            fontSize: '0.85rem', fontWeight: 800, 
+            padding: '0.5rem 1rem', borderRadius: 30, 
+            marginBottom: '1.5rem', textTransform: 'uppercase', letterSpacing: 1
+          }}>
+            <i className="fas fa-sparkles"></i> Partage local & solidaire
           </span>
-          <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', fontWeight: 800, color: '#0f172a', lineHeight: 1.15, marginBottom: '1.25rem', letterSpacing: '-0.5px' }}>
+          <h1 style={{ marginBottom: '1.5rem' }}>
             Partagez vos outils,<br />
             <span style={{ color: '#2563eb' }}>économisez ensemble</span>
           </h1>
-          <p style={{ fontSize: '1.1rem', color: '#64748b', maxWidth: 520, margin: '0 auto 2.5rem', lineHeight: 1.7 }}>
-            Louez ou prêtez des outils avec vos voisins. Réduisez les coûts et favorisez une consommation plus durable.
+          <p style={{ 
+            fontSize: 'clamp(1rem, 3vw, 1.2rem)', 
+            color: '#64748b', maxWidth: 600, 
+            margin: '0 auto 3rem', lineHeight: 1.6,
+            padding: '0 1rem'
+          }}>
+            Louez ou prêtez des outils à vos voisins. Une solution simple pour vos travaux tout en respectant la planète.
           </p>
-          <div style={{ display: 'flex', gap: '0.85rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/tools">
-              <button className="cta-primary">
-                <i className="fas fa-search"></i> Parcourir les outils
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', padding: '0 1rem' }}>
+            <Link to="/tools" style={{ width: '100%', maxWidth: 240 }}>
+              <button className="btn-primary" style={{ width: '100%', padding: '1rem' }}>
+                <i className="fas fa-search"></i> Parcourir le catalogue
               </button>
             </Link>
             {!user && (
-              <Link to="/register">
-                <button className="cta-outline">
-                  Rejoindre gratuitement <i className="fas fa-arrow-right"></i>
+              <Link to="/register" style={{ width: '100%', maxWidth: 240 }}>
+                <button className="btn-outline" style={{ width: '100%', padding: '1rem' }}>
+                  S'inscrire gratuitement
                 </button>
               </Link>
             )}
@@ -108,13 +122,13 @@ export default function HomePage() {
       </section>
 
       {/* Stats */}
-      <section style={{ padding: '0 1rem 4rem' }}>
-        <div className="container">
-          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', overflow: 'hidden' }}>
+      <section style={{ paddingBottom: '4rem' }}>
+        <div className="container animate-up" style={{ animationDelay: '0.1s' }}>
+          <div className="stats-grid">
             {STATS.map((s, i) => (
-              <div key={s.label} style={{ padding: '1.75rem 1rem', textAlign: 'center', borderRight: i < STATS.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
-                <p style={{ fontSize: '2rem', fontWeight: 800, color: '#0f172a', margin: 0 }}>{s.value}</p>
-                <p style={{ fontSize: '0.82rem', color: '#94a3b8', fontWeight: 600, margin: '0.25rem 0 0', textTransform: 'uppercase', letterSpacing: 0.5 }}>{s.label}</p>
+              <div key={s.label} className="stat-item" style={{ padding: '2rem 1rem', textAlign: 'center', borderRight: i < STATS.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                <p style={{ fontSize: '2.5rem', fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: -1 }}>{s.value}</p>
+                <p style={{ fontSize: '0.85rem', color: '#94a3b8', fontWeight: 700, margin: '0.25rem 0 0', textTransform: 'uppercase', letterSpacing: 1 }}>{s.label}</p>
               </div>
             ))}
           </div>
@@ -122,47 +136,46 @@ export default function HomePage() {
       </section>
 
       {/* Features */}
-      <section style={{ padding: '0 1rem 5rem' }}>
+      <section style={{ padding: '2rem 0 6rem' }}>
         <div className="container">
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.5rem' }}>
-              Comment ça marche ?
-            </h2>
-            <p style={{ color: '#64748b', fontSize: '1rem' }}>Simple, rapide et sécurisé.</p>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }} className="animate-up">
+            <h2 style={{ marginBottom: '1rem' }}>Simple et sécurisé</h2>
+            <p style={{ color: '#64748b', fontSize: '1.1rem' }}>Comment Tasharuk facilite vos projets au quotidien.</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+          <div className="feature-grid">
             {FEATURES.map((f, i) => (
-              <div key={f.title} className="feature-card">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div style={{ background: f.bg, borderRadius: 10, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <i className={`fas ${f.icon}`} style={{ color: f.color, fontSize: '1.1rem' }}></i>
+              <div key={f.title} className="feature-card animate-up" style={{ animationDelay: `${0.1 + i * 0.1}s` }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                  <div style={{ background: f.bg, borderRadius: 16, width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <i className={`fas ${f.icon}`} style={{ color: f.color, fontSize: '1.5rem' }}></i>
                   </div>
-                  <span style={{ background: '#f1f5f9', color: '#94a3b8', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 800 }}>
-                    {i + 1}
-                  </span>
+                  <span style={{ fontSize: '2.5rem', fontWeight: 900, color: '#f1f5f9' }}>0{i + 1}</span>
                 </div>
-                <h3 style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a', marginBottom: '0.4rem' }}>{f.title}</h3>
-                <p style={{ color: '#64748b', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+                <h3 style={{ marginBottom: '0.75rem', fontSize: '1.25rem' }}>{f.title}</h3>
+                <p style={{ color: '#64748b', fontSize: '1rem', lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA bottom */}
+      {/* Final CTA */}
       {!user && (
-        <section style={{ padding: '0 1rem 5rem' }}>
-          <div className="container">
-            <div style={{ background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)', borderRadius: 20, padding: '3rem 2rem', textAlign: 'center', color: '#fff' }}>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 800, marginBottom: '0.75rem' }}>
-                Prêt à commencer ?
-              </h2>
-              <p style={{ opacity: 0.85, fontSize: '1rem', marginBottom: '1.75rem', maxWidth: 400, margin: '0 auto 1.75rem' }}>
-                Rejoignez la communauté Tasharuk et commencez à partager dès aujourd'hui.
+        <section style={{ paddingBottom: '6rem' }}>
+          <div className="container animate-up">
+            <div style={{ 
+              background: 'linear-gradient(135deg, #2563eb 0%, #1e4ed8 100%)', 
+              borderRadius: 32, padding: 'clamp(2rem, 8vw, 4rem) 2rem', 
+              textAlign: 'center', color: '#fff',
+              boxShadow: '0 20px 40px rgba(37, 99, 235, 0.2)'
+            }}>
+              <h2 style={{ color: '#fff', marginBottom: '1rem' }}>Prêt à rejoindre l'aventure ?</h2>
+              <p style={{ opacity: 0.9, fontSize: '1.1rem', marginBottom: '2.5rem', maxWidth: 500, margin: '0 auto 2.5rem' }}>
+                Créez votre compte en quelques secondes et commencez à économiser.
               </p>
               <Link to="/register">
-                <button style={{ background: '#fff', color: '#2563eb', border: 'none', padding: '0.8rem 2rem', borderRadius: 10, fontWeight: 700, fontSize: '1rem', cursor: 'pointer', transition: 'transform 0.1s' }}>
-                  Créer un compte gratuit
+                <button className="btn-primary" style={{ background: '#fff', color: '#2563eb', padding: '1rem 2.5rem' }}>
+                  Commencer maintenant
                 </button>
               </Link>
             </div>
