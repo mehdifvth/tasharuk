@@ -37,7 +37,7 @@ function ElapsedTimer({ startTime }) {
     const i = setInterval(update, 1000);
     return () => clearInterval(i);
   }, [startTime]);
-  return <span style={{ fontWeight: 800, color: '#2563eb', fontFamily: 'monospace', fontSize: '1rem' }}>⏱ {elapsed}</span>;
+  return <span style={{ fontWeight: 800, color: '#2563eb', fontFamily: 'monospace', fontSize: '1rem' }}><i className="fas fa-history me-1"></i> {elapsed}</span>;
 }
 
 function LivePrice({ startTime, pricePerDay }) {
@@ -53,8 +53,8 @@ function LivePrice({ startTime, pricePerDay }) {
   }, [startTime, pricePerDay]);
   return (
     <div>
-      <span style={{ fontWeight: 800, color: '#f59e0b', fontFamily: 'monospace', fontSize: '1.1rem' }}>💰 {price} MAD</span>
-      <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0 0' }}>⚠️ Minimum 1 jour facturé ({pricePerDay} MAD)</p>
+      <span style={{ fontWeight: 800, color: '#f59e0b', fontFamily: 'monospace', fontSize: '1.1rem' }}><i className="fas fa-coins me-1"></i> {price} MAD</span>
+      <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0 0' }}><i className="fas fa-info-circle me-1"></i> Minimum 1 jour facturé ({pricePerDay} MAD)</p>
     </div>
   );
 }
@@ -190,7 +190,7 @@ export default function BookingsPage() {
             Mes Réservations
           </h1>
           <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0.25rem 0 0' }}>
-            {isOwnerRole ? '🔧 Vue Propriétaire' : '👤 Vue Emprunteur'}
+            {isOwnerRole ? <><i className="fas fa-tools me-2"></i>Vue Propriétaire</> : <><i className="fas fa-user me-2"></i>Vue Emprunteur</>}
           </p>
         </div>
 
@@ -265,7 +265,10 @@ export default function BookingsPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
                         <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
                           <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, margin: '0 0 0.15rem', textTransform: 'uppercase' }}>Dates</p>
-                          <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0 }}>{b.start_date?.slice(0, 10)} → {b.end_date?.slice(0, 10)}</p>
+                          <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              {b.start_date?.slice(0, 10)} <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> {b.end_date?.slice(0, 10)}
+                          </p>
+
                         </div>
                         <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
                           <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, margin: '0 0 0.15rem', textTransform: 'uppercase' }}>
@@ -282,13 +285,17 @@ export default function BookingsPage() {
                         <div style={{ background: '#eff6ff', borderRadius: 10, padding: '0.85rem', border: '1px dashed #93c5fd', textAlign: 'center', marginBottom: '0.75rem' }}>
                           {!b.picked_up_at ? (
                             <>
-                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem' }}>🔑 Code de récupération</p>
+                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                                <i className="fas fa-key"></i> Code de récupération
+                              </p>
                               <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.5rem', color: '#2563eb', margin: '0 0 0.2rem', letterSpacing: 4 }}>{b.confirmation_code}</p>
                               <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>Donnez ce code à l'emprunteur</p>
                             </>
                           ) : b.return_code ? (
                             <>
-                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem' }}>🔑 Code de retour</p>
+                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                                <i className="fas fa-key"></i> Code de retour
+                              </p>
                               <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.5rem', color: '#16a34a', margin: '0 0 0.2rem', letterSpacing: 4 }}>{b.return_code}</p>
                               <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>Donnez ce code à l'emprunteur lors du retour</p>
                             </>
@@ -307,12 +314,12 @@ export default function BookingsPage() {
                       {/* Live price */}
                       {b.picked_up_at && !b.returned_at && (
                         <div style={{ background: isOverdue ? '#fef2f2' : '#fffbeb', borderRadius: 10, padding: '0.85rem', border: `1px solid ${isOverdue ? '#fca5a5' : '#fcd34d'}`, marginBottom: '0.5rem' }}>
-                          {isOverdue && <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.82rem', margin: '0 0 0.4rem' }}>⚠️ Prolongation — date de fin dépassée</p>}
+                          {isOverdue && <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.82rem', margin: '0 0 0.4rem' }}><i className="fas fa-exclamation-triangle me-1"></i> Prolongation — date de fin dépassée</p>}
                           <div style={{ marginBottom: '0.4rem' }}><ElapsedTimer startTime={b.picked_up_at} /></div>
                           <LivePrice startTime={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
                           {!isOverdue && (
                             <p style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, margin: '0.4rem 0 0' }}>
-                              ✅ Retournez avant le {new Date(b.end_date + 'Z').toLocaleDateString('fr-FR')}
+                              <i className="fas fa-check-circle me-1"></i> Retournez avant le {new Date(b.end_date + 'Z').toLocaleDateString('fr-FR')}
                             </p>
                           )}
                         </div>

@@ -14,7 +14,7 @@ export default function ProfilePage() {
         const res = await updateRole(newRole);
         setLoading(false);
         if (res.success) {
-            setMsg(`Rôle changé en ${newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'} ✅`);
+            setMsg(<><i className="fas fa-check-circle me-1"></i>Rôle changé en {newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'}</>);
             setTimeout(() => setMsg(null), 3000);
         } else {
             setMsg(res.error);
@@ -24,10 +24,10 @@ export default function ProfilePage() {
     if (!user) return null;
 
     const roleConfig = user.is_admin
-        ? { label: 'Administrateur', icon: 'fa-shield-alt', color: '#92400e', bg: '#fef3c7', emoji: '👑' }
+        ? { label: 'Administrateur', icon: 'fa-shield-alt', color: '#92400e', bg: '#fef3c7' }
         : user.role === 'owner'
-            ? { label: 'Propriétaire', icon: 'fa-wrench', color: '#1d4ed8', bg: '#dbeafe', emoji: '🔧' }
-            : { label: 'Emprunteur', icon: 'fa-user', color: '#16a34a', bg: '#dcfce7', emoji: '📦' };
+            ? { label: 'Propriétaire', icon: 'fa-wrench', color: '#1d4ed8', bg: '#dbeafe' }
+            : { label: 'Emprunteur', icon: 'fa-user', color: '#16a34a', bg: '#dcfce7' };
 
     return (
         <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 1rem' }}>
@@ -71,8 +71,8 @@ export default function ProfilePage() {
                     {/* Role badge */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: roleConfig.bg, borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem' }}>
-                                {roleConfig.emoji}
+                            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
+                                <i className={`fas ${roleConfig.icon}`} style={{ color: roleConfig.color }}></i>
                             </div>
                             <div>
                                 <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Rôle actuel</p>
@@ -113,7 +113,7 @@ export default function ProfilePage() {
                     ) : (
                         <div style={{ background: '#f8fafc', borderRadius: 12, padding: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>
                             <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '0.85rem' }}>
-                                {user.role === 'owner' ? '👤 Vous voulez louer des outils ?' : '🔧 Vous voulez proposer des outils ?'}
+                                {user.role === 'owner' ? <><i className="fas fa-user me-2"></i>Vous voulez louer des outils ?</> : <><i className="fas fa-tools me-2"></i>Vous voulez proposer des outils ?</>}
                             </p>
                             <button className="switch-btn" onClick={handleSwitch} disabled={loading}>
                                 {loading

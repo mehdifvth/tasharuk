@@ -204,7 +204,7 @@ export default function AdminLayout({ children }) {
                                 background: '#dbeafe', color: '#1d4ed8', padding: '0.25rem 0.75rem',
                                 borderRadius: 20, fontSize: '0.78rem', fontWeight: 700
                             }}>
-                                👑 Admin
+                                <i className="fas fa-crown me-1"></i> Admin
                             </span>
                         </div>
                     </div>

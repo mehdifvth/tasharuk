@@ -108,8 +108,9 @@ export default function AdminUsers() {
                                             padding: '0.2rem 0.7rem', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700,
                                             background: u.is_admin ? '#fef3c7' : u.role === 'owner' ? '#dbeafe' : '#dcfce7',
                                             color: u.is_admin ? '#92400e' : u.role === 'owner' ? '#1d4ed8' : '#16a34a',
+                                            display: 'inline-flex', alignItems: 'center', gap: '0.3rem'
                                         }}>
-                                            {u.is_admin ? '👑 Admin' : u.role === 'owner' ? '🔧 Propriétaire' : '👤 Emprunteur'}
+                                            {u.is_admin ? <><i className="fas fa-crown"></i> Admin</> : u.role === 'owner' ? <><i className="fas fa-tools"></i> Propriétaire</> : <><i className="fas fa-user"></i> Emprunteur</>}
                                         </span>
                                     </td>
                                     <td style={td}>

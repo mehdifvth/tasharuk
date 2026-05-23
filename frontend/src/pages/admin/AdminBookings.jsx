@@ -123,13 +123,13 @@ export default function AdminBookings() {
                                             </div>
                                         </td>
                                         <td style={td}>
-                                            <span style={{ fontSize: '0.82rem', color: '#64748b' }}>
-                                                {b.start_date?.slice(0, 10)} → {b.end_date?.slice(0, 10)}
+                                            <span style={{ fontSize: '0.82rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                {b.start_date?.slice(0, 10)} <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> {b.end_date?.slice(0, 10)}
                                             </span>
                                         </td>
                                         <td style={td}>
-                                            <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block' }}>
-                                                {b.status === 'completed' ? '✅ Final' : b.picked_up_at && !b.returned_at ? '⏱ En cours' : '💰 Estimé'}
+                                            <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block', marginBottom: '0.2rem' }}>
+                                                {b.status === 'completed' ? <><i className="fas fa-check-circle me-1"></i>Final</> : b.picked_up_at && !b.returned_at ? <><i className="fas fa-clock-rotate-left me-1"></i>En cours</> : <><i className="fas fa-calculator me-1"></i>Estimé</>}
                                             </span>
                                             {b.picked_up_at && !b.returned_at ? (
                                                 <AdminLivePrice pickedUpAt={b.picked_up_at} pricePerDay={b.tool?.price || 0} />

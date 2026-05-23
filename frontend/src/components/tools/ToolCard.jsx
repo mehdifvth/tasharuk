@@ -53,7 +53,7 @@ export default function ToolCard({ tool, onClick }) {
           {/* Footer */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
             <span style={{ fontWeight: 800, fontSize: '1rem', color: tool.price > 0 ? '#2563eb' : '#16a34a' }}>
-              {tool.price > 0 ? `${tool.price} MAD/j` : '🎁 Gratuit'}
+              {tool.price > 0 ? `${tool.price} MAD/j` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
             </span>
             <span style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>

@@ -73,7 +73,7 @@ export default function AdminDashboard() {
               <i className="fas fa-calendar-alt me-2 text-primary"></i>Réservations récentes
             </h3>
             <button onClick={() => navigate('/admin/bookings')} style={styles.viewAll}>
-              Voir tout →
+              Voir tout <i className="fas fa-arrow-right ms-1"></i>
             </button>
           </div>
           {recentBookings.length === 0 ? (
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
               <i className="fas fa-users me-2 text-success"></i>Utilisateurs récents
             </h3>
             <button onClick={() => navigate('/admin/users')} style={styles.viewAll}>
-              Voir tout →
+              Voir tout <i className="fas fa-arrow-right ms-1"></i>
             </button>
           </div>
           {recentUsers.length === 0 ? (
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
             <i className="fas fa-tools me-2" style={{ color: '#f59e0b' }}></i>Outils récents
           </h3>
           <button onClick={() => navigate('/admin/tools')} style={styles.viewAll}>
-            Voir tout →
+            Voir tout <i className="fas fa-arrow-right ms-1"></i>
           </button>
         </div>
         <div style={styles.toolsGrid}>

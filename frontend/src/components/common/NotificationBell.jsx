@@ -46,14 +46,14 @@ export default function NotificationBell() {
     };
 
     const ICONS = {
-        booking_received: '📦',
-        booking_approved: '✅',
-        booking_rejected: '❌',
-        booking_cancelled: '🚫',
-        tool_picked_up: '🔑',
-        tool_returned: '🏁',
-        new_message: '💬',
-    };
+    booking_received: { icon: 'fa-box', color: '#2563eb' },
+    booking_approved: { icon: 'fa-check-circle', color: '#16a34a' },
+    booking_rejected: { icon: 'fa-times-circle', color: '#dc2626' },
+    booking_cancelled: { icon: 'fa-ban', color: '#94a3b8' },
+    tool_picked_up: { icon: 'fa-key', color: '#f59e0b' },
+    tool_returned: { icon: 'fa-flag-checkered', color: '#059669' },
+    new_message: { icon: 'fa-comment-dots', color: '#7c3aed' },
+};
 
     return (
         <div ref={ref} style={{ position: 'relative' }}>
@@ -124,7 +124,13 @@ export default function NotificationBell() {
                                     }
                                 }}
                             >
-                                <span style={{ fontSize: '1.2rem' }}>{ICONS[n.type] || '🔔'}</span>
+                                <div style={{ 
+                                    width: 40, height: 40, borderRadius: 10, 
+                                    background: (ICONS[n.type]?.color || '#f1f5f9') + '15',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 
+                                }}>
+                                    <i className={`fas ${ICONS[n.type]?.icon || 'fa-bell'}`} style={{ color: ICONS[n.type]?.color || '#94a3b8', fontSize: '1rem' }}></i>
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <p style={styles.itemTitle}>{n.title}</p>
                                     <p style={styles.itemMsg}>{n.message}</p>

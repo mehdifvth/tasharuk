@@ -99,7 +99,7 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
             )}
           </div>
           <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.35rem 0 0' }}>
-            ⚠️ Minimum 1 jour facturé même en cas de retour anticipé
+            <i className="fas fa-exclamation-triangle me-1" style={{ color: '#f59e0b' }}></i> Minimum 1 jour facturé même en cas de retour anticipé
           </p>
         </div>
       )}

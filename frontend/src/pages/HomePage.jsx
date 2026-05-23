@@ -81,7 +81,7 @@ export default function HomePage() {
       <section style={{ padding: '5rem 1rem 4rem', textAlign: 'center' }}>
         <div className="container hero-animate">
           <span style={{ display: 'inline-block', background: '#dbeafe', color: '#1d4ed8', fontSize: '0.8rem', fontWeight: 700, padding: '0.3rem 0.85rem', borderRadius: 20, marginBottom: '1.25rem', letterSpacing: 0.5 }}>
-            🌱 Consommation collaborative
+            <i className="fas fa-seedling me-1"></i> Consommation collaborative
           </span>
           <h1 style={{ fontSize: 'clamp(2rem, 5vw, 3.25rem)', fontWeight: 800, color: '#0f172a', lineHeight: 1.15, marginBottom: '1.25rem', letterSpacing: '-0.5px' }}>
             Partagez vos outils,<br />

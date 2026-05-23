@@ -2,9 +2,10 @@
 // FIX: cleanup correct du setInterval + gestion erreur accès non autorisé
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import Logo from '../components/common/Logo';
 
 export default function MessagesPage() {
   const { bookingId } = useParams();
@@ -88,16 +89,29 @@ export default function MessagesPage() {
         }
       `}</style>
       <div className="container" style={{ maxWidth: 700 }}>
-        <button
-          onClick={() => navigate('/bookings')}
-          style={{ background: 'none', color: '#2563eb', fontWeight: 600, marginBottom: '1rem', fontSize: '0.95rem' }}
-        >
-          ← Retour aux réservations
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+          <button
+            onClick={() => navigate('/bookings')}
+            style={{ background: '#f1f5f9', border: 'none', color: '#475569', fontWeight: 600, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.85rem', borderRadius: 10, cursor: 'pointer', transition: 'all 0.15s' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = '#e2e8f0'; e.currentTarget.style.color = '#1e293b'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#475569'; }}
+          >
+            <i className="fas fa-arrow-left"></i> Retour
+          </button>
+          <Logo size={28} showText={false} />
+        </div>
 
-        <h2 style={{ fontWeight: 800, marginBottom: '1rem' }}>
-          <i className="fas fa-comments me-2"></i>Conversation — Réservation #{bookingId}
-        </h2>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontWeight: 800, fontSize: '1.5rem', color: '#0f172a', margin: 0, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ background: '#eff6ff', color: '#2563eb', width: 42, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <i className="fas fa-comments"></i>
+            </div>
+            Conversation #{bookingId}
+          </h2>
+          <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0', paddingLeft: '3.75rem' }}>
+            Échangez avec votre partenaire de réservation
+          </p>
+        </div>
 
         {error && <p className="error-msg" style={{ marginBottom: '1rem' }}>{error}</p>}
 
@@ -156,9 +170,9 @@ export default function MessagesPage() {
             type="submit"
             className="btn-primary"
             disabled={sending || !text.trim() || !!error}
-            style={{ alignSelf: 'flex-end', padding: '0.6rem 1.25rem' }}
+            style={{ alignSelf: 'flex-end', padding: '0.6rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            {sending ? '...' : '➤ Envoyer'}
+            {sending ? '...' : <><i className="fas fa-paper-plane"></i> Envoyer</>}
           </button>
         </form>
         <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem' }}>

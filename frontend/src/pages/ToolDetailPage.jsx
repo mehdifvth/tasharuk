@@ -115,7 +115,7 @@ export default function ToolDetailPage() {
 
               <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '0.85rem 1rem', display: 'inline-block' }}>
                 <span style={{ fontWeight: 800, fontSize: '1.4rem', color: '#16a34a' }}>
-                  {tool.price > 0 ? `${tool.price} MAD` : '🎁 Gratuit'}
+                  {tool.price > 0 ? `${tool.price} MAD` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
                 </span>
                 {tool.price > 0 && <span style={{ color: '#64748b', fontSize: '0.85rem', marginLeft: '0.3rem' }}>/ jour</span>}
               </div>
@@ -172,7 +172,7 @@ export default function ToolDetailPage() {
               <p style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a', marginBottom: '1rem' }}>
                 {tool.price > 0 ? (
                   <><span style={{ fontSize: '1.4rem', color: '#2563eb' }}>{tool.price} MAD</span> <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.85rem' }}>/ jour</span></>
-                ) : '🎁 Gratuit'}
+                ) : <><i className="fas fa-gift me-1"></i>Gratuit</>}
               </p>
 
               {!user ? (

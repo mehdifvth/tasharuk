@@ -151,13 +151,13 @@ export default function ToolsPage() {
         {lastPage > 1 && (
           <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2.5rem' }}>
             <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-              ← Précédent
+              <i className="fas fa-chevron-left me-1"></i>Précédent
             </button>
             <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 600 }}>
               Page {page} / {lastPage}
             </span>
             <button className="page-btn" disabled={page === lastPage} onClick={() => setPage(p => p + 1)}>
-              Suivant →
+              Suivant<i className="fas fa-chevron-right ms-1"></i>
             </button>
           </div>
         )}
