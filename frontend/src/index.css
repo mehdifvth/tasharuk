@@ -7,7 +7,7 @@
 }
 
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: #f8fafc;
   color: #1e293b;
   line-height: 1.6;
@@ -25,7 +25,6 @@ a {
   padding: 0 1.5rem;
 }
 
-/* Inputs — base minimale, les composants gèrent leur propre style */
 input,
 select,
 textarea {
@@ -44,14 +43,8 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-}
-
-input[type="file"] {
-  padding: 0.4rem;
-  background: #f8fafc;
-  cursor: pointer;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 input[type="radio"],
@@ -62,7 +55,12 @@ input[type="checkbox"] {
   box-shadow: none;
 }
 
-/* Buttons — base seulement */
+input[type="file"] {
+  padding: 0.4rem;
+  background: #f8fafc;
+  cursor: pointer;
+}
+
 button {
   font-family: inherit;
   cursor: pointer;
@@ -75,9 +73,8 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* Classes utilitaires gardées pour compatibilité */
 .btn-primary {
-  background: #2563eb;
+  background: #6366f1;
   color: #fff;
   font-weight: 600;
   border-radius: 8px;
@@ -85,20 +82,20 @@ button:disabled {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #4f46e5;
 }
 
 .btn-outline {
   background: transparent;
-  color: #2563eb;
-  border: 1.5px solid #2563eb;
+  color: #6366f1;
+  border: 1.5px solid #6366f1;
   font-weight: 600;
   border-radius: 8px;
   padding: 0.55rem 1.1rem;
 }
 
 .btn-outline:hover:not(:disabled) {
-  background: #eff6ff;
+  background: #eef2ff;
 }
 
 .btn-danger {
@@ -125,7 +122,6 @@ button:disabled {
   background: #15803d;
 }
 
-/* Card — base minimale */
 .card {
   background: #fff;
   border: 1px solid #f1f5f9;
@@ -145,7 +141,7 @@ button:disabled {
 
 .spinner {
   text-align: center;
-  color: #94a3b8;
+  color: '#94a3b8';
   padding: 3rem 1rem;
 }
 

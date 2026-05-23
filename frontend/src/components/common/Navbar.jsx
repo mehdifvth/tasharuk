@@ -166,8 +166,27 @@ export default function Navbar() {
               <Link to="/profile" className={`mobile-link ${isActive('/profile') ? 'active' : ''}`}>
                 <i className="fas fa-user" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>{user?.name}
               </Link>
-              <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1.25rem', background: 'none', border: 'none', color: '#dc2626', fontSize: '0.92rem', fontWeight: 600, cursor: 'pointer', borderTop: '1px solid #f1f5f9' }}>
-                <i className="fas fa-sign-out-alt" style={{ width: 18, textAlign: 'center' }}></i>Déconnexion
+              // Remplace le bouton déconnexion
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: '#fff',
+                  color: '#64748b',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 8,
+                  padding: '0.4rem 0.85rem',
+                  fontSize: '0.85rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#fee2e2'; e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fca5a5'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#64748b'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
+              >
+                <i className="fas fa-sign-out-alt"></i> Déconnexion
               </button>
             </>
           ) : (
