@@ -71,7 +71,7 @@ export default function ProfilePage() {
 }
 
 const styles = {
-    wrapper: { display: 'flex', justifyContent: 'center', paddingTop: '3rem' },
+    wrapper: { display: 'flex', justifyContent: 'center', paddingTop: '3rem', padding: '1rem' },
     card: { width: '100%', maxWidth: 450 },
     title: { fontWeight: 800, fontSize: '1.6rem', marginBottom: '1.5rem' },
     info: { display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' },
