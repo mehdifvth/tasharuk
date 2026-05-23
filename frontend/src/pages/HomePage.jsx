@@ -15,7 +15,7 @@ export default function HomePage() {
         Partagez, prêtez et louez des outils avec vos voisins.
         Réduisez les coûts et favorisez une consommation durable.
       </p>
-      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
         <Link to="/tools">
           <button className="btn-primary" style={{ fontSize: '1rem', padding: '0.75rem 2rem' }}>
             Parcourir les outils

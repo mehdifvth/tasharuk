@@ -157,9 +157,9 @@ const styles = {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
     },
     dropdown: {
-        position: 'absolute', right: 0, top: '2.2rem',
+        position: 'fixed', right: 8, top: '60px',
         background: '#fff', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-        width: 320, maxHeight: 420, overflowY: 'auto', zIndex: 999,
+        width: 'min(320px, calc(100vw - 16px))', maxHeight: 420, overflowY: 'auto', zIndex: 999,
         border: '1px solid #e2e8f0',
     },
     dropdownHeader: {
