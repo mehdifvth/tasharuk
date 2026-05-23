@@ -111,7 +111,11 @@ export default function ToolsPage() {
             style={{ minWidth: 200 }}
           >
             <option value="">Toutes les catégories</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {categories.map(c => (
+              <option key={c.id} value={c.id}>
+                {c.name} ({c.tools_count})
+              </option>
+            ))}
           </select>
           {(keyword || category) && (
             <button
