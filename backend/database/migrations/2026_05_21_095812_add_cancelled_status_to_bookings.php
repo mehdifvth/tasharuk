@@ -12,14 +12,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::statement("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check");
-        DB::statement("ALTER TABLE bookings ALTER COLUMN status TYPE VARCHAR(255)");
-        DB::statement("ALTER TABLE bookings ADD CONSTRAINT bookings_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'completed', 'cancelled'))");
+        Schema::table('bookings', function (Blueprint $table) {
+            // On convertit l'ENUM en STRING pour plus de souplesse et de compatibilité
+            $table->string('status')->default('pending')->change();
+        });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        DB::statement("ALTER TABLE bookings DROP CONSTRAINT IF EXISTS bookings_status_check");
-        DB::statement("ALTER TABLE bookings ADD CONSTRAINT bookings_status_check CHECK (status IN ('pending', 'approved', 'rejected', 'completed'))");
+        Schema::table('bookings', function (Blueprint $table) {
+            // On pourrait remettre en ENUM, mais rester en STRING est plus sûr pour les migrations Laravel
+            $table->string('status')->default('pending')->change();
+        });
     }
 };

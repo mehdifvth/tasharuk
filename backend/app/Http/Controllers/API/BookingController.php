@@ -232,10 +232,18 @@ class BookingController extends Controller
         // Génère un NOUVEAU code pour le retour (RET-XXXX)
         $returnCode = 'RET-' . strtoupper(substr(md5(uniqid()), 0, 4));
 
-        $booking->update([
+        $updateData = [
             'picked_up_at' => now(),
             'return_code'  => $returnCode,
-        ]);
+        ];
+
+        // Si l'utilisateur récupère l'outil AVANT la date prévue, 
+        // on met à jour la date de début pour que les calculs de durée soient corrects.
+        if (now()->lt(\Carbon\Carbon::parse($booking->start_date))) {
+            $updateData['start_date'] = now();
+        }
+
+        $booking->update($updateData);
 
         Notification::create([
             'user_id'        => $booking->tool->user_id,
@@ -271,10 +279,18 @@ class BookingController extends Controller
         if ($booking->return_code !== $request->code)
             return response()->json(['message' => 'Code incorrect'], 422);
 
-        $start    = new \DateTime($booking->picked_up_at);
-        $end      = new \DateTime();
-        $diffMins = ($end->getTimestamp() - $start->getTimestamp()) / 60;
-        $finalPrice = round(($diffMins / 60 / 24) * $booking->tool->price, 2);
+        $start    = \Carbon\Carbon::parse($booking->picked_up_at);
+        $end      = now();
+        $minutes  = $start->diffInMinutes($end);
+
+        if ($minutes <= 24 * 60) {
+            // Moins de 24h → 1 jour minimum
+            $finalPrice = $booking->tool->price;
+        } else {
+            // Au-delà → par minute
+            $pricePerMinute = $booking->tool->price / 24 / 60;
+            $finalPrice = round($minutes * $pricePerMinute, 2);
+        }
 
         $booking->update([
             'returned_at' => now(),
