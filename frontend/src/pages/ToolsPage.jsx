@@ -1,4 +1,3 @@
-// src/pages/ToolsPage.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -18,7 +17,7 @@ export default function ToolsPage() {
   const [lastPage, setLastPage] = useState(1);
 
   useEffect(() => {
-    api.get('/categories').then((r) => setCategories(r.data));
+    api.get('/categories').then(r => setCategories(r.data));
   }, []);
 
   const loadTools = useCallback(() => {
@@ -27,7 +26,7 @@ export default function ToolsPage() {
     if (keyword) params.keyword = keyword;
     if (category) params.category = category;
     api.get('/tools', { params })
-      .then((r) => { setTools(r.data.data || []); setLastPage(r.data.last_page || 1); })
+      .then(r => { setTools(r.data.data || []); setLastPage(r.data.last_page || 1); })
       .catch(() => setTools([]))
       .finally(() => setLoading(false));
   }, [keyword, category, page]);
@@ -36,99 +35,133 @@ export default function ToolsPage() {
   useEffect(() => { loadTools(); }, [loadTools]);
 
   return (
-    <>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '3rem' }}>
       <style>{`
+        .filter-input {
+          background: #fff;
+          border: 1.5px solid #e2e8f0;
+          border-radius: 10px;
+          padding: 0.6rem 0.85rem;
+          font-size: 0.88rem;
+          color: #374151;
+          transition: border-color 0.15s;
+          outline: none;
+        }
+        .filter-input:focus { border-color: #2563eb; }
+        .page-btn {
+          padding: 0.5rem 1.1rem;
+          border-radius: 8px;
+          border: 1.5px solid #e2e8f0;
+          background: #fff;
+          color: #374151;
+          font-weight: 600;
+          font-size: 0.88rem;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .page-btn:hover:not(:disabled) { border-color: #2563eb; color: #2563eb; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         @media (max-width: 768px) {
-          .tools-grid {
-            grid-template-columns: repeat(2, 1fr) !important;
-            gap: 0.75rem !important;
-          }
-          .tools-filters {
-            flex-direction: column !important;
-          }
-          .tools-filters input,
-          .tools-filters select {
-            width: 100% !important;
-          }
+          .tools-filters { flex-direction: column !important; }
+          .tools-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 480px) {
-          .tools-grid {
-            grid-template-columns: 1fr !important;
-          }
+          .tools-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
-      <div className="container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <h1 style={{ fontWeight: 800, fontSize: '1.75rem' }}>
-            <i className="fas fa-search me-2 text-primary"></i>Parcourir les Outils
-          </h1>
+      <div className="container" style={{ paddingTop: '2rem' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ fontWeight: 800, fontSize: '1.75rem', color: '#0f172a', margin: 0 }}>
+              Parcourir les outils
+            </h1>
+            <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0.25rem 0 0' }}>
+              {loading ? 'Chargement...' : `${tools.length} outil${tools.length !== 1 ? 's' : ''} disponible${tools.length !== 1 ? 's' : ''}`}
+            </p>
+          </div>
           {user?.role === 'owner' && (
-            <button className="btn-primary" onClick={() => navigate('/my-tools')}>
-              <i className="fas fa-plus me-1"></i> Publier un outil
+            <button
+              onClick={() => navigate('/my-tools')}
+              style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.25rem', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <i className="fas fa-plus"></i> Publier un outil
             </button>
-          )}
-          {tools.length > 0 && !loading && (
-            <p style={{ color: '#64748b', fontSize: '0.88rem' }}>{tools.length} outil(s) trouvé(s)</p>
           )}
         </div>
 
-        {/* Filtres */}
-        <div className="tools-filters" style={styles.filters}>
-          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
-            <i className="fas fa-search" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+        {/* Filters */}
+        <div className="tools-filters" style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+          <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
+            <i className="fas fa-search" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem' }}></i>
             <input
+              className="filter-input"
               value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Rechercher par titre ou description..."
-              style={{ width: '100%', paddingLeft: '35px' }}
+              onChange={e => setKeyword(e.target.value)}
+              placeholder="Rechercher un outil..."
+              style={{ width: '100%', paddingLeft: 34, boxSizing: 'border-box' }}
             />
           </div>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ width: 220 }}>
+          <select
+            className="filter-input"
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            style={{ minWidth: 200 }}
+          >
             <option value="">Toutes les catégories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
           {(keyword || category) && (
             <button
               onClick={() => { setKeyword(''); setCategory(''); }}
-              style={{ background: '#fee2e2', color: '#dc2626', borderRadius: 6, padding: '0.5rem 1rem', fontWeight: 600 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1rem', borderRadius: 10, border: 'none', background: '#fee2e2', color: '#dc2626', fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer' }}
             >
-              <i className="fas fa-times me-1"></i> Effacer
+              <i className="fas fa-times"></i> Effacer
             </button>
           )}
         </div>
 
+        {/* Grid */}
         {loading ? (
-          <p className="spinner">Chargement des outils...</p>
+          <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', marginBottom: '0.75rem' }}></i>
+            <p>Chargement des outils...</p>
+          </div>
         ) : tools.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-            <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><i className="fas fa-search"></i></p>
-            <p>Aucun outil trouvé{keyword ? ` pour "${keyword}"` : ''}.</p>
+          <div style={{ textAlign: 'center', padding: '4rem', background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.75rem', color: '#e2e8f0' }}>
+              <i className="fas fa-search"></i>
+            </div>
+            <p style={{ fontWeight: 700, color: '#374151', marginBottom: '0.25rem' }}>Aucun outil trouvé</p>
+            <p style={{ color: '#94a3b8', fontSize: '0.88rem' }}>
+              {keyword ? `Aucun résultat pour "${keyword}"` : 'Aucun outil disponible pour le moment'}
+            </p>
           </div>
         ) : (
-          <div className="tools-grid" style={styles.grid}>
-            {tools.map((tool) => (
+          <div className="tools-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' }}>
+            {tools.map(tool => (
               <ToolCard key={tool.id} tool={tool} onClick={() => navigate(`/tools/${tool.id}`)} />
             ))}
           </div>
         )}
 
+        {/* Pagination */}
         {lastPage > 1 && (
-          <div style={styles.pagination}>
-            <button className="btn-outline" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>← Précédent</button>
-            <span style={{ color: '#64748b', fontSize: '0.9rem' }}>Page {page} / {lastPage}</span>
-            <button className="btn-outline" disabled={page === lastPage} onClick={() => setPage((p) => p + 1)}>Suivant →</button>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2.5rem' }}>
+            <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+              ← Précédent
+            </button>
+            <span style={{ color: '#64748b', fontSize: '0.88rem', fontWeight: 600 }}>
+              Page {page} / {lastPage}
+            </span>
+            <button className="page-btn" disabled={page === lastPage} onClick={() => setPage(p => p + 1)}>
+              Suivant →
+            </button>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 }
-
-const styles = {
-  filters: { display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap', alignItems: 'center' },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' },
-  pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' },
-};
