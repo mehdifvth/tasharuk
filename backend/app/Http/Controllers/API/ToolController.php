@@ -5,9 +5,6 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Tool;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
-use Cloudinary\Cloudinary as CloudinaryClient;
 use Cloudinary\Api\Upload\UploadApi;
 use Cloudinary\Configuration\Configuration;
 
@@ -15,7 +12,6 @@ class ToolController extends Controller
 {
     /**
      * GET /api/tools
-     * Liste publique paginée avec filtres keyword + category
      */
     public function index(Request $request)
     {
@@ -37,18 +33,43 @@ class ToolController extends Controller
             $query->where('category_id', $request->category);
         }
 
-        // FIX: per_page configurable (défaut 12, max 100)
-        // Permet au frontend de récupérer plus d'outils si besoin
+        // Filtre ville
+        if ($request->filled('city')) {
+            $query->where('city', 'like', '%' . $request->city . '%');
+        }
+
         $perPage = min((int) $request->get('per_page', 12), 100);
         $tools   = $query->latest()->paginate($perPage);
+
+        // Calcul distance si coordonnées fournies
+        if ($request->filled('lat') && $request->filled('lng')) {
+            $lat = (float) $request->lat;
+            $lng = (float) $request->lng;
+
+            $tools->getCollection()->transform(function ($tool) use ($lat, $lng) {
+                if ($tool->latitude && $tool->longitude) {
+                    $tool->distance = $this->haversine(
+                        $lat,
+                        $lng,
+                        (float) $tool->latitude,
+                        (float) $tool->longitude
+                    );
+                } else {
+                    $tool->distance = null;
+                }
+                return $tool;
+            });
+
+            // Trier par distance croissante
+            $sorted = $tools->getCollection()->sortBy('distance')->values();
+            $tools->setCollection($sorted);
+        }
 
         return response()->json($tools);
     }
 
     /**
-     * GET /api/my-tools   (route protégée)
-     * FIX: Retourne TOUS les outils du user connecté sans pagination
-     *      Evite le problème de paginate(12) côté frontend
+     * GET /api/my-tools
      */
     public function myTools(Request $request)
     {
@@ -74,10 +95,10 @@ class ToolController extends Controller
      */
     public function store(Request $request)
     {
-
         if ($request->user()->role !== 'owner' || $request->user()->is_admin) {
             return response()->json(['message' => 'Accès réservé aux propriétaires'], 403);
         }
+
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -85,6 +106,9 @@ class ToolController extends Controller
             'condition'   => 'required|in:new,good,fair',
             'price'       => 'required|numeric|min:0',
             'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'latitude'    => 'nullable|numeric|between:-90,90',
+            'longitude'   => 'nullable|numeric|between:-180,180',
+            'city'        => 'nullable|string|max:100',
         ]);
 
         $imagePath = null;
@@ -100,6 +124,9 @@ class ToolController extends Controller
             'condition'   => $validated['condition'],
             'price'       => $validated['price'],
             'image'       => $imagePath,
+            'latitude'    => $validated['latitude']  ?? null,
+            'longitude'   => $validated['longitude'] ?? null,
+            'city'        => $validated['city']      ?? null,
         ]);
 
         return response()->json([
@@ -110,7 +137,6 @@ class ToolController extends Controller
 
     /**
      * PUT /api/tools/{id}
-     * FIX: Accepte aussi POST avec _method=PUT (method spoofing Laravel)
      */
     public function update(Request $request, $id)
     {
@@ -127,11 +153,15 @@ class ToolController extends Controller
             'condition'   => 'sometimes|required|in:new,good,fair',
             'price'       => 'sometimes|required|numeric|min:0',
             'image'       => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'latitude'    => 'nullable|numeric|between:-90,90',
+            'longitude'   => 'nullable|numeric|between:-180,180',
+            'city'        => 'nullable|string|max:100',
         ]);
 
         if ($request->hasFile('image')) {
             $validated['image'] = $this->uploadToCloudinary($request->file('image'));
         }
+
         $tool->update($validated);
 
         return response()->json([
@@ -151,18 +181,30 @@ class ToolController extends Controller
             return response()->json(['message' => 'Non autorisé'], 403);
         }
 
-        // On ne supprime pas l'image physiquement pour garder l'historique des réservations
-        // if ($tool->image) {
-        //     Storage::disk('public')->delete($tool->image);
-        // }
-
         $tool->delete();
 
         return response()->json(['message' => 'Outil supprimé avec succès']);
     }
+
+    /**
+     * Formule Haversine — distance en km entre deux points GPS
+     */
+    private function haversine(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $R    = 6371;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+        $a    = sin($dLat / 2) ** 2 +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLng / 2) ** 2;
+        return round($R * 2 * atan2(sqrt($a), sqrt(1 - $a)), 1);
+    }
+
+    /**
+     * Upload image vers Cloudinary
+     */
     private function uploadToCloudinary($file): string
     {
-        // Initialisation de la config : Priorité à CLOUDINARY_URL s'il est présent
         if (env('CLOUDINARY_URL')) {
             Configuration::instance(env('CLOUDINARY_URL'));
         } else {
@@ -172,7 +214,7 @@ class ToolController extends Controller
                     'api_key'    => env('CLOUDINARY_KEY'),
                     'api_secret' => env('CLOUDINARY_SECRET'),
                 ],
-                'url' => ['secure' => true]
+                'url' => ['secure' => true],
             ]);
         }
 

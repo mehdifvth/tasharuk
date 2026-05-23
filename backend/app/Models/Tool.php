@@ -17,6 +17,9 @@ class Tool extends Model
         'condition',
         'price',
         'image',
+        'latitude',
+        'longitude',
+        'city',
     ];
 
     protected $appends = ['image_url'];
