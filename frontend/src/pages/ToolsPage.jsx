@@ -75,6 +75,7 @@ export default function ToolsPage() {
         }
         @media (max-width: 640px) {
           .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .filters-desktop { display: none; }
           .filter-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: #fff; border-top: 1px solid #e2e8f0;
