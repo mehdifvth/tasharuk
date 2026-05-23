@@ -19,26 +19,34 @@ export default function ToolDetailPage() {
   const [reviews, setReviews] = useState([]);
   const [avgRating, setAvgRating] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const [booked, setBooked] = useState(false);
 
   useEffect(() => {
     setLoading(true);
+    setError(null);
     Promise.all([api.get(`/tools/${id}`), api.get(`/tools/${id}/reviews`)])
       .then(([toolRes, reviewRes]) => {
         setTool(toolRes.data);
         setReviews(reviewRes.data.reviews || []);
         setAvgRating(reviewRes.data.average_rating || null);
       })
-      .catch(err => { if (err.response?.status === 404) setNotFound(true); })
+      .catch(err => { 
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        } else {
+          setError('Erreur lors du chargement des données. Veuillez réessayer.');
+        }
+      })
       .finally(() => setLoading(false));
   }, [id]);
 
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300, color: '#94a3b8' }}>
       <div style={{ textAlign: 'center' }}>
-        <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#2563eb' }}></i>
-        <p style={{ marginTop: '0.75rem' }}>Chargement...</p>
+        <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#6366f1' }}></i>
+        <p style={{ marginTop: '0.75rem' }}>Chargement de l'outil...</p>
       </div>
     </div>
   );
@@ -47,8 +55,17 @@ export default function ToolDetailPage() {
     <div style={{ textAlign: 'center', paddingTop: '4rem' }}>
       <p style={{ fontSize: '3rem', color: '#e2e8f0' }}><i className="fas fa-search"></i></p>
       <p style={{ fontWeight: 700, color: '#374151' }}>Outil introuvable</p>
-      <button onClick={() => navigate('/tools')} style={{ marginTop: '1rem', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
+      <button onClick={() => navigate('/tools')} style={{ marginTop: '1rem', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
         Retour aux outils
+      </button>
+    </div>
+  );
+
+  if (error) return (
+    <div style={{ textAlign: 'center', paddingTop: '4rem' }}>
+      <p style={{ color: '#dc2626', fontWeight: 600 }}>{error}</p>
+      <button onClick={() => window.location.reload()} style={{ marginTop: '1rem', background: '#f1f5f9', color: '#374151', border: 'none', borderRadius: 10, padding: '0.6rem 1.5rem', fontWeight: 700, cursor: 'pointer' }}>
+        Actualiser la page
       </button>
     </div>
   );
@@ -104,13 +121,25 @@ export default function ToolDetailPage() {
 
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b' }}>
-                  <i className="fas fa-folder" style={{ color: '#2563eb' }}></i> {tool.category?.name}
+                  <i className="fas fa-folder" style={{ color: '#6366f1' }}></i> {tool.category?.name}
                 </span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b' }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
+                <span 
+                  onClick={() => navigate(`/profile/${tool.user_id}`)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b', cursor: 'pointer' }}
+                >
+                  <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
                     {tool.user?.name?.charAt(0).toUpperCase()}
                   </div>
-                  {tool.user?.name}
+                  <div>
+                    <span style={{ fontWeight: 600 }} className="owner-link">{tool.user?.name}</span>
+                    <style>{`.owner-link:hover { text-decoration: underline; color: #6366f1; }`}</style>
+                    {tool.user?.owner_rating > 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.05rem' }}>
+                        <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.62rem' }}></i>
+                        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#94a3b8' }}>{tool.user.owner_rating}</span>
+                      </div>
+                    )}
+                  </div>
                 </span>
               </div>
 
@@ -150,10 +179,13 @@ export default function ToolDetailPage() {
                 <div key={r.id} style={{ padding: '0.85rem 0', borderBottom: '1px solid #f1f5f9' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700 }}>
+                      <div 
+                        onClick={() => navigate(`/profile/${r.reviewer_id}`)}
+                        style={{ width: 32, height: 32, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer' }}
+                      >
                         {r.reviewer?.name?.charAt(0).toUpperCase()}
                       </div>
-                      <strong style={{ fontSize: '0.88rem', color: '#374151' }}>{r.reviewer?.name}</strong>
+                      <strong onClick={() => navigate(`/profile/${r.reviewer_id}`)} style={{ fontSize: '0.88rem', color: '#374151', cursor: 'pointer' }}>{r.reviewer?.name}</strong>
                     </div>
                     <div style={{ display: 'flex', gap: '2px' }}>
                       {[...Array(5)].map((_, i) => (
@@ -161,7 +193,7 @@ export default function ToolDetailPage() {
                       ))}
                     </div>
                   </div>
-                  {r.comment && <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0, paddingLeft: '2.25rem' }}>{r.comment}</p>}
+                  {r.comment && <p style={{ color: '#64748b', fontSize: '0.85rem', margin: 0, paddingLeft: '2.5rem' }}>{r.comment}</p>}
                 </div>
               ))}
             </div>
@@ -172,14 +204,14 @@ export default function ToolDetailPage() {
             <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', padding: '1.5rem', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
               <p style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a', marginBottom: '1rem' }}>
                 {tool.price > 0 ? (
-                  <><span style={{ fontSize: '1.4rem', color: '#2563eb' }}>{hourlyPrice} MAD</span> <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.85rem' }}>/ heure</span></>
+                  <><span style={{ fontSize: '1.4rem', color: '#6366f1' }}>{hourlyPrice} MAD</span> <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.85rem' }}>/ heure</span></>
                 ) : <><i className="fas fa-gift me-1"></i>Gratuit</>}
               </p>
 
               {!user ? (
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '1rem' }}>Connectez-vous pour réserver</p>
-                  <button onClick={() => navigate('/login')} style={{ width: '100%', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '0.7rem', fontWeight: 700, cursor: 'pointer' }}>
+                  <button onClick={() => navigate('/login')} style={{ width: '100%', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '0.7rem', fontWeight: 700, cursor: 'pointer' }}>
                     Se connecter
                   </button>
                 </div>
@@ -208,7 +240,7 @@ export default function ToolDetailPage() {
                   </div>
                   <p style={{ fontWeight: 700, color: '#16a34a', marginBottom: '0.25rem' }}>Demande envoyée !</p>
                   <p style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '1rem' }}>Le propriétaire doit approuver votre demande.</p>
-                  <button onClick={() => navigate('/bookings')} style={{ width: '100%', background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '0.7rem', fontWeight: 700, cursor: 'pointer' }}>
+                  <button onClick={() => navigate('/bookings')} style={{ width: '100%', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 10, padding: '0.7rem', fontWeight: 700, cursor: 'pointer' }}>
                     Voir mes réservations
                   </button>
                 </div>

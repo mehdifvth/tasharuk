@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Tool;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -83,6 +85,55 @@ class AuthController extends Controller
     {
         return response()->json($request->user());
     }
+
+    /**
+     * GET /api/users/{id}/profile
+     * Retourne les données publiques d'un utilisateur (outils + avis séparés)
+     */
+    public function publicProfile($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Outils actifs
+        $tools = Tool::where('user_id', $id)
+            ->whereNull('deleted_at')
+            ->with('category')
+            ->latest()
+            ->get();
+
+        // Avis reçus EN TANT QUE PROPRIÉTAIRE (par des emprunteurs)
+        $ownerReviews = Review::with('reviewer')
+            ->where('reviewee_id', $id)
+            ->whereHas('booking.tool', fn($q) => $q->where('user_id', $id))
+            ->latest()
+            ->get();
+
+        // Avis reçus EN TANT QU'EMPRUNTEUR (par des propriétaires)
+        $borrowerReviews = Review::with('reviewer')
+            ->where('reviewee_id', $id)
+            ->whereHas('booking', fn($q) => $q->where('borrower_id', $id))
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'role' => $user->role,
+                'owner_rating' => $user->owner_rating,
+                'owner_reviews_count' => $user->owner_reviews_count,
+                'borrower_rating' => $user->borrower_rating,
+                'borrower_reviews_count' => $user->borrower_reviews_count,
+                'created_at' => $user->created_at,
+            ],
+            'tools' => $tools,
+            'reviews' => [
+                'as_owner' => $ownerReviews,
+                'as_borrower' => $borrowerReviews
+            ]
+        ]);
+    }
+
     public function updateRole(Request $request)
     {
         $request->validate([

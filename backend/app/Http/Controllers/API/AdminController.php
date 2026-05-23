@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Tool;
 use App\Models\Category;
 use App\Models\Booking;
+use App\Models\Review;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -25,6 +26,7 @@ class AdminController extends Controller
             'tools'      => Tool::withTrashed()->with(['user', 'category'])->orderBy('created_at', 'desc')->get(),
             'categories' => Category::withCount('tools')->get(),
             'bookings'   => Booking::with(['tool', 'borrower'])->orderBy('created_at', 'desc')->get(),
+            'reviews'    => Review::with(['reviewer', 'reviewee', 'booking.tool'])->latest()->get(),
         ]);
     }
 
@@ -57,6 +59,18 @@ class AdminController extends Controller
     }
 
     /**
+     * Delete a review
+     */
+    public function deleteReview(Request $request, $id)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $review = Review::findOrFail($id);
+        $review->delete();
+        return response()->json(['message' => 'Avis supprimé avec succès']);
+    }
+
+    /**
      * Store a new category
      */
     public function storeCategory(Request $request)
@@ -77,14 +91,14 @@ class AdminController extends Controller
     public function updateCategory(Request $request, $id)
     {
         $request->validate(['name' => 'required|string|unique:categories,name,' . $id]);
-        $category = \App\Models\Category::findOrFail($id);
+        $category = Category::findOrFail($id);
         $category->update(['name' => $request->name]);
         return response()->json(['message' => 'Catégorie mise à jour', 'category' => $category]);
     }
 
     public function deleteCategory($id)
     {
-        $category = \App\Models\Category::findOrFail($id);
+        $category = Category::findOrFail($id);
         if ($category->tools()->count() > 0) {
             return response()->json(['message' => 'Impossible — cette catégorie contient des outils'], 422);
         }

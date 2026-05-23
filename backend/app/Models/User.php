@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use App\Models\Review;
 
 class User extends Authenticatable
 {
@@ -18,6 +19,8 @@ class User extends Authenticatable
         'is_admin',
         'role',
     ];
+
+    protected $appends = ['owner_rating', 'borrower_rating', 'owner_reviews_count', 'borrower_reviews_count'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -35,6 +38,44 @@ class User extends Authenticatable
     public function bookings()
     {
         return $this->hasMany(Booking::class, 'borrower_id');
+    }
+
+    /**
+     * Note en tant que PROPRIÉTAIRE (reçue des emprunteurs)
+     */
+    public function getOwnerRatingAttribute()
+    {
+        $rating = Review::where('reviewee_id', $this->id)
+            ->whereHas('booking.tool', fn($q) => $q->where('user_id', $this->id))
+            ->avg('rating');
+
+        return $rating ? round($rating, 1) : null;
+    }
+
+    public function getOwnerReviewsCountAttribute()
+    {
+        return Review::where('reviewee_id', $this->id)
+            ->whereHas('booking.tool', fn($q) => $q->where('user_id', $this->id))
+            ->count();
+    }
+
+    /**
+     * Note en tant qu'EMPRUNTEUR (reçue des propriétaires)
+     */
+    public function getBorrowerRatingAttribute()
+    {
+        $rating = Review::where('reviewee_id', $this->id)
+            ->whereHas('booking', fn($q) => $q->where('borrower_id', $this->id))
+            ->avg('rating');
+
+        return $rating ? round($rating, 1) : null;
+    }
+
+    public function getBorrowerReviewsCountAttribute()
+    {
+        return Review::where('reviewee_id', $this->id)
+            ->whereHas('booking', fn($q) => $q->where('borrower_id', $this->id))
+            ->count();
     }
 
     /**

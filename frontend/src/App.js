@@ -13,6 +13,7 @@ import MyToolsPage from './pages/MyToolsPage';
 import BookingsPage from './pages/BookingsPage';
 import MessagesPage from './pages/MessagesPage';
 import ProfilePage from './pages/ProfilePage';
+import PublicProfilePage from './pages/PublicProfilePage';
 
 // Admin
 import AdminLayout from './layouts/AdminLayout';
@@ -21,6 +22,7 @@ import AdminTools from './pages/admin/AdminTools';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminBookings from './pages/admin/AdminBookings';
+import AdminReviews from './pages/admin/AdminReviews';
 
 function PrivateRoute({ children }) {
   const { token } = useAuth();
@@ -56,6 +58,7 @@ export default function App() {
         <Route path="/register" element={<UserLayout><RegisterPage /></UserLayout>} />
         <Route path="/tools" element={<UserLayout><ToolsPage /></UserLayout>} />
         <Route path="/tools/:id" element={<UserLayout><ToolDetailPage /></UserLayout>} />
+        <Route path="/profile/:id" element={<UserLayout><PublicProfilePage /></UserLayout>} />
 
         {/* Routes protégées avec Navbar normale */}
         <Route path="/my-tools" element={<UserLayout><PrivateRoute><MyToolsPage /></PrivateRoute></UserLayout>} />
@@ -70,6 +73,7 @@ export default function App() {
         <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
         <Route path="/admin/categories" element={<AdminRoute><AdminLayout><AdminCategories /></AdminLayout></AdminRoute>} />
         <Route path="/admin/bookings" element={<AdminRoute><AdminLayout><AdminBookings /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />

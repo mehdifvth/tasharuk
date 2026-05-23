@@ -24,7 +24,7 @@ class BookingController extends Controller
             'tool.user',        // FIX: charge aussi l'user du tool (proprietaire)
             'tool.category',    // FIX: charge la categorie du tool
             'borrower',         // l'emprunteur
-            'review',           // FIX: charge le review pour savoir s'il existe déjà
+            'reviews',           // FIX: charge les reviews
         ])
             ->where(function ($q) use ($userId) {
                 $q->where('borrower_id', $userId)
@@ -145,7 +145,7 @@ class BookingController extends Controller
 
         return response()->json([
             'message' => 'Reservation approuvée',
-            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+            'booking' => $booking->load(['tool.user', 'borrower', 'reviews']),
         ]);
     }
 
@@ -179,7 +179,7 @@ class BookingController extends Controller
 
         return response()->json([
             'message' => 'Reservation rejetée',
-            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+            'booking' => $booking->load(['tool.user', 'borrower', 'reviews']),
         ]);
     }
     /**
@@ -212,7 +212,7 @@ class BookingController extends Controller
 
         return response()->json([
             'message' => 'Réservation annulée',
-            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+            'booking' => $booking->load(['tool.user', 'borrower', 'reviews']),
         ]);
     }
     /**
@@ -268,7 +268,7 @@ class BookingController extends Controller
 
         return response()->json([
             'message' => 'Prise en charge confirmée — timer démarré',
-            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+            'booking' => $booking->load(['tool.user', 'borrower', 'reviews']),
         ]);
     }
 
@@ -324,7 +324,7 @@ class BookingController extends Controller
 
         return response()->json([
             'message' => 'Retour confirmé — réservation terminée',
-            'booking' => $booking->load(['tool.user', 'borrower', 'review']),
+            'booking' => $booking->load(['tool.user', 'borrower', 'reviews']),
         ]);
     }
 }

@@ -27,6 +27,7 @@ Route::prefix('auth')->group(function () {
 // ─── Public ───────────────────────────────────────────────────────────────────
 Route::get('/tools',                    [ToolController::class, 'index']);
 Route::get('/tools/{id}',              [ToolController::class, 'show']);
+Route::get('/users/{id}/profile',      [AuthController::class, 'publicProfile']);
 Route::get('/tools/{id}/reviews',      [ReviewController::class, 'toolReviews']);
 Route::get('/categories',              [CategoryController::class, 'index']);
 
@@ -61,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/data',             [AdminController::class, 'index']);
     Route::delete('/admin/users/{id}',    [AdminController::class, 'deleteUser']);
     Route::delete('/admin/tools/{id}',    [AdminController::class, 'deleteTool']);
+    Route::delete('/admin/reviews/{id}',  [AdminController::class, 'deleteReview']);
     Route::post('/admin/categories',      [AdminController::class, 'storeCategory']);
     Route::put('/admin/categories/{id}',    [AdminController::class, 'updateCategory']);
     Route::delete('/admin/categories/{id}', [AdminController::class, 'deleteCategory']);

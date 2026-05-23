@@ -127,193 +127,149 @@ export default function BookingsPage() {
   };
 
   const handleReject = async (id) => {
-    if (!window.confirm('Rejeter cette réservation ?')) return;
+    if (!window.confirm('Voulez-vous rejeter cette demande ?')) return;
     setActionLoad(id);
     try { await api.put(`/bookings/${id}/reject`); loadBookings(); }
-    catch (err) { setError(err.response?.data?.message || 'Erreur'); }
+    catch (err) { setError('Erreur lors du rejet'); }
     finally { setActionLoad(null); }
   };
 
   const handleCancel = async (id) => {
-    if (!window.confirm('Annuler cette réservation ?')) return;
+    if (!window.confirm('Voulez-vous annuler votre demande ?')) return;
     setActionLoad(id);
     try { await api.put(`/bookings/${id}/cancel`); loadBookings(); }
-    catch (err) { setError(err.response?.data?.message || 'Erreur'); }
+    catch (err) { setError('Erreur lors de l\'annulation'); }
     finally { setActionLoad(null); }
   };
 
   const handlePickup = async (id, code) => {
-    setCodeLoad(id); setCodeError({});
-    try { await api.post(`/bookings/${id}/confirm-pickup`, { code }); loadBookings(); }
-    catch (err) { setCodeError(p => ({ ...p, [`pickup_${id}`]: err.response?.data?.message || 'Code incorrect' })); }
-    finally { setCodeLoad(null); }
+    setCodeLoad(id);
+    try {
+      await api.post(`/bookings/${id}/confirm-pickup`, { code });
+      loadBookings();
+    } catch (err) {
+      setCodeError(prev => ({ ...prev, [`pickup_${id}`]: err.response?.data?.message || 'Code incorrect' }));
+    } finally { setCodeLoad(null); }
   };
 
   const handleReturn = async (id, code) => {
-    setCodeLoad(id); setCodeError({});
-    try { await api.post(`/bookings/${id}/confirm-return`, { code }); loadBookings(); }
-    catch (err) { setCodeError(p => ({ ...p, [`return_${id}`]: err.response?.data?.message || 'Code incorrect' })); }
-    finally { setCodeLoad(null); }
-  };
-
-  const isOwnerRole = user?.role === 'owner';
-  const myBookings = isOwnerRole
-    ? bookings.filter(b => b.tool?.user_id === user?.id)
-    : bookings.filter(b => b.borrower_id === user?.id);
-
-  const groups = {
-    pending: myBookings.filter(b => b.status === 'pending'),
-    approved: myBookings.filter(b => b.status === 'approved'),
-    completed: myBookings.filter(b => b.status === 'completed'),
-    rejected: myBookings.filter(b => b.status === 'rejected' || b.status === 'cancelled'),
+    setCodeLoad(id);
+    try {
+      await api.post(`/bookings/${id}/confirm-return`, { code });
+      loadBookings();
+    } catch (err) {
+      setCodeError(prev => ({ ...prev, [`return_${id}`]: err.response?.data?.message || 'Code incorrect' }));
+    } finally { setCodeLoad(null); }
   };
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-      <div style={{ textAlign: 'center', color: '#94a3b8' }}>
-        <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#2563eb' }}></i>
-        <p style={{ marginTop: '0.75rem' }}>Chargement...</p>
-      </div>
+    <div style={{ textAlign: 'center', padding: '5rem' }}>
+      <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '2rem', color: '#2563eb' }}></i>
     </div>
   );
 
+  const filtered = bookings.filter(b => {
+    if (activeBlock === 'pending') return b.status === 'pending';
+    if (activeBlock === 'approved') return b.status === 'approved';
+    if (activeBlock === 'completed') return b.status === 'completed';
+    if (activeBlock === 'rejected') return b.status === 'rejected' || b.status === 'cancelled';
+    return false;
+  });
+
   return (
-    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '3rem' }}>
-      <style>{`
-        .booking-card { background: #fff; border-radius: 16px; border: 1px solid #f1f5f9; padding: 1.25rem; transition: box-shadow 0.2s; }
-        .booking-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-        .action-btn { padding: 0.45rem 1rem; border-radius: 8px; border: none; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.4rem; }
-        @media (max-width: 768px) {
-          .blocks-grid { grid-template-columns: repeat(2,1fr) !important; }
-          .booking-inner { flex-direction: column !important; }
-          .actions-col { flex-direction: row !important; flex-wrap: wrap !important; min-width: unset !important; }
-        }
-      `}</style>
-
-      <div className="container" style={{ paddingTop: '2rem' }}>
-
+    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '4rem' }}>
+      <div className="container" style={{ maxWidth: 1000, paddingTop: '1.5rem' }}>
+        
         {/* Header */}
-        <div style={{ marginBottom: '1.75rem' }}>
-          <h1 style={{ fontWeight: 800, fontSize: '1.75rem', color: '#0f172a', margin: 0 }}>
-            Mes Réservations
-          </h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0.25rem 0 0' }}>
-            {isOwnerRole ? <><i className="fas fa-tools me-2"></i>Vue Propriétaire</> : <><i className="fas fa-user me-2"></i>Vue Emprunteur</>}
-          </p>
+        <div style={{ marginBottom: '2rem' }}>
+          <h1 style={{ fontWeight: 850, fontSize: '1.75rem', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' }}>Mes Réservations</h1>
+          <p style={{ color: '#64748b', fontSize: '0.92rem', marginTop: '0.35rem' }}>Suivez vos locations en cours et l'historique de vos partages.</p>
         </div>
 
-        {error && (
-          <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 10, padding: '0.75rem 1rem', marginBottom: '1rem', color: '#dc2626', fontSize: '0.88rem' }}>
-            <i className="fas fa-exclamation-circle me-1"></i>{error}
-          </div>
-        )}
-
-        {/* Status blocks */}
-        <div className="blocks-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '0.85rem', marginBottom: '1.75rem' }}>
-          {BLOCKS.map(block => (
-            <div
-              key={block.key}
-              onClick={() => setActiveBlock(block.key)}
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '0.5rem', background: '#fff', padding: '0.4rem', borderRadius: 16, border: '1px solid #f1f5f9', marginBottom: '2rem', flexWrap: 'wrap', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          {BLOCKS.map(b => (
+            <button
+              key={b.key}
+              onClick={() => setActiveBlock(b.key)}
               style={{
-                background: activeBlock === block.key ? block.bg : '#fff',
-                border: `2px solid ${activeBlock === block.key ? block.color : '#f1f5f9'}`,
-                borderRadius: 14, padding: '1.1rem', textAlign: 'center',
-                cursor: 'pointer', transition: 'all 0.2s',
-                boxShadow: activeBlock === block.key ? `0 4px 12px ${block.color}22` : 'none',
+                flex: 1, minWidth: '120px', padding: '0.7rem 1rem', borderRadius: 12, border: 'none',
+                background: activeBlock === b.key ? b.bg : 'transparent',
+                color: activeBlock === b.key ? b.color : '#64748b',
+                fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
-              <i className={`fas ${block.icon}`} style={{ fontSize: '1.25rem', color: block.color, marginBottom: '0.4rem', display: 'block' }}></i>
-              <p style={{ fontWeight: 800, fontSize: '1.5rem', color: block.color, margin: '0 0 0.2rem' }}>
-                {groups[block.key].length}
-              </p>
-              <p style={{ fontWeight: 600, fontSize: '0.78rem', color: '#64748b', margin: 0, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                {block.label}
-              </p>
-            </div>
+              <i className={`fas ${b.icon}`} style={{ fontSize: '0.9rem', opacity: activeBlock === b.key ? 1 : 0.6 }}></i>
+              {b.label}
+              <span style={{ fontSize: '0.75rem', background: activeBlock === b.key ? 'rgba(0,0,0,0.08)' : '#f1f5f9', padding: '0.1rem 0.4rem', borderRadius: 6, marginLeft: '0.2rem' }}>
+                {bookings.filter(x => b.key === 'rejected' ? (x.status === 'rejected' || x.status === 'cancelled') : x.status === b.key).length}
+              </span>
+            </button>
           ))}
         </div>
 
-        {/* List */}
-        {groups[activeBlock]?.length === 0 ? (
-          <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', padding: '3rem', textAlign: 'center' }}>
-            <i className="fas fa-inbox" style={{ fontSize: '2.5rem', color: '#e2e8f0', marginBottom: '0.75rem', display: 'block' }}></i>
-            <p style={{ fontWeight: 700, color: '#374151', margin: '0 0 0.25rem' }}>Aucune réservation</p>
-            <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: 0 }}>Aucune réservation dans cette catégorie.</p>
+        {error && (
+          <div style={{ background: '#fee2e2', color: '#dc2626', padding: '1rem', borderRadius: 12, marginBottom: '1.5rem', border: '1px solid #fca5a5', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <i className="fas fa-exclamation-circle"></i> {error}
+          </div>
+        )}
+
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '6rem 2rem', background: '#fff', borderRadius: 24, border: '1px dashed #e2e8f0' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+              <i className={`fas ${BLOCKS.find(b => b.key === activeBlock)?.icon}`} style={{ fontSize: '1.5rem', color: '#cbd5e1' }}></i>
+            </div>
+            <p style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.95rem' }}>Aucune réservation dans cette catégorie.</p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {groups[activeBlock].map(b => {
-              const isOwner = b.tool?.user_id === user?.id;
-              const s = STATUS[b.status] || STATUS.pending;
-              const hasReview = !!b.review;
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {filtered.map(b => {
+              const isOwner = user?.id === b.tool?.user_id;
+              const s = STATUS[b.status];
+              const myReview = b.reviews?.find(r => r.reviewer_id === user.id);
+              const hasReview = !!myReview;
               const isOverdue = b.picked_up_at && !b.returned_at && new Date() > new Date(b.end_date + 'Z');
 
               return (
-                <div key={b.id} className="booking-card">
-
-                  {/* Card header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 10, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '1.1rem', flexShrink: 0 }}>
-                        <i className="fas fa-wrench"></i>
+                <div key={b.id} style={{ background: '#fff', borderRadius: 20, padding: '1.25rem', border: '1px solid #f1f5f9', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', transition: 'transform 0.2s' }}>
+                  
+                  {/* Card Header */}
+                  <div className="card-top" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                      <div style={{ width: 64, height: 64, borderRadius: 14, overflow: 'hidden', border: '1px solid #f1f5f9', flexShrink: 0 }}>
+                        {b.tool?.image_url 
+                          ? <img src={b.tool.image_url} alt={b.tool.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <div style={{ height: '100%', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#cbd5e1' }}><i className="fas fa-wrench"></i></div>
+                        }
                       </div>
                       <div>
-                        <p style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0f172a', margin: 0 }}>{b.tool?.title}</p>
-                        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0 }}>#{b.id} · {b.tool?.category?.name}</p>
+                        <span style={{ padding: '0.2rem 0.6rem', borderRadius: 20, fontSize: '0.72rem', fontWeight: 700, background: s.bg, color: s.color, display: 'inline-flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.4rem' }}>
+                          <i className={`fas ${s.icon}`}></i> {s.text}
+                        </span>
+                        <h4 style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', margin: 0 }}>{b.tool?.title || 'Outil supprimé'}</h4>
+                        <p style={{ margin: '0.15rem 0 0', fontSize: '0.82rem', color: '#64748b' }}>
+                          {isOwner ? <><i className="fas fa-user me-1"></i>Emprunteur : <strong>{b.borrower?.name}</strong></> : <><i className="fas fa-user-tie me-1"></i>Propriétaire : <strong>{b.tool?.user?.name}</strong></>}
+                        </p>
                       </div>
                     </div>
-                    <span style={{ padding: '0.25rem 0.75rem', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700, background: s.bg, color: s.color, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <i className={`fas ${s.icon}`}></i> {s.text}
-                    </span>
+                    
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 0.25rem' }}>Période</p>
+                      <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                          {new Date(b.start_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')} 
+                          <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> 
+                          {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="booking-inner" style={{ display: 'flex', gap: '1rem' }}>
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                        <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
-                          <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, margin: '0 0 0.15rem', textTransform: 'uppercase' }}>Dates</p>
-                          <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                              {new Date(b.start_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')} 
-                              <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> 
-                              {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
-                          </p>
-
-                        </div>
-                        <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
-                          <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, margin: '0 0 0.15rem', textTransform: 'uppercase' }}>
-                            {isOwner ? 'Emprunteur' : 'Propriétaire'}
-                          </p>
-                          <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0 }}>
-                            {isOwner ? b.borrower?.name : b.tool?.user?.name}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Code box owner */}
-                      {isOwner && b.status === 'approved' && b.confirmation_code && (
-                        <div style={{ background: '#eff6ff', borderRadius: 10, padding: '0.85rem', border: '1px dashed #93c5fd', textAlign: 'center', marginBottom: '0.75rem' }}>
-                          {!b.picked_up_at ? (
-                            <>
-                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                                <i className="fas fa-key"></i> Code de récupération
-                              </p>
-                              <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.5rem', color: '#2563eb', margin: '0 0 0.2rem', letterSpacing: 4 }}>{b.confirmation_code}</p>
-                              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>Donnez ce code à l'emprunteur</p>
-                            </>
-                          ) : b.return_code ? (
-                            <>
-                              <p style={{ fontSize: '0.75rem', color: '#64748b', margin: '0 0 0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                                <i className="fas fa-key"></i> Code de retour
-                              </p>
-                              <p style={{ fontFamily: 'monospace', fontWeight: 800, fontSize: '1.5rem', color: '#16a34a', margin: '0 0 0.2rem', letterSpacing: 4 }}>{b.return_code}</p>
-                              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0 }}>Donnez ce code à l'emprunteur lors du retour</p>
-                            </>
-                          ) : null}
-                        </div>
-                      )}
-
-                      {/* Prix estimé avant pickup */}
+                  {/* Card Content Area */}
+                  <div className="card-middle" style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 260 }}>
+                      
+                      {/* Price Section */}
                       {!b.picked_up_at && (b.status === 'approved' || b.status === 'pending') && (
                         <div style={{ background: '#f0f9ff', borderRadius: 8, padding: '0.6rem 0.75rem', marginBottom: '0.5rem' }}>
                           <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 0.15rem', textTransform: 'uppercase', fontWeight: 600 }}>Prix estimé</p>
@@ -323,10 +279,18 @@ export default function BookingsPage() {
 
                       {/* Live price */}
                       {b.picked_up_at && !b.returned_at && (
-                        <div style={{ background: isOverdue ? '#fef2f2' : '#fffbeb', borderRadius: 10, padding: '0.85rem', border: `1px solid ${isOverdue ? '#fca5a5' : '#fcd34d'}`, marginBottom: '0.5rem' }}>
-                          {isOverdue && <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.82rem', margin: '0 0 0.4rem' }}><i className="fas fa-exclamation-triangle me-1"></i> Prolongation — date de fin dépassée</p>}
-                          <div style={{ marginBottom: '0.4rem' }}><ElapsedTimer startTime={b.picked_up_at} /></div>
-                          <LivePrice startTime={b.picked_up_at} pricePerHour={b.tool?.price || 0} />
+                        <div style={{ background: '#fffbeb', borderRadius: 8, padding: '0.6rem 0.75rem', border: '1px solid #fef3c7' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                             <div>
+                               <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 0.15rem', textTransform: 'uppercase', fontWeight: 600 }}>Temps écoulé</p>
+                               <ElapsedTimer startTime={b.picked_up_at} />
+                             </div>
+                             <div style={{ textAlign: 'right' }}>
+                               <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 0.15rem', textTransform: 'uppercase', fontWeight: 600 }}>Prix en cours</p>
+                               <LivePrice startTime={b.picked_up_at} pricePerHour={b.tool?.price || 0} />
+                             </div>
+                          </div>
+                          {isOverdue && <p style={{ color: '#dc2626', fontWeight: 800, fontSize: '0.75rem', margin: '0.4rem 0 0', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><i className="fas fa-exclamation-triangle"></i> PROLONGATION EN COURS</p>}
                           {!isOverdue && (
                             <p style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, margin: '0.4rem 0 0' }}>
                               <i className="fas fa-check-circle me-1"></i> Retournez avant le {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
@@ -381,15 +345,20 @@ export default function BookingsPage() {
                           {actionLoad === b.id ? <i className="fas fa-spinner fa-spin"></i> : <><i className="fas fa-ban"></i> Annuler</>}
                         </button>
                       )}
-                      {!isOwner && b.status === 'completed' && !hasReview && reviewFor !== b.id && (
+                      
+                      {/* Review Section (Bidirectional) */}
+                      {b.status === 'completed' && !hasReview && reviewFor !== b.id && (
                         <button className="action-btn" onClick={() => setReviewFor(b.id)} style={{ background: '#fef9c3', color: '#92400e' }}>
-                          <i className="fas fa-star"></i> Avis
+                          <i className="fas fa-star"></i> {isOwner ? 'Noter l\'emprunteur' : 'Laisser un avis'}
                         </button>
                       )}
-                      {!isOwner && b.status === 'completed' && hasReview && (
-                        <span style={{ fontSize: '0.82rem', color: '#16a34a', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                          <i className="fas fa-check-circle"></i> {b.review.rating}/5
-                        </span>
+                      {b.status === 'completed' && hasReview && (
+                        <div style={{ background: '#f8fafc', padding: '0.5rem', borderRadius: 8, border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                            <p style={{ margin: 0, fontSize: '0.62rem', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>Votre avis</p>
+                            <span style={{ fontSize: '0.88rem', color: '#16a34a', fontWeight: 800 }}>
+                              <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.75rem' }}></i> {myReview.rating}/5
+                            </span>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -414,6 +383,26 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      <style>{`
+        .card-top { flex-direction: row; }
+        .action-btn {
+          width: 100%; padding: 0.6rem; border: none; border-radius: 10px;
+          font-weight: 700; font-size: 0.85rem; cursor: pointer;
+          display: flex; alignItems: center; justifyContent: center; gap: 0.5rem;
+          transition: transform 0.1s, opacity 0.15s;
+        }
+        .action-btn:active { transform: scale(0.97); }
+        .action-btn:hover { opacity: 0.9; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        @media (max-width: 600px) {
+          .card-top { flex-direction: column !important; align-items: flex-start !important; }
+          .card-top > div:last-child { text-align: left !important; }
+          .actions-col { width: 100% !important; flex-direction: row !important; }
+          .action-btn { flex: 1; }
+        }
+      `}</style>
     </div>
   );
 }

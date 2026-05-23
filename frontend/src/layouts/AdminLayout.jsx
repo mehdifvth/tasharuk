@@ -10,6 +10,7 @@ const NAV_ITEMS = [
     { path: '/admin/users', icon: 'fa-users', label: 'Utilisateurs' },
     { path: '/admin/categories', icon: 'fa-tag', label: 'Catégories' },
     { path: '/admin/bookings', icon: 'fa-calendar-alt', label: 'Réservations' },
+    { path: '/admin/reviews', icon: 'fa-star', label: 'Avis' },
 ];
 
 export default function AdminLayout({ children }) {

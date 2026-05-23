@@ -5,7 +5,7 @@ import api from '../../services/api';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [data, setData] = useState({ users: [], tools: [], categories: [], bookings: [] });
+  const [data, setData] = useState({ users: [], tools: [], categories: [], bookings: [], reviews: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,8 +18,8 @@ export default function AdminDashboard() {
   const stats = [
     { label: 'Outils', value: data.tools.filter(t => !t.deleted_at).length, icon: 'fa-tools', color: '#2563eb', bg: '#dbeafe', path: '/admin/tools' },
     { label: 'Utilisateurs', value: data.users.length, icon: 'fa-users', color: '#16a34a', bg: '#dcfce7', path: '/admin/users' },
-    { label: 'Catégories', value: data.categories.length, icon: 'fa-tag', color: '#f59e0b', bg: '#fef9c3', path: '/admin/categories' },
     { label: 'Réservations', value: data.bookings.length, icon: 'fa-calendar-alt', color: '#10b981', bg: '#d1fae5', path: '/admin/bookings' },
+    { label: 'Avis', value: data.reviews.length, icon: 'fa-star', color: '#7c3aed', bg: '#f5f3ff', path: '/admin/reviews' },
   ];
 
   const STATUS_STYLE = {
@@ -199,7 +199,7 @@ export default function AdminDashboard() {
                   fontWeight: 700, margin: '0 0 0.15rem', fontSize: '0.82rem', color: '#0f172a',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
                 }}>{t.title}</p>
-                <p style={{ color: '#6366f1', margin: 0, fontSize: '0.78rem', fontWeight: 700 }}>{t.price} MAD/j</p>
+                <p style={{ color: '#6366f1', margin: 0, fontSize: '0.78rem', fontWeight: 700 }}>{t.price} MAD/h</p>
                 <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.72rem' }}>{t.user?.name}</p>
               </div>
             </div>

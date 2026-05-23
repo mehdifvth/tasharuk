@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const CONDITION = {
   new: { label: 'Neuf', color: '#16a34a', bg: '#dcfce7' },
@@ -8,6 +9,12 @@ const CONDITION = {
 
 export default function ToolCard({ tool, onClick }) {
   const cond = CONDITION[tool.condition] || CONDITION.good;
+  const navigate = useNavigate();
+
+  const handleProfileClick = (e) => {
+    e.stopPropagation();
+    navigate(`/profile/${tool.user_id}`);
+  };
 
   return (
     <>
@@ -55,12 +62,25 @@ export default function ToolCard({ tool, onClick }) {
             <span style={{ fontWeight: 800, fontSize: '1rem', color: tool.price > 0 ? '#2563eb' : '#16a34a' }}>
               {tool.price > 0 ? `${parseFloat(tool.price).toFixed(2)} MAD/h` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
             </span>
-            <span style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
-                {tool.user?.name?.charAt(0).toUpperCase()}
-              </div>
-              {tool.user?.name}
-            </span>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <span 
+                onClick={handleProfileClick}
+                style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}
+              >
+                <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
+                  {tool.user?.name?.charAt(0).toUpperCase()}
+                </div>
+                <span className="owner-link">{tool.user?.name}</span>
+              </span>
+              <style>{`.owner-link:hover { text-decoration: underline; color: #2563eb; }`}</style>
+              {tool.user?.owner_rating > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem', marginTop: '0.1rem' }}>
+                  <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.62rem' }}></i>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b' }}>{tool.user.owner_rating}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
