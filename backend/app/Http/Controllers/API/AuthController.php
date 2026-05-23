@@ -24,7 +24,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name'     => $validated['name'],
-            'email'    => $validated['email'],
+            'email'    => strtolower($validated['email']),
             'password' => $validated['password'],
             'is_admin' => false,
             'role'     => $validated['role'],
@@ -49,7 +49,7 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('email', strtolower($request->email))->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
