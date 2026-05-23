@@ -2,13 +2,12 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import Logo from '../components/common/Logo';
 
 const NAV_ITEMS = [
-    { path: '/admin/dashboard', icon: 'fa-chart-bar', label: 'Dashboard' },
+    { path: '/admin/dashboard', icon: 'fa-chart-pie', label: 'Dashboard' },
     { path: '/admin/tools', icon: 'fa-tools', label: 'Outils' },
     { path: '/admin/users', icon: 'fa-users', label: 'Utilisateurs' },
-    { path: '/admin/categories', icon: 'fa-folder', label: 'Catégories' },
+    { path: '/admin/categories', icon: 'fa-tag', label: 'Catégories' },
     { path: '/admin/bookings', icon: 'fa-calendar-alt', label: 'Réservations' },
 ];
 
@@ -16,212 +15,186 @@ export default function AdminLayout({ children }) {
     const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [open, setOpen] = useState(false);
 
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    };
-
+    const handleLogout = async () => { await logout(); navigate('/login'); };
     const isActive = (path) => location.pathname === path;
+
+    const currentPage = NAV_ITEMS.find(i => i.path === location.pathname);
 
     return (
         <>
             <style>{`
-        .admin-wrapper {
-          display: flex;
-          min-height: 100vh;
-          background: #f1f5f9;
-        }
+        * { box-sizing: border-box; }
+        .adm-wrap { display: flex; min-height: 100vh; background: #f8fafc; font-family: 'Inter', system-ui, sans-serif; }
+        
         /* Sidebar */
-        .admin-sidebar {
-          width: 240px;
-          background: #1e293b;
-          display: flex;
-          flex-direction: column;
-          position: fixed;
-          top: 0; left: 0; bottom: 0;
-          z-index: 200;
-          transition: transform 0.3s;
+        .adm-side {
+          width: 250px; background: #fff;
+          border-right: 1px solid #e2e8f0;
+          display: flex; flex-direction: column;
+          position: fixed; top: 0; left: 0; bottom: 0;
+          z-index: 200; transition: transform 0.25s ease;
         }
-        .admin-sidebar.closed {
-          transform: translateX(-240px);
-        }
-        .admin-content {
-          margin-left: 240px;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          min-height: 100vh;
-        }
+        .adm-side.closed { transform: translateX(-250px); }
+
+        /* Content */
+        .adm-body { margin-left: 250px; flex: 1; display: flex; flex-direction: column; }
+
         /* Topbar */
-        .admin-topbar {
-          background: #fff;
-          border-bottom: 1px solid #e2e8f0;
-          padding: 0.75rem 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          position: sticky;
-          top: 0;
-          z-index: 100;
+        .adm-top {
+          background: #fff; border-bottom: 1px solid #e2e8f0;
+          padding: 1rem 1.5rem;
+          display: flex; align-items: center; justify-content: space-between;
+          position: sticky; top: 0; z-index: 100;
         }
-        .admin-main {
-          padding: 1.5rem;
-          flex: 1;
+
+        /* Main */
+        .adm-main { padding: 1.5rem; flex: 1; }
+
+        /* Nav link */
+        .adm-link {
+          display: flex; align-items: center; gap: 0.75rem;
+          padding: 0.65rem 1rem; margin: 0.15rem 0.75rem;
+          border-radius: 8px; color: #64748b;
+          text-decoration: none; font-size: 0.875rem; font-weight: 500;
+          transition: all 0.15s ease;
         }
-        /* Nav items */
-        .admin-nav-item {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          padding: 0.75rem 1.25rem;
-          color: #94a3b8;
-          text-decoration: none;
-          font-size: 0.9rem;
-          font-weight: 500;
-          transition: all 0.15s;
-          border-left: 3px solid transparent;
-        }
-        .admin-nav-item:hover {
-          background: rgba(255,255,255,0.05);
-          color: #fff;
-        }
-        .admin-nav-item.active {
-          background: rgba(37,99,235,0.15);
-          color: #60a5fa;
-          border-left: 3px solid #2563eb;
-        }
-        /* Overlay mobile */
-        .admin-overlay {
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.5);
-          z-index: 199;
-        }
+        .adm-link:hover { background: #f1f5f9; color: #0f172a; }
+        .adm-link.active { background: #eef2ff; color: #6366f1; font-weight: 600; }
+        .adm-link .adm-icon { width: 16px; text-align: center; }
+
+        /* Overlay */
+        .adm-ov { display: none; position: fixed; inset: 0; background: rgba(15,23,42,0.4); z-index: 199; backdrop-filter: blur(2px); }
+
+        /* Hamburger */
+        .adm-ham { display: none; }
+
         @media (max-width: 768px) {
-          .admin-sidebar { transform: translateX(-240px); }
-          .admin-sidebar.open { transform: translateX(0); }
-          .admin-content { margin-left: 0; }
-          .admin-overlay.show { display: block; }
-          .admin-main { padding: 1rem; }
+          .adm-side { transform: translateX(-250px); }
+          .adm-side.open { transform: translateX(0); box-shadow: 20px 0 40px rgba(0,0,0,0.1); }
+          .adm-body { margin-left: 0; }
+          .adm-ov.show { display: block; }
+          .adm-ham { display: flex !important; }
+          .adm-main { padding: 1rem; }
         }
       `}</style>
 
-            <div className="admin-wrapper">
-                {/* Overlay mobile */}
-                <div
-                    className={`admin-overlay ${sidebarOpen ? 'show' : ''}`}
-                    onClick={() => setSidebarOpen(false)}
-                />
+            <div className="adm-wrap">
+                {/* Overlay */}
+                <div className={`adm-ov ${open ? 'show' : ''}`} onClick={() => setOpen(false)} />
 
                 {/* Sidebar */}
-                <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+                <aside className={`adm-side ${open ? 'open' : ''}`}>
                     {/* Logo */}
-                    <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                        <Link to="/" style={{ textDecoration: 'none' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                <Logo size={32} light showText={false} />
-                                <div>
-                                    <p style={{ color: '#fff', fontWeight: 800, margin: 0, fontSize: '1rem' }}>Tasharuk</p>
-                                    <p style={{ color: '#64748b', margin: 0, fontSize: '0.72rem' }}>Administration</p>
-                                </div>
+                    <div style={{ padding: '1.25rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <div style={{
+                                background: '#6366f1', borderRadius: 10, width: 36, height: 36,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
+                                <i className="fas fa-wrench" style={{ color: '#fff', fontSize: '0.9rem' }}></i>
                             </div>
-                        </Link>
+                            <div>
+                                <p style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', margin: 0 }}>Tasharuk</p>
+                                <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: 0 }}>Admin Panel</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Navigation */}
-                    <nav style={{ flex: 1, paddingTop: '0.75rem' }}>
+                    {/* Nav */}
+                    <nav style={{ flex: 1, paddingTop: '0.5rem', overflowY: 'auto' }}>
+                        <p style={{
+                            fontSize: '0.65rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase',
+                            letterSpacing: 1, padding: '0.5rem 1.75rem', margin: 0
+                        }}>Menu</p>
                         {NAV_ITEMS.map(item => (
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`admin-nav-item ${isActive(item.path) ? 'active' : ''}`}
-                                onClick={() => setSidebarOpen(false)}
+                                className={`adm-link ${isActive(item.path) ? 'active' : ''}`}
+                                onClick={() => setOpen(false)}
                             >
-                                <i className={`fas ${item.icon}`} style={{ width: 18, textAlign: 'center' }}></i>
+                                <i className={`fas ${item.icon} adm-icon`}></i>
                                 {item.label}
                             </Link>
                         ))}
                     </nav>
 
-                    {/* User + Logout */}
-                    <div style={{ padding: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    {/* User */}
+                    <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem',
+                            padding: '0.6rem', background: '#f8fafc', borderRadius: 10
+                        }}>
                             <div style={{
-                                background: '#2563eb', borderRadius: '50%', width: 36, height: 36,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                width: 32, height: 32, borderRadius: '50%', background: '#eef2ff',
+                                color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontWeight: 700, fontSize: '0.82rem', flexShrink: 0
                             }}>
-                                <i className="fas fa-user" style={{ color: '#fff', fontSize: '0.85rem' }}></i>
+                                {user?.name?.charAt(0).toUpperCase()}
                             </div>
-                            <div>
-                                <p style={{ color: '#fff', margin: 0, fontSize: '0.85rem', fontWeight: 600 }}>{user?.name}</p>
-                                <p style={{ color: '#64748b', margin: 0, fontSize: '0.72rem' }}>Administrateur</p>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <p style={{
+                                    fontWeight: 600, fontSize: '0.82rem', color: '#0f172a', margin: 0,
+                                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'
+                                }}>{user?.name}</p>
+                                <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: 0 }}>Administrateur</p>
                             </div>
                         </div>
-                        <button
-                            onClick={handleLogout}
-                            style={{
-                                width: '100%', background: 'rgba(220,38,38,0.15)', color: '#f87171',
-                                border: 'none', borderRadius: 8, padding: '0.5rem', cursor: 'pointer',
-                                fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center',
-                                justifyContent: 'center', gap: '0.5rem'
-                            }}
+                        <button onClick={handleLogout} style={{
+                            width: '100%', background: '#fff', color: '#64748b',
+                            border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.5rem',
+                            cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                            transition: 'all 0.15s',
+                        }}
+                            onMouseEnter={e => { e.target.style.background = '#fee2e2'; e.target.style.color = '#dc2626'; e.target.style.borderColor = '#fca5a5'; }}
+                            onMouseLeave={e => { e.target.style.background = '#fff'; e.target.style.color = '#64748b'; e.target.style.borderColor = '#e2e8f0'; }}
                         >
                             <i className="fas fa-sign-out-alt"></i> Déconnexion
                         </button>
                     </div>
                 </aside>
 
-                {/* Contenu principal */}
-                <div className="admin-content">
+                {/* Main content */}
+                <div className="adm-body">
                     {/* Topbar */}
-                    <div className="admin-topbar">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            {/* Hamburger mobile */}
+                    <div className="adm-top">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <button
-                                onClick={() => setSidebarOpen(!sidebarOpen)}
+                                className="adm-ham"
+                                onClick={() => setOpen(!open)}
                                 style={{
-                                    background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem',
-                                    display: 'none'
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    padding: '0.4rem', borderRadius: 6, color: '#374151'
                                 }}
-                                className="admin-hamburger"
                             >
-                                <i className="fas fa-bars" style={{ fontSize: '1.1rem', color: '#374151' }}></i>
+                                <i className="fas fa-bars" style={{ fontSize: '1rem' }}></i>
                             </button>
                             <div>
-                                <h1 style={{ fontWeight: 700, fontSize: '1.1rem', color: '#1e293b', margin: 0 }}>
-                                    {NAV_ITEMS.find(i => i.path === location.pathname)?.label || 'Admin'}
+                                <h1 style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a', margin: 0 }}>
+                                    {currentPage?.label || 'Admin'}
                                 </h1>
-                                <p style={{ color: '#94a3b8', fontSize: '0.78rem', margin: 0 }}>
-                                    {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                <p style={{ color: '#94a3b8', fontSize: '0.72rem', margin: 0 }}>
+                                    {new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}
                                 </p>
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                             <span style={{
-                                background: '#dbeafe', color: '#1d4ed8', padding: '0.25rem 0.75rem',
-                                borderRadius: 20, fontSize: '0.78rem', fontWeight: 700
+                                background: '#eef2ff', color: '#6366f1', padding: '0.25rem 0.75rem',
+                                borderRadius: 20, fontSize: '0.75rem', fontWeight: 700
                             }}>
-                                <i className="fas fa-crown me-1"></i> Admin
+                                ✦ Admin
                             </span>
                         </div>
                     </div>
 
-                    {/* Page content */}
-                    <main className="admin-main">
-                        {children}
-                    </main>
+                    {/* Page */}
+                    <main className="adm-main">{children}</main>
                 </div>
             </div>
-
-            {/* Show hamburger on mobile */}
-            <style>{`
-        @media (max-width: 768px) {
-          .admin-hamburger { display: block !important; }
-        }
-      `}</style>
         </>
     );
 }
