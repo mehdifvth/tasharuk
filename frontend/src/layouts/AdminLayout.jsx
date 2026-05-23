@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 
 const NAV_ITEMS = [
     { path: '/admin/dashboard', icon: 'fa-chart-bar', label: 'Dashboard' },
@@ -119,15 +120,15 @@ export default function AdminLayout({ children }) {
                 <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
                     {/* Logo */}
                     <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ background: '#2563eb', borderRadius: 8, padding: '0.4rem 0.6rem' }}>
-                                <i className="fas fa-wrench" style={{ color: '#fff', fontSize: '1rem' }}></i>
+                        <Link to="/" style={{ textDecoration: 'none' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <Logo size={32} light showText={false} />
+                                <div>
+                                    <p style={{ color: '#fff', fontWeight: 800, margin: 0, fontSize: '1rem' }}>Tasharuk</p>
+                                    <p style={{ color: '#64748b', margin: 0, fontSize: '0.72rem' }}>Administration</p>
+                                </div>
                             </div>
-                            <div>
-                                <p style={{ color: '#fff', fontWeight: 800, margin: 0, fontSize: '1rem' }}>Tasharuk</p>
-                                <p style={{ color: '#64748b', margin: 0, fontSize: '0.72rem' }}>Administration</p>
-                            </div>
-                        </div>
+                        </Link>
                     </div>
 
                     {/* Navigation */}

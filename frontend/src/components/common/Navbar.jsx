@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from './NotificationBell';
+import Logo from './Logo';
 
 export default function Navbar() {
   const { user, token, logout } = useAuth();
@@ -70,23 +71,20 @@ export default function Navbar() {
       `}</style>
 
       <nav style={{
-        background: '#fff',
-        borderBottom: scrolled ? '1px solid #e2e8f0' : '1px solid transparent',
-        boxShadow: scrolled ? '0 1px 12px rgba(0,0,0,0.06)' : 'none',
-        padding: '0.7rem 0',
+        background: scrolled ? 'rgba(255, 255, 255, 0.85)' : '#fff',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(12px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(226, 232, 240, 0.5)' : '1px solid transparent',
+        boxShadow: scrolled ? '0 4px 30px rgba(0,0,0,0.04)' : 'none',
+        padding: scrolled ? '0.55rem 0' : '0.8rem 0',
         position: 'sticky', top: 0, zIndex: 100,
-        transition: 'box-shadow 0.2s, border-color 0.2s',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
           {/* Logo */}
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-            <div style={{ background: '#2563eb', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <i className="fas fa-wrench" style={{ color: '#fff', fontSize: '0.85rem' }}></i>
-            </div>
-            <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#0f172a', letterSpacing: '-0.3px' }}>
-              Tasharuk
-            </span>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Logo size={32} />
           </Link>
 
           {/* Desktop */}

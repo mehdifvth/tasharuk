@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
@@ -26,7 +27,10 @@ export default function LoginPage() {
   return (
     <div className="container" style={styles.wrapper}>
       <div className="card" style={styles.card}>
-        <h2 style={styles.title}><i className="fas fa-wrench me-2 text-primary"></i>Connexion</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <Logo size={48} showText={false} />
+        </div>
+        <h2 style={styles.title}>Connexion</h2>
         <p style={styles.sub}>Bienvenue sur Tasharuk</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>

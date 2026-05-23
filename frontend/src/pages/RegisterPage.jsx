@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 
 export default function RegisterPage() {
   const { register, loading } = useAuth();
@@ -30,7 +31,10 @@ export default function RegisterPage() {
   return (
     <div className="container" style={styles.wrapper}>
       <div className="card" style={styles.card}>
-        <h2 style={styles.title}><i className="fas fa-pen-to-square me-2 text-primary"></i>Créer un compte</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <Logo size={48} showText={false} />
+        </div>
+        <h2 style={styles.title}>Créer un compte</h2>
         <p style={styles.sub}>Rejoignez la communauté Tasharuk</p>
 
         <form onSubmit={handleSubmit} style={styles.form}>
