@@ -1,5 +1,4 @@
-// src/components/common/Navbar.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import NotificationBell from './NotificationBell';
@@ -9,76 +8,130 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-    setMenuOpen(false);
-  };
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
+  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
+
+  const handleLogout = async () => { await logout(); navigate('/login'); };
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
-
-  const linkStyle = (path) => ({
-    color: isActive(path) ? '#60a5fa' : '#cbd5e1',
-    fontWeight: isActive(path) ? 700 : 400,
-    fontSize: '0.95rem',
-    textDecoration: 'none',
-  });
-
-  const close = () => setMenuOpen(false);
 
   return (
     <>
-      <nav style={styles.nav}>
-        <div className="container" style={styles.inner}>
+      <style>{`
+        .nav-link {
+          color: #475569;
+          font-weight: 500;
+          font-size: 0.92rem;
+          text-decoration: none;
+          padding: 0.35rem 0.6rem;
+          border-radius: 6px;
+          transition: color 0.15s, background 0.15s;
+        }
+        .nav-link:hover { color: #2563eb; background: #eff6ff; }
+        .nav-link.active { color: #2563eb; font-weight: 700; }
+        .nav-btn-primary {
+          background: #2563eb; color: #fff; border: none;
+          padding: 0.45rem 1.1rem; border-radius: 8px;
+          font-weight: 600; font-size: 0.88rem; cursor: pointer;
+          transition: background 0.15s, transform 0.1s;
+        }
+        .nav-btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .nav-btn-outline {
+          background: transparent; color: #475569;
+          border: 1.5px solid #e2e8f0; padding: 0.4rem 1rem;
+          border-radius: 8px; font-weight: 600; font-size: 0.88rem;
+          cursor: pointer; transition: all 0.15s;
+        }
+        .nav-btn-outline:hover { border-color: #2563eb; color: #2563eb; }
+        .mobile-link {
+          display: flex; align-items: center; gap: 0.75rem;
+          padding: 0.85rem 1.25rem; color: #374151;
+          font-size: 0.92rem; font-weight: 500;
+          text-decoration: none;
+          border-bottom: 1px solid #f1f5f9;
+          transition: background 0.15s;
+        }
+        .mobile-link:hover { background: #f8fafc; }
+        .mobile-link.active { color: #2563eb; font-weight: 700; background: #eff6ff; }
+        @media (max-width: 768px) {
+          .desktop-links { display: none !important; }
+          .hamburger-btn { display: flex !important; }
+        }
+        @media (min-width: 769px) {
+          .desktop-links { display: flex !important; }
+          .hamburger-btn { display: none !important; }
+        }
+      `}</style>
+
+      <nav style={{
+        background: '#fff',
+        borderBottom: scrolled ? '1px solid #e2e8f0' : '1px solid transparent',
+        boxShadow: scrolled ? '0 1px 12px rgba(0,0,0,0.06)' : 'none',
+        padding: '0.7rem 0',
+        position: 'sticky', top: 0, zIndex: 100,
+        transition: 'box-shadow 0.2s, border-color 0.2s',
+      }}>
+        <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+
           {/* Logo */}
-          <Link to="/" style={styles.brand} onClick={close}>
-            <i className="fas fa-wrench me-2"></i>Tasharuk
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+            <div style={{ background: '#2563eb', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <i className="fas fa-wrench" style={{ color: '#fff', fontSize: '0.85rem' }}></i>
+            </div>
+            <span style={{ fontWeight: 800, fontSize: '1.15rem', color: '#0f172a', letterSpacing: '-0.3px' }}>
+              Tasharuk
+            </span>
           </Link>
 
-          {/* Desktop links */}
-          <div className="desktop-links" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-            <Link to="/tools" style={linkStyle('/tools')}>Parcourir</Link>
+          {/* Desktop */}
+          <div className="desktop-links" style={{ alignItems: 'center', gap: '0.25rem' }}>
+            <Link to="/tools" className={`nav-link ${isActive('/tools') ? 'active' : ''}`}>Parcourir</Link>
             {token ? (
               <>
                 {user?.is_admin && (
-                  <Link to="/admin" style={linkStyle('/admin')}>
-                    <i className="fas fa-star me-1"></i> Admin
+                  <Link to="/admin" className={`nav-link ${isActive('/admin') ? 'active' : ''}`}>
+                    <i className="fas fa-shield-alt me-1"></i>Admin
                   </Link>
                 )}
                 {!user?.is_admin && (
-                  <Link to="/my-tools" style={linkStyle('/my-tools')}>Mes Outils</Link>
+                  <Link to="/my-tools" className={`nav-link ${isActive('/my-tools') ? 'active' : ''}`}>Mes Outils</Link>
                 )}
-                <Link to="/bookings" style={linkStyle('/bookings')}>Réservations</Link>
-                <NotificationBell />
-                <Link to="/profile" style={styles.username}>
-                  <i className="fas fa-user me-1"></i> {user?.name}
+                <Link to="/bookings" className={`nav-link ${isActive('/bookings') ? 'active' : ''}`}>Réservations</Link>
+                <div style={{ margin: '0 0.25rem' }}><NotificationBell /></div>
+                <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', padding: '0.35rem 0.6rem', borderRadius: 8, border: '1.5px solid #e2e8f0', marginLeft: '0.25rem' }}>
+                  <div style={{ width: 26, height: 26, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700 }}>
+                    {user?.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151' }}>{user?.name}</span>
                 </Link>
-                <button onClick={handleLogout} className="btn-danger" style={{ padding: '0.35rem 0.85rem', fontSize: '0.85rem' }}>
+                <button onClick={handleLogout} className="nav-btn-outline" style={{ marginLeft: '0.25rem', color: '#dc2626', borderColor: '#fca5a5' }}>
                   Déconnexion
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" style={linkStyle('/login')}>Connexion</Link>
-                <Link to="/register">
-                  <button className="btn-primary" style={{ padding: '0.35rem 0.85rem', fontSize: '0.85rem' }}>
-                    S'inscrire
-                  </button>
+                <Link to="/login" className={`nav-link ${isActive('/login') ? 'active' : ''}`}>Connexion</Link>
+                <Link to="/register" style={{ marginLeft: '0.25rem' }}>
+                  <button className="nav-btn-primary">S'inscrire</button>
                 </Link>
               </>
             )}
           </div>
 
-          {/* Hamburger button — mobile only */}
-          <div className="hamburger-wrapper" style={{ display: 'none', alignItems: 'center', gap: '0.75rem' }}>
+          {/* Mobile hamburger */}
+          <div className="hamburger-btn" style={{ display: 'none', alignItems: 'center', gap: '0.75rem' }}>
             {token && <NotificationBell />}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              style={styles.hamburger}
-              aria-label="Menu"
+              style={{ background: menuOpen ? '#f1f5f9' : 'none', border: 'none', cursor: 'pointer', padding: '0.4rem', borderRadius: 8 }}
             >
-              <i className={`fas ${menuOpen ? 'fa-times' : 'fa-bars'}`} style={{ color: '#fff', fontSize: '1.2rem' }}></i>
+              <i className={`fas ${menuOpen ? 'fa-times' : 'fa-bars'}`} style={{ color: '#374151', fontSize: '1.1rem' }}></i>
             </button>
           </div>
         </div>
@@ -86,93 +139,51 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div style={styles.mobileMenu}>
-          <Link to="/tools" style={styles.mobileLink} onClick={close}>
-            <i className="fas fa-search me-2"></i>Parcourir
+        <div style={{
+          position: 'fixed', top: '57px', left: 0, right: 0, zIndex: 99,
+          background: '#fff', borderBottom: '1px solid #e2e8f0',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+          display: 'flex', flexDirection: 'column',
+          animation: 'slideDown 0.15s ease',
+        }}>
+          <style>{`@keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }`}</style>
+          <Link to="/tools" className={`mobile-link ${isActive('/tools') ? 'active' : ''}`}>
+            <i className="fas fa-search" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>Parcourir
           </Link>
-
           {token ? (
             <>
               {user?.is_admin && (
-                <Link to="/admin" style={styles.mobileLink} onClick={close}>
-                  <i className="fas fa-star me-2"></i>Admin
+                <Link to="/admin" className={`mobile-link ${isActive('/admin') ? 'active' : ''}`}>
+                  <i className="fas fa-shield-alt" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>Admin
                 </Link>
               )}
               {!user?.is_admin && (
-                <Link to="/my-tools" style={styles.mobileLink} onClick={close}>
-                  <i className="fas fa-tools me-2"></i>Mes Outils
+                <Link to="/my-tools" className={`mobile-link ${isActive('/my-tools') ? 'active' : ''}`}>
+                  <i className="fas fa-tools" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>Mes Outils
                 </Link>
               )}
-              <Link to="/bookings" style={styles.mobileLink} onClick={close}>
-                <i className="fas fa-clipboard-list me-2"></i>Réservations
+              <Link to="/bookings" className={`mobile-link ${isActive('/bookings') ? 'active' : ''}`}>
+                <i className="fas fa-calendar-alt" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>Réservations
               </Link>
-              <Link to="/profile" style={styles.mobileLink} onClick={close}>
-                <i className="fas fa-user me-2"></i>{user?.name}
+              <Link to="/profile" className={`mobile-link ${isActive('/profile') ? 'active' : ''}`}>
+                <i className="fas fa-user" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>{user?.name}
               </Link>
-              <button onClick={handleLogout} style={styles.mobileLogout}>
-                <i className="fas fa-sign-out-alt me-2"></i>Déconnexion
+              <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1.25rem', background: 'none', border: 'none', color: '#dc2626', fontSize: '0.92rem', fontWeight: 600, cursor: 'pointer', borderTop: '1px solid #f1f5f9' }}>
+                <i className="fas fa-sign-out-alt" style={{ width: 18, textAlign: 'center' }}></i>Déconnexion
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" style={styles.mobileLink} onClick={close}>
-                <i className="fas fa-sign-in-alt me-2"></i>Connexion
+              <Link to="/login" className="mobile-link">
+                <i className="fas fa-sign-in-alt" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>Connexion
               </Link>
-              <Link to="/register" style={styles.mobileLink} onClick={close}>
-                <i className="fas fa-user-plus me-2"></i>S'inscrire
+              <Link to="/register" className="mobile-link">
+                <i className="fas fa-user-plus" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>S'inscrire
               </Link>
             </>
           )}
         </div>
       )}
-
-      {/* CSS Media Queries */}
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-links { display: none !important; }
-          .hamburger-wrapper { display: flex !important; }
-        }
-        @media (min-width: 769px) {
-          .hamburger-wrapper { display: none !important; }
-          .desktop-links { display: flex !important; }
-        }
-      `}</style>
     </>
   );
 }
-
-const styles = {
-  nav: {
-    background: '#1e293b', padding: '0.8rem 0',
-    position: 'sticky', top: 0, zIndex: 100,
-    borderBottom: '1px solid rgba(255,255,255,0.08)',
-  },
-  inner: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  brand: { color: '#fff', fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.3px' },
-  desktopLinks: { display: 'flex', alignItems: 'center', gap: '1.25rem', className: 'desktop-links' },
-  hamburgerWrapper: {
-    display: 'none', alignItems: 'center', gap: '0.75rem',
-    className: 'hamburger-wrapper',
-  },
-  hamburger: {
-    background: 'none', border: 'none', cursor: 'pointer', padding: '0.3rem',
-  },
-  username: { color: '#94a3b8', fontSize: '0.88rem', textDecoration: 'none' },
-  mobileMenu: {
-    position: 'fixed', top: '57px', left: 0, right: 0, zIndex: 99,
-    background: '#1e293b', borderBottom: '1px solid rgba(255,255,255,0.08)',
-    display: 'flex', flexDirection: 'column', padding: '0.5rem 0',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-  },
-  mobileLink: {
-    color: '#cbd5e1', padding: '0.85rem 1.5rem', fontSize: '0.95rem',
-    textDecoration: 'none', borderBottom: '1px solid rgba(255,255,255,0.05)',
-    display: 'block',
-  },
-  mobileLogout: {
-    background: 'none', border: 'none', color: '#f87171',
-    padding: '0.85rem 1.5rem', fontSize: '0.95rem', cursor: 'pointer',
-    textAlign: 'left', width: '100%',
-    borderTop: '1px solid rgba(255,255,255,0.08)',
-  },
-};
