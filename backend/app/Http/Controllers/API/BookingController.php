@@ -78,19 +78,37 @@ class BookingController extends Controller
             ], 422);
         }
 
+        // Vérification durée minimale (12h)
+        $start = \Carbon\Carbon::parse($validated['start_date']);
+        $end   = \Carbon\Carbon::parse($validated['end_date']);
+        $minutes = $start->diffInMinutes($end);
+
+        if ($minutes < 12 * 60) {
+            return response()->json(['message' => "La durée minimale d'une réservation est de 12 heures"], 422);
+        }
+
+        // Calcul du prix estimé (minimum 12h, puis par minute)
+        if ($minutes <= 720) {
+            $totalPrice = round($tool->price / 2, 2);
+        } else {
+            $pricePerMinute = $tool->price / 1440;
+            $totalPrice = round($minutes * $pricePerMinute, 2);
+        }
+
         $booking = Booking::create([
             'tool_id'     => $validated['tool_id'],
             'borrower_id' => $request->user()->id,
             'start_date'  => $validated['start_date'],
             'end_date'    => $validated['end_date'],
             'status'      => 'pending',
+            'total_price' => $totalPrice,
         ]);
 
         Notification::create([
             'user_id'        => $tool->user_id,
             'type'           => 'booking_received',
-            'title'          => 'Nouvelle réservation',
-            'message'        => $request->user()->name . ' a réservé votre outil "' . $tool->title . '"',
+            'title'          => 'Nouvelle demande reçue 📥',
+            'message'        => $request->user()->name . ' souhaite réserver votre "' . $tool->title . '".',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
@@ -129,8 +147,8 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->borrower_id,
             'type'           => 'booking_approved',
-            'title'          => 'Réservation approuvée ✅',
-            'message'        => 'Votre réservation pour "' . $booking->tool->title . '" a été approuvée.',
+            'title'          => 'Réservation confirmée ✅',
+            'message'        => 'Bonne nouvelle ! Votre réservation pour "' . $booking->tool->title . '" a été approuvée.',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
@@ -163,8 +181,8 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->borrower_id,
             'type'           => 'booking_rejected',
-            'title'          => 'Réservation rejetée ❌',
-            'message'        => 'Votre réservation pour "' . $booking->tool->title . '" a été rejetée.',
+                        'title'          => 'Réservation refusée',
+            'message'        => 'Désolé, votre demande pour "' . $booking->tool->title . '" ne peut pas être satisfaite pour le moment.',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
@@ -196,8 +214,8 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->tool->user_id,
             'type'           => 'booking_cancelled',
-            'title'          => 'Réservation annulée ❌',
-            'message'        => $booking->borrower->name . ' a annulé sa réservation pour "' . $booking->tool->title . '"',
+            'title'          => 'Réservation annulée ⚠️',
+            'message'        => $booking->borrower->name . ' a annulé sa demande pour "' . $booking->tool->title . '".',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
@@ -237,10 +255,18 @@ class BookingController extends Controller
             'return_code'  => $returnCode,
         ];
 
-        // Si l'utilisateur récupère l'outil AVANT la date prévue, 
-        // on met à jour la date de début pour que les calculs de durée soient corrects.
+        // AJUSTEMENT AUTOMATIQUE : Si l'utilisateur récupère l'outil AVANT la date prévue, 
+        // on met à jour la date de début et on recalcule le prix total estimé.
         if (now()->lt(\Carbon\Carbon::parse($booking->start_date))) {
             $updateData['start_date'] = now();
+            
+            // Recalcul de la durée totale estimée (now -> end_date prévue)
+            $mins = now()->diffInMinutes(\Carbon\Carbon::parse($booking->end_date));
+            if ($mins <= 720) {
+                $updateData['total_price'] = round($booking->tool->price / 2, 2);
+            } else {
+                $updateData['total_price'] = round($mins * ($booking->tool->price / 1440), 2);
+            }
         }
 
         $booking->update($updateData);
@@ -248,8 +274,8 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->tool->user_id,
             'type'           => 'tool_picked_up',
-            'title'          => 'Outil récupéré 🔑',
-            'message'        => $booking->borrower->name . ' a récupéré "' . $booking->tool->title . '"',
+            'title'          => 'Outil en cours d\'utilisation 🔑',
+            'message'        => $booking->borrower->name . ' vient de récupérer votre "' . $booking->tool->title . '".',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
@@ -283,12 +309,12 @@ class BookingController extends Controller
         $end      = now();
         $minutes  = $start->diffInMinutes($end);
 
-        if ($minutes <= 24 * 60) {
-            // Moins de 24h → 1 jour minimum
-            $finalPrice = $booking->tool->price;
+        if ($minutes <= 720) {
+            // Moins de 12h → 12h minimum (moitié prix jour)
+            $finalPrice = round($booking->tool->price / 2, 2);
         } else {
             // Au-delà → par minute
-            $pricePerMinute = $booking->tool->price / 24 / 60;
+            $pricePerMinute = $booking->tool->price / 1440;
             $finalPrice = round($minutes * $pricePerMinute, 2);
         }
 
@@ -300,8 +326,8 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->tool->user_id,
             'type'           => 'tool_returned',
-            'title'          => 'Outil retourné 🏁',
-            'message'        => 'Votre outil "' . $booking->tool->title . '" a été retourné.',
+            'title'          => 'Outil retourné avec succès',
+            'message'        => 'Votre "' . $booking->tool->title . '" a bien été restitué. Merci pour le partage !',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);

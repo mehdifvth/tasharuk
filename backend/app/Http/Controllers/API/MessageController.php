@@ -66,7 +66,7 @@ class MessageController extends Controller
         Notification::create([
             'user_id'        => $recipientId,
             'type'           => 'new_message',
-            'title'          => 'Nouveau message 💬',
+            'title'          => 'Nouveau message',
             'message'        => $request->user()->name . ' vous a envoyé un message pour "' . $booking->tool->title . '"',
             'reference_id'   => $validated['booking_id'],
             'reference_type' => 'booking',

@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         }
 
         // ─── Demo users ──────────────────────────────────────────────────────
-        $admin = User::firstOrCreate(
+        User::firstOrCreate(
             ['email' => 'admin@tasharuk.com'],
             [
                 'name'     => 'Administrateur Système',
@@ -43,44 +43,23 @@ class DatabaseSeeder extends Seeder
         );
 
         $users = [
-            [
-                'name' => 'Ahmed Benali',
-                'email' => 'ahmed@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'owner',
-            ],
-            [
-                'name' => 'Sara El Idrissi',
-                'email' => 'sara@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'owner',
-            ],
-            [
-                'name' => 'Youssef Mansouri',
-                'email' => 'youssef@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'borrower',
-            ],
-            [
-                'name' => 'Khadija Amrani',
-                'email' => 'khadija@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'owner',
-            ],
-            [
-                'name' => 'Mehdi Tazi',
-                'email' => 'mehdi@example.com',
-                'password' => Hash::make('password'),
-                'role' => 'borrower',
-            ],
+            ['name' => 'Ahmed Benali', 'email' => 'ahmed@example.com', 'role' => 'owner'],
+            ['name' => 'Sara El Idrissi', 'email' => 'sara@example.com', 'role' => 'owner'],
+            ['name' => 'Youssef Mansouri', 'email' => 'youssef@example.com', 'role' => 'borrower'],
+            ['name' => 'Khadija Amrani', 'email' => 'khadija@example.com', 'role' => 'owner'],
+            ['name' => 'Mehdi Tazi', 'email' => 'mehdi@example.com', 'role' => 'borrower'],
         ];
 
-        $createdUsers = [];
         foreach ($users as $u) {
-            $createdUsers[] = User::firstOrCreate(['email' => $u['email']], $u);
+            User::firstOrCreate(['email' => $u['email']], [
+                'name' => $u['name'],
+                'password' => Hash::make('password'),
+                'role' => $u['role'],
+                'is_admin' => false
+            ]);
         }
 
-        // ─── Demo tools ──────────────────────────────────────────────────────
+        // ─── Demo tools (Vérification rigoureuse des images) ──────────────────
         $toolsData = [
             [
                 'user_email' => 'ahmed@example.com',
@@ -107,7 +86,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Tondeuse silencieuse et efficace pour jardins jusqu\'à 500m2. Bac de ramassage inclus.',
                 'condition' => 'good',
                 'price' => 90,
-                'image' => 'https://images.unsplash.com/photo-1592819695396-0661b3694663?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1591954840744-4834c9a2153c?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'sara@example.com',
@@ -116,7 +95,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Coffret complet de haute qualité. Cliquets, douilles, embouts de vissage.',
                 'condition' => 'new',
                 'price' => 40,
-                'image' => 'https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1586864387417-f7ca9799f3a8?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'khadija@example.com',
@@ -125,7 +104,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Bétonnière robuste pour vos travaux de maçonnerie. Facile à déplacer.',
                 'condition' => 'good',
                 'price' => 150,
-                'image' => 'https://images.unsplash.com/photo-1541888946425-d81bb19480c5?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1517089152318-42ec560349c0?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'khadija@example.com',
@@ -152,7 +131,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Lame de 184mm, coupe précise et puissante. Idéale pour les découpes de bois sur chantier.',
                 'condition' => 'new',
                 'price' => 75,
-                'image' => 'https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'khadija@example.com',
@@ -161,7 +140,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Modèle puissant pour l\'abattage et l\'élagage. Entretien régulier effectué.',
                 'condition' => 'good',
                 'price' => 110,
-                'image' => 'https://images.unsplash.com/photo-1622313337905-2d334e9e0331?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1586374246828-56608514c3e8?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'ahmed@example.com',
@@ -179,7 +158,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Cuve inox 30L, idéal pour le garage ou après travaux. Fonction souffleur.',
                 'condition' => 'good',
                 'price' => 45,
-                'image' => 'https://images.unsplash.com/photo-1610427672288-751249622d9c?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'khadija@example.com',
@@ -233,7 +212,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Polyvalente pour meuler, brosser et polir. Poignée réglable.',
                 'condition' => 'good',
                 'price' => 50,
-                'image' => 'https://images.unsplash.com/photo-1574635843846-993d987d605f?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'khadija@example.com',
@@ -242,7 +221,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Pratique pour déplacer des cartons, meubles ou électroménager.',
                 'condition' => 'good',
                 'price' => 25,
-                'image' => 'https://images.unsplash.com/photo-1621905252507-b35432d94b4c?auto=format&fit=crop&w=800&q=80',
+                'image' => 'https://images.unsplash.com/photo-1532635241-17e820acc59f?auto=format&fit=crop&w=800&q=80',
             ],
             [
                 'user_email' => 'ahmed@example.com',
@@ -282,10 +261,11 @@ class DatabaseSeeder extends Seeder
             ],
         ];
 
-        $createdTools = [];
         foreach ($toolsData as $t) {
             $user = User::where('email', $t['user_email'])->first();
-            $createdTools[] = Tool::firstOrCreate(
+            if (!$user) continue;
+
+            Tool::updateOrCreate(
                 ['title' => $t['title'], 'user_id' => $user->id],
                 [
                     'category_id' => $categories[$t['category']]->id,
@@ -300,45 +280,51 @@ class DatabaseSeeder extends Seeder
         // ─── Demo bookings ───────────────────────────────────────────────────
         $youssef = User::where('email', 'youssef@example.com')->first();
         $mehdi = User::where('email', 'mehdi@example.com')->first();
+        $perceuse = Tool::where('title', 'like', '%Perceuse%')->first();
+        $tondeuse = Tool::where('title', 'like', '%Tondeuse%')->first();
+        $karcher = Tool::where('title', 'like', '%Kärcher%')->first();
 
-        // 1. Booking terminée avec avis
-        $b1 = Booking::create([
-            'tool_id' => $createdTools[0]->id, // Perceuse Ahmed
-            'borrower_id' => $youssef->id,
-            'start_date' => Carbon::now()->subDays(10),
-            'end_date' => Carbon::now()->subDays(8),
-            'status' => 'completed',
-            'picked_up_at' => Carbon::now()->subDays(10)->addHours(2),
-            'returned_at' => Carbon::now()->subDays(8)->addHours(1),
-            'final_price' => 120, // 2 jours * 60
-        ]);
+        if ($youssef && $perceuse) {
+            $b1 = Booking::create([
+                'tool_id' => $perceuse->id,
+                'borrower_id' => $youssef->id,
+                'start_date' => Carbon::now()->subDays(10),
+                'end_date' => Carbon::now()->subDays(8),
+                'status' => 'completed',
+                'picked_up_at' => Carbon::now()->subDays(10)->addHours(2),
+                'returned_at' => Carbon::now()->subDays(8)->addHours(1),
+                'final_price' => 120,
+            ]);
 
-        Review::create([
-            'booking_id' => $b1->id,
-            'reviewer_id' => $youssef->id,
-            'rating' => 5,
-            'comment' => 'La perceuse est excellente, Ahmed est très sympathique et arrangeant.',
-        ]);
+            Review::create([
+                'booking_id' => $b1->id,
+                'reviewer_id' => $youssef->id,
+                'rating' => 5,
+                'comment' => 'Excellent matériel !',
+            ]);
+        }
 
-        // 2. Booking en cours
-        Booking::create([
-            'tool_id' => $createdTools[2]->id, // Tondeuse Sara
-            'borrower_id' => $mehdi->id,
-            'start_date' => Carbon::now()->subDays(1),
-            'end_date' => Carbon::now()->addDays(1),
-            'status' => 'approved',
-            'picked_up_at' => Carbon::now()->subDays(1)->addHours(1),
-            'confirmation_code' => 'TAS-1234',
-            'return_code' => 'RET-5678',
-        ]);
+        if ($mehdi && $tondeuse) {
+            Booking::create([
+                'tool_id' => $tondeuse->id,
+                'borrower_id' => $mehdi->id,
+                'start_date' => Carbon::now()->subDays(1),
+                'end_date' => Carbon::now()->addDays(1),
+                'status' => 'approved',
+                'picked_up_at' => Carbon::now()->subDays(1)->addHours(1),
+                'confirmation_code' => 'TAS-1234',
+                'return_code' => 'RET-5678',
+            ]);
+        }
 
-        // 3. Booking en attente
-        Booking::create([
-            'tool_id' => $createdTools[1]->id, // Kärcher Ahmed
-            'borrower_id' => $youssef->id,
-            'start_date' => Carbon::now()->addDays(5),
-            'end_date' => Carbon::now()->addDays(6),
-            'status' => 'pending',
-        ]);
+        if ($youssef && $karcher) {
+            Booking::create([
+                'tool_id' => $karcher->id,
+                'borrower_id' => $youssef->id,
+                'start_date' => Carbon::now()->addDays(5),
+                'end_date' => Carbon::now()->addDays(6),
+                'status' => 'pending',
+            ]);
+        }
     }
 }

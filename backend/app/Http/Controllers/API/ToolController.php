@@ -161,15 +161,9 @@ class ToolController extends Controller
     }
     private function uploadToCloudinary($file): string
     {
-        Configuration::instance([
-            'cloud' => [
-                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_KEY'),
-                'api_secret' => env('CLOUDINARY_SECRET'),
-            ],
-            'url' => ['secure' => true]
-        ]);
-        $uploaded = (new UploadApi())->upload($file->getPathname());
-        return $uploaded['secure_url'];
+        // On essaie d'utiliser le facade du package laravel-cloudinary qui est plus simple
+        // et utilise déjà CLOUDINARY_URL par défaut.
+        $uploadedFileUrl = Cloudinary::upload($file->getRealPath())->getSecurePath();
+        return $uploadedFileUrl;
     }
 }
