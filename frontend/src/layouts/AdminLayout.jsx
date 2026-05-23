@@ -88,10 +88,10 @@ export default function AdminLayout({ children }) {
                 {/* Sidebar */}
                 <aside className={`adm-side ${open ? 'open' : ''}`}>
                     {/* Logo */}
-                    <div style={{ padding: '1.25rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                            <Logo size={34} />
-                            <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: 0, paddingLeft: '2.8rem', marginTop: '-0.4rem' }}>Admin Panel</p>
+                    <div style={{ padding: '1.5rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                            <Logo size={42} />
+                            <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: 0, paddingLeft: '3.4rem', marginTop: '-0.5rem', fontWeight: 600, letterSpacing: 0.5 }}>ADMIN PANEL</p>
                         </div>
                     </div>
 

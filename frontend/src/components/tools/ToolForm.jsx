@@ -93,7 +93,7 @@ export default function ToolForm({ initial = null, onSubmit, loading }) {
       </div>
 
       <div>
-        <label style={LABEL}>Prix par jour (MAD) *</label>
+        <label style={LABEL}>Prix par heure (MAD) *</label>
         <div style={{ position: 'relative' }}>
           <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.85rem', fontWeight: 600 }}>MAD</span>
           <input name="price" type="number" min="0" step="0.01" value={form.price} onChange={handleChange} required placeholder="0 = Gratuit" className="tool-form-input" style={{ ...INPUT_STYLE, paddingLeft: '3rem' }} />

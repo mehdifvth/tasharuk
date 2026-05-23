@@ -22,7 +22,7 @@ class AdminController extends Controller
 
         return response()->json([
             'users'      => User::orderBy('created_at', 'desc')->get(),
-            'tools'      => Tool::with(['user', 'category'])->orderBy('created_at', 'desc')->get(),
+            'tools'      => Tool::withTrashed()->with(['user', 'category'])->orderBy('created_at', 'desc')->get(),
             'categories' => Category::withCount('tools')->get(),
             'bookings'   => Booking::with(['tool', 'borrower'])->orderBy('created_at', 'desc')->get(),
         ]);

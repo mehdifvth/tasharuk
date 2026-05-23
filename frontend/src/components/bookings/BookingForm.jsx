@@ -27,7 +27,6 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
     const diff = new Date(form.end_date) - new Date(form.start_date);
     if (diff <= 0) return null;
     const totalHours = diff / 3600000;
-    if (totalHours < 12) return null;
     const days = Math.floor(totalHours / 24);
     const hours = Math.floor(totalHours % 24);
     if (days === 0) return `${hours}h`;
@@ -38,14 +37,10 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
   const getTotalPrice = () => {
     if (!form.start_date || !form.end_date || !toolPrice) return null;
     const diffMins = (new Date(form.end_date) - new Date(form.start_date)) / 60000;
-    if (diffMins < 12 * 60) return null;
+    if (diffMins <= 0) return null;
     
-    if (diffMins <= 1440) {
-      return parseFloat(toolPrice).toFixed(2);
-    } else {
-      const pricePerMin = toolPrice / 1440;
-      return (diffMins * pricePerMin).toFixed(2);
-    }
+    const totalHours = diffMins / 60;
+    return (totalHours * toolPrice).toFixed(2);
   };
 
   const handleSubmit = async (e) => {
@@ -53,7 +48,6 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
     setError(null);
     const diffHours = (new Date(form.end_date) - new Date(form.start_date)) / 3600000;
     if (diffHours <= 0) { setError('La date de fin doit être après la date de début.'); return; }
-    if (diffHours < 12) { setError("La durée minimale d'une réservation est de 12 heures."); return; }
     setLoading(true);
     try {
       await api.post('/bookings', {
@@ -104,7 +98,7 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
             )}
           </div>
           <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.35rem 0 0' }}>
-            <i className="fas fa-exclamation-triangle me-1" style={{ color: '#f59e0b' }}></i> Minimum 12h facturées par réservation même en cas de retour anticipé
+            <i className="fas fa-info-circle me-1" style={{ color: '#2563eb' }}></i> Facturation à l'heure (Prix fixe par heure)
           </p>
         </div>
       )}

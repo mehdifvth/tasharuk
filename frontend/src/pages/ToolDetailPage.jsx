@@ -57,6 +57,7 @@ export default function ToolDetailPage() {
 
   const isOwner = user?.id === tool.user_id;
   const cond = CONDITION[tool.condition] || CONDITION.good;
+  const hourlyPrice = parseFloat(tool.price).toFixed(2);
 
   return (
     <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '3rem' }}>
@@ -115,9 +116,9 @@ export default function ToolDetailPage() {
 
               <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '0.85rem 1rem', display: 'inline-block' }}>
                 <span style={{ fontWeight: 800, fontSize: '1.4rem', color: '#16a34a' }}>
-                  {tool.price > 0 ? `${tool.price} MAD` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
+                  {tool.price > 0 ? `${hourlyPrice} MAD` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
                 </span>
-                {tool.price > 0 && <span style={{ color: '#64748b', fontSize: '0.85rem', marginLeft: '0.3rem' }}>/ jour</span>}
+                {tool.price > 0 && <span style={{ color: '#64748b', fontSize: '0.85rem', marginLeft: '0.3rem' }}>/ heure</span>}
               </div>
 
               {tool.description && (
@@ -171,7 +172,7 @@ export default function ToolDetailPage() {
             <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', padding: '1.5rem', boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
               <p style={{ fontWeight: 700, fontSize: '1rem', color: '#0f172a', marginBottom: '1rem' }}>
                 {tool.price > 0 ? (
-                  <><span style={{ fontSize: '1.4rem', color: '#2563eb' }}>{tool.price} MAD</span> <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.85rem' }}>/ jour</span></>
+                  <><span style={{ fontSize: '1.4rem', color: '#2563eb' }}>{hourlyPrice} MAD</span> <span style={{ color: '#94a3b8', fontWeight: 500, fontSize: '0.85rem' }}>/ heure</span></>
                 ) : <><i className="fas fa-gift me-1"></i>Gratuit</>}
               </p>
 

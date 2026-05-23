@@ -151,9 +151,10 @@ class ToolController extends Controller
             return response()->json(['message' => 'Non autorisé'], 403);
         }
 
-        if ($tool->image) {
-            Storage::disk('public')->delete($tool->image);
-        }
+        // On ne supprime pas l'image physiquement pour garder l'historique des réservations
+        // if ($tool->image) {
+        //     Storage::disk('public')->delete($tool->image);
+        // }
 
         $tool->delete();
 
@@ -161,14 +162,20 @@ class ToolController extends Controller
     }
     private function uploadToCloudinary($file): string
     {
-        Configuration::instance([
-            'cloud' => [
-                'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
-                'api_key'    => env('CLOUDINARY_KEY'),
-                'api_secret' => env('CLOUDINARY_SECRET'),
-            ],
-            'url' => ['secure' => true]
-        ]);
+        // Initialisation de la config : Priorité à CLOUDINARY_URL s'il est présent
+        if (env('CLOUDINARY_URL')) {
+            Configuration::instance(env('CLOUDINARY_URL'));
+        } else {
+            Configuration::instance([
+                'cloud' => [
+                    'cloud_name' => env('CLOUDINARY_CLOUD_NAME'),
+                    'api_key'    => env('CLOUDINARY_KEY'),
+                    'api_secret' => env('CLOUDINARY_SECRET'),
+                ],
+                'url' => ['secure' => true]
+            ]);
+        }
+
         $uploaded = (new UploadApi())->upload($file->getPathname());
         return $uploaded['secure_url'];
     }

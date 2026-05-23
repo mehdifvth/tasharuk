@@ -24,7 +24,7 @@ class Booking extends Model
 
     public function tool()
     {
-        return $this->belongsTo(Tool::class);
+        return $this->belongsTo(Tool::class)->withTrashed();
     }
     public function borrower()
     {
@@ -47,28 +47,19 @@ class Booking extends Model
 
         $start = \Carbon\Carbon::parse($this->start_date);
         $end   = \Carbon\Carbon::parse($this->end_date);
-        $minutes = $start->diffInMinutes($end);
+        $hours = $start->diffInMinutes($end) / 60;
 
-        // Minimum 12h (720 mins) -> Moitié du prix journalier
-        if ($minutes <= 720) return round($this->tool->price / 2, 2);
-        
-        // Au-delà -> prorata par minute basé sur le prix journalier
-        return round($minutes * ($this->tool->price / 1440), 2);
+        // Prix à l'heure direct
+        return round($hours * $this->tool->price, 2);
     }
 
-    // Prix en cours basé sur le temps réel écoulé depuis pickup (Logique per-minute avec minimum 12h)
+    // Prix en cours basé sur le temps réel écoulé depuis pickup
     public function getLivePriceAttribute()
     {
         if (!$this->tool || !$this->picked_up_at || $this->status === 'completed') return 0;
         
-        $minutes = \Carbon\Carbon::parse($this->picked_up_at)->diffInMinutes(now());
-
-        if ($minutes <= 720) {
-            return round($this->tool->price / 2, 2);
-        }
-
-        $pricePerMinute = $this->tool->price / 1440;
-        return round($minutes * $pricePerMinute, 2);
+        $hours = \Carbon\Carbon::parse($this->picked_up_at)->diffInMinutes(now()) / 60;
+        return round($hours * $this->tool->price, 2);
     }
 
     // Prix final (Utilise la colonne final_price ou calcule dynamiquement)
@@ -77,9 +68,7 @@ class Booking extends Model
         if ($this->final_price > 0) return $this->final_price;
         if (!$this->tool || !$this->picked_up_at || !$this->returned_at) return 0;
 
-        $minutes = \Carbon\Carbon::parse($this->picked_up_at)->diffInMinutes($this->returned_at);
-
-        if ($minutes <= 720) return round($this->tool->price / 2, 2);
-        return round($minutes * ($this->tool->price / 1440), 2);
+        $hours = \Carbon\Carbon::parse($this->picked_up_at)->diffInMinutes($this->returned_at) / 60;
+        return round($hours * $this->tool->price, 2);
     }
 }

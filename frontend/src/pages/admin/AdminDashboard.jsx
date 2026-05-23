@@ -16,8 +16,8 @@ export default function AdminDashboard() {
   }, []);
 
   const stats = [
-    { label: 'Outils', value: data.tools.length, icon: 'fa-tools', color: '#6366f1', bg: '#eef2ff', path: '/admin/tools' },
-    { label: 'Utilisateurs', value: data.users.length, icon: 'fa-users', color: '#0ea5e9', bg: '#e0f2fe', path: '/admin/users' },
+    { label: 'Outils', value: data.tools.filter(t => !t.deleted_at).length, icon: 'fa-tools', color: '#2563eb', bg: '#dbeafe', path: '/admin/tools' },
+    { label: 'Utilisateurs', value: data.users.length, icon: 'fa-users', color: '#16a34a', bg: '#dcfce7', path: '/admin/users' },
     { label: 'Catégories', value: data.categories.length, icon: 'fa-tag', color: '#f59e0b', bg: '#fef9c3', path: '/admin/categories' },
     { label: 'Réservations', value: data.bookings.length, icon: 'fa-calendar-alt', color: '#10b981', bg: '#d1fae5', path: '/admin/bookings' },
   ];

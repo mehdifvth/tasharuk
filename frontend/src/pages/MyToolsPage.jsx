@@ -209,7 +209,7 @@ export default function MyToolsPage() {
                       <h5 className="card-title fw-bold mb-0 text-truncate" title={tool.title}>
                         {tool.title}
                       </h5>
-                      <span className="badge bg-light text-dark border">{tool.price} MAD/j</span>
+                      <span className="badge bg-light text-dark border">{tool.price} MAD/h</span>
                     </div>
                     <p className="text-muted small mb-3">
                       <i className="fas fa-folder me-1"></i>{tool.category?.name}

@@ -1,31 +1,41 @@
+// src/pages/admin/AdminBookings.jsx
 import React, { useEffect, useState } from 'react';
 import api from '../../services/api';
 
-function AdminLivePrice({ pickedUpAt, pricePerDay }) {
+function LivePrice({ pickedUpAt, pricePerHour }) {
     const [price, setPrice] = useState('0.00');
     useEffect(() => {
         const update = () => {
-            const mins = (Date.now() - new Date(pickedUpAt + 'Z')) / 60000;
-            if (mins <= 720) {
-                setPrice((parseFloat(pricePerDay) / 2).toFixed(2));
-            } else {
-                setPrice((mins * (pricePerDay / 1440)).toFixed(2));
-            }
+            const hours = (Date.now() - new Date(pickedUpAt + 'Z')) / 3600000;
+            const p = hours * pricePerHour;
+            setPrice(p.toFixed(2));
         };
         update();
         const interval = setInterval(update, 1000);
         return () => clearInterval(interval);
-    }, [pickedUpAt, pricePerDay]);
-    return <span style={{ fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace' }}>{price} MAD</span>;
+    }, [pickedUpAt, pricePerHour]);
+    return (
+        <span style={{ fontWeight: 700, color: '#f59e0b', fontFamily: 'monospace', fontSize: '0.88rem' }}>
+            {price} MAD
+        </span>
+    );
 }
 
 const STATUS = {
     pending: { label: 'En attente', bg: '#fef9c3', color: '#854d0e' },
-    approved: { label: 'Approuvée', bg: '#dcfce7', color: '#166534' },
-    completed: { label: 'Terminée', bg: '#dbeafe', color: '#1e40af' },
+    approved: { label: 'Approuvée', bg: '#d1fae5', color: '#065f46' },
+    completed: { label: 'Terminée', bg: '#e0f2fe', color: '#0369a1' },
     rejected: { label: 'Rejetée', bg: '#fee2e2', color: '#991b1b' },
-    cancelled: { label: 'Annulée', bg: '#f1f5f9', color: '#64748b' },
+    cancelled: { label: 'Annulée', bg: '#f1f5f9', color: '#475569' },
 };
+
+const FILTERS = [
+    { key: 'all', label: 'Toutes', color: '#6366f1' },
+    { key: 'pending', label: 'En attente', color: '#f59e0b' },
+    { key: 'approved', label: 'Approuvées', color: '#10b981' },
+    { key: 'completed', label: 'Terminées', color: '#0ea5e9' },
+    { key: 'rejected', label: 'Rejetées / Annulées', color: '#dc2626' },
+];
 
 export default function AdminBookings() {
     const [bookings, setBookings] = useState([]);
@@ -41,9 +51,11 @@ export default function AdminBookings() {
     }, []);
 
     const filtered = bookings.filter(b => {
-        const matchStatus = filter === 'all' || b.status === filter;
-        const matchSearch = b.tool?.title?.toLowerCase().includes(search.toLowerCase())
-            || b.borrower?.name?.toLowerCase().includes(search.toLowerCase());
+        const matchStatus = filter === 'all'
+            || (filter === 'rejected' ? b.status === 'rejected' || b.status === 'cancelled' : b.status === filter);
+        const matchSearch =
+            b.tool?.title?.toLowerCase().includes(search.toLowerCase()) ||
+            b.borrower?.name?.toLowerCase().includes(search.toLowerCase());
         return matchStatus && matchSearch;
     });
 
@@ -55,96 +67,144 @@ export default function AdminBookings() {
         rejected: bookings.filter(b => b.status === 'rejected' || b.status === 'cancelled').length,
     };
 
-    if (loading) return <p style={{ color: '#94a3b8' }}>Chargement...</p>;
+    if (loading) return (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.75rem', color: '#6366f1' }}></i>
+        </div>
+    );
 
     return (
         <div>
-            <h2 style={{ color: '#1e293b', fontWeight: 800, marginBottom: '1.5rem' }}>
-                <i className="fas fa-calendar-alt me-2 text-primary"></i>Réservations
-            </h2>
+            {/* Header */}
+            <div style={{ marginBottom: '1.5rem' }}>
+                <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Réservations</h2>
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
+                    {bookings.length} réservation(s) au total
+                </p>
+            </div>
 
-            {/* Filtres */}
+            {/* Filter tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-                {[
-                    { key: 'all', label: 'Toutes' },
-                    { key: 'pending', label: 'En attente' },
-                    { key: 'approved', label: 'Approuvées' },
-                    { key: 'completed', label: 'Terminées' },
-                    { key: 'rejected', label: 'Rejetées/Annulées' },
-                ].map(f => (
+                {FILTERS.map(f => (
                     <button
                         key={f.key}
                         onClick={() => setFilter(f.key)}
                         style={{
-                            padding: '0.35rem 0.85rem', borderRadius: 20, border: 'none', cursor: 'pointer',
-                            fontWeight: 600, fontSize: '0.82rem',
-                            background: filter === f.key ? '#2563eb' : '#f1f5f9',
-                            color: filter === f.key ? '#fff' : '#64748b',
+                            padding: '0.4rem 0.9rem', borderRadius: 8, cursor: 'pointer',
+                            fontWeight: 600, fontSize: '0.8rem', transition: 'all 0.15s',
+                            border: `1px solid ${filter === f.key ? f.color : '#e2e8f0'}`,
+                            background: filter === f.key ? f.color + '15' : '#fff',
+                            color: filter === f.key ? f.color : '#64748b',
                         }}
                     >
-                        {f.label} <span style={{ opacity: 0.7 }}>({counts[f.key] ?? bookings.filter(b => b.status === f.key).length})</span>
+                        {f.label}
+                        <span style={{ marginLeft: '0.4rem', opacity: 0.7 }}>({counts[f.key]})</span>
                     </button>
                 ))}
             </div>
 
             {/* Search */}
-            <div style={{ marginBottom: '1rem', position: 'relative', maxWidth: 320 }}>
-                <i className="fas fa-search" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+            <div style={{ position: 'relative', maxWidth: 340, marginBottom: '1rem' }}>
+                <i className="fas fa-search" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.8rem' }}></i>
                 <input
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Rechercher outil ou emprunteur..."
-                    style={{ width: '100%', paddingLeft: 32, paddingRight: 12, paddingTop: 8, paddingBottom: 8, borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.88rem' }}
+                    style={{
+                        width: '100%', paddingLeft: 32, paddingRight: 12, paddingTop: '0.5rem', paddingBottom: '0.5rem',
+                        borderRadius: 8, border: '1px solid #e2e8f0', fontSize: '0.85rem', outline: 'none'
+                    }}
                 />
             </div>
 
             {/* Table */}
-            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <div style={{
+                background: '#fff', borderRadius: 14, border: '1px solid #f1f5f9',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden'
+            }}>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
-                            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                                {['ID', 'Outil', 'Emprunteur', 'Dates', 'Prix', 'Statut'].map(h => (
-                                    <th key={h} style={{ padding: '0.75rem 1rem', textAlign: 'left', fontSize: '0.78rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.5 }}>{h}</th>
+                            <tr style={{ background: '#f8fafc', borderBottom: '1px solid #f1f5f9' }}>
+                                {['#', 'Outil', 'Emprunteur', 'Dates', 'Prix', 'Statut'].map(h => (
+                                    <th key={h} style={{
+                                        padding: '0.75rem 1rem', textAlign: 'left',
+                                        fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8',
+                                        textTransform: 'uppercase', letterSpacing: 0.8
+                                    }}>
+                                        {h}
+                                    </th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
                             {filtered.length === 0 ? (
-                                <tr><td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>Aucune réservation trouvée</td></tr>
+                                <tr>
+                                    <td colSpan={6} style={{ textAlign: 'center', padding: '2.5rem', color: '#94a3b8', fontSize: '0.85rem' }}>
+                                        Aucune réservation trouvée
+                                    </td>
+                                </tr>
                             ) : filtered.map(b => {
                                 const s = STATUS[b.status] || STATUS.pending;
                                 return (
-                                    <tr key={b.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={td}><span style={{ fontWeight: 700, color: '#94a3b8' }}>#{b.id}</span></td>
-                                        <td style={td}><strong style={{ fontSize: '0.88rem' }}>{b.tool?.title}</strong></td>
-                                        <td style={td}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>
-                                                    {b.borrower?.name?.charAt(0).toUpperCase()}
-                                                </div>
-                                                <span style={{ fontSize: '0.88rem' }}>{b.borrower?.name}</span>
+                                    <tr key={b.id} style={{ borderBottom: '1px solid #f8fafc' }}>
+                                        <td style={TD}>
+                                            <span style={{ fontWeight: 700, color: '#94a3b8', fontSize: '0.8rem' }}>#{b.id}</span>
+                                        </td>
+                                        <td style={TD}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                                {b.tool?.image_url
+                                                    ? <img src={b.tool.image_url} alt={b.tool.title}
+                                                        style={{ width: 32, height: 32, borderRadius: 6, objectFit: 'cover', flexShrink: 0 }} />
+                                                    : <div style={{
+                                                        width: 32, height: 32, borderRadius: 6, background: '#f1f5f9',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                                                    }}>
+                                                        <i className="fas fa-wrench" style={{ color: '#94a3b8', fontSize: '0.75rem' }}></i>
+                                                    </div>
+                                                }
+                                                <span style={{ fontWeight: 600, fontSize: '0.85rem', color: '#0f172a' }}>{b.tool?.title}</span>
                                             </div>
                                         </td>
-                                        <td style={td}>
-                                            <span style={{ fontSize: '0.82rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                {b.start_date?.slice(0, 10)} <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> {b.end_date?.slice(0, 10)}
-                                            </span>
+                                        <td style={TD}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <div style={{
+                                                    width: 28, height: 28, borderRadius: '50%', background: '#e0f2fe',
+                                                    color: '#0369a1', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: '0.75rem', fontWeight: 700, flexShrink: 0
+                                                }}>
+                                                    {b.borrower?.name?.charAt(0).toUpperCase()}
+                                                </div>
+                                                <span style={{ fontSize: '0.85rem', color: '#374151' }}>{b.borrower?.name}</span>
+                                            </div>
                                         </td>
-                                        <td style={td}>
-                                            <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block', marginBottom: '0.2rem' }}>
-                                                {b.status === 'completed' ? <><i className="fas fa-check-circle me-1"></i>Final</> : b.picked_up_at && !b.returned_at ? <><i className="fas fa-clock-rotate-left me-1"></i>En cours</> : <><i className="fas fa-calculator me-1"></i>Estimé</>}
-                                            </span>
+                                        <td style={TD}>
+                                            <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
+                                                <p style={{ margin: 0 }}>{b.start_date?.slice(0, 10)}</p>
+                                                <p style={{ margin: 0, color: '#94a3b8' }}>→ {b.end_date?.slice(0, 10)}</p>
+                                            </div>
+                                        </td>
+                                        <td style={TD}>
+                                            <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '0 0 0.15rem' }}>
+                                                {b.status === 'completed' ? '✅ Final' : b.picked_up_at && !b.returned_at ? '⏱ En cours' : '💰 Estimé'}
+                                            </p>
                                             {b.picked_up_at && !b.returned_at ? (
-                                                <AdminLivePrice pickedUpAt={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
+                                                <LivePrice pickedUpAt={b.picked_up_at} pricePerHour={b.tool?.price || 0} />
                                             ) : b.status === 'completed' ? (
-                                                <span style={{ fontWeight: 700, color: '#16a34a' }}>{parseFloat(b.display_final_price || 0).toFixed(2)} MAD</span>
+                                                <span style={{ fontWeight: 700, color: '#10b981', fontSize: '0.88rem' }}>
+                                                    {parseFloat(b.display_final_price || 0).toFixed(2)} MAD
+                                                </span>
                                             ) : (
-                                                <span style={{ fontWeight: 700, color: '#2563eb' }}>{parseFloat(b.display_total_price || 0).toFixed(2)} MAD</span>
+                                                <span style={{ fontWeight: 700, color: '#6366f1', fontSize: '0.88rem' }}>
+                                                    {parseFloat(b.display_total_price || 0).toFixed(2)} MAD
+                                                </span>
                                             )}
                                         </td>
-                                        <td style={td}>
-                                            <span style={{ padding: '0.2rem 0.7rem', borderRadius: 20, fontSize: '0.75rem', fontWeight: 700, background: s.bg, color: s.color }}>
+                                        <td style={TD}>
+                                            <span style={{
+                                                padding: '0.2rem 0.65rem', borderRadius: 20,
+                                                fontSize: '0.72rem', fontWeight: 700, background: s.bg, color: s.color
+                                            }}>
                                                 {s.label}
                                             </span>
                                         </td>
@@ -159,4 +219,4 @@ export default function AdminBookings() {
     );
 }
 
-const td = { padding: '0.75rem 1rem', verticalAlign: 'middle' };
+const TD = { padding: '0.75rem 1rem', verticalAlign: 'middle' };

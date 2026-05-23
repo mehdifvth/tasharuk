@@ -40,28 +40,22 @@ function ElapsedTimer({ startTime }) {
   return <span style={{ fontWeight: 800, color: '#2563eb', fontFamily: 'monospace', fontSize: '1rem' }}><i className="fas fa-history me-1"></i> {elapsed}</span>;
 }
 
-function LivePrice({ startTime, pricePerDay }) {
+function LivePrice({ startTime, pricePerHour }) {
   const [price, setPrice] = useState('0.00');
   useEffect(() => {
     const update = () => {
-      const mins = (Date.now() - new Date(startTime + 'Z')) / 60000;
-      if (mins <= 720) {
-        // Moins de 12h -> 12h minimum
-        setPrice((parseFloat(pricePerDay) / 2).toFixed(2));
-      } else {
-        // Au-delà -> per minute
-        const p = mins * (pricePerDay / 1440);
-        setPrice(p.toFixed(2));
-      }
+      const hours = (Date.now() - new Date(startTime + 'Z')) / 3600000;
+      const p = hours * pricePerHour;
+      setPrice(p.toFixed(2));
     };
     update();
     const i = setInterval(update, 1000);
     return () => clearInterval(i);
-  }, [startTime, pricePerDay]);
+  }, [startTime, pricePerHour]);
   return (
     <div>
       <span style={{ fontWeight: 800, color: '#f59e0b', fontFamily: 'monospace', fontSize: '1.1rem' }}><i className="fas fa-coins me-1"></i> {price} MAD</span>
-      <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0 0' }}><i className="fas fa-info-circle me-1"></i> Minimum 12h facturées ({parseFloat(pricePerDay / 2).toFixed(2)} MAD)</p>
+      <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0 0' }}><i className="fas fa-info-circle me-1"></i> Facturation à l'heure ({parseFloat(pricePerHour).toFixed(2)} MAD/h)</p>
     </div>
   );
 }
@@ -323,7 +317,7 @@ export default function BookingsPage() {
                         <div style={{ background: isOverdue ? '#fef2f2' : '#fffbeb', borderRadius: 10, padding: '0.85rem', border: `1px solid ${isOverdue ? '#fca5a5' : '#fcd34d'}`, marginBottom: '0.5rem' }}>
                           {isOverdue && <p style={{ color: '#dc2626', fontWeight: 700, fontSize: '0.82rem', margin: '0 0 0.4rem' }}><i className="fas fa-exclamation-triangle me-1"></i> Prolongation — date de fin dépassée</p>}
                           <div style={{ marginBottom: '0.4rem' }}><ElapsedTimer startTime={b.picked_up_at} /></div>
-                          <LivePrice startTime={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
+                          <LivePrice startTime={b.picked_up_at} pricePerHour={b.tool?.price || 0} />
                           {!isOverdue && (
                             <p style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, margin: '0.4rem 0 0' }}>
                               <i className="fas fa-check-circle me-1"></i> Retournez avant le {new Date(b.end_date + 'Z').toLocaleDateString('fr-FR')}

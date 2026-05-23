@@ -78,22 +78,12 @@ class BookingController extends Controller
             ], 422);
         }
 
-        // Vérification durée minimale (12h)
         $start = \Carbon\Carbon::parse($validated['start_date']);
         $end   = \Carbon\Carbon::parse($validated['end_date']);
-        $minutes = $start->diffInMinutes($end);
 
-        if ($minutes < 12 * 60) {
-            return response()->json(['message' => "La durée minimale d'une réservation est de 12 heures"], 422);
-        }
-
-        // Calcul du prix estimé (minimum 12h, puis par minute)
-        if ($minutes <= 720) {
-            $totalPrice = round($tool->price / 2, 2);
-        } else {
-            $pricePerMinute = $tool->price / 1440;
-            $totalPrice = round($minutes * $pricePerMinute, 2);
-        }
+        // Calcul du prix estimé (basé sur l'heure direct)
+        $hours = $start->diffInMinutes($end) / 60;
+        $totalPrice = round($hours * $tool->price, 2);
 
         $booking = Booking::create([
             'tool_id'     => $validated['tool_id'],
@@ -260,13 +250,9 @@ class BookingController extends Controller
         if (now()->lt(\Carbon\Carbon::parse($booking->start_date))) {
             $updateData['start_date'] = now();
             
-            // Recalcul de la durée totale estimée (now -> end_date prévue)
-            $mins = now()->diffInMinutes(\Carbon\Carbon::parse($booking->end_date));
-            if ($mins <= 720) {
-                $updateData['total_price'] = round($booking->tool->price / 2, 2);
-            } else {
-                $updateData['total_price'] = round($mins * ($booking->tool->price / 1440), 2);
-            }
+            // Recalcul de la durée totale estimée (now -> end_date prévue) en mode horaire direct
+            $hours = now()->diffInMinutes(\Carbon\Carbon::parse($booking->end_date)) / 60;
+            $updateData['total_price'] = round($hours * $booking->tool->price, 2);
         }
 
         $booking->update($updateData);
@@ -307,16 +293,10 @@ class BookingController extends Controller
 
         $start    = \Carbon\Carbon::parse($booking->picked_up_at);
         $end      = now();
-        $minutes  = $start->diffInMinutes($end);
+        $hours    = $start->diffInMinutes($end) / 60;
 
-        if ($minutes <= 720) {
-            // Moins de 12h → 12h minimum (moitié prix jour)
-            $finalPrice = round($booking->tool->price / 2, 2);
-        } else {
-            // Au-delà → par minute
-            $pricePerMinute = $booking->tool->price / 1440;
-            $finalPrice = round($minutes * $pricePerMinute, 2);
-        }
+        // Calcul final à l'heure direct
+        $finalPrice = round($hours * $booking->tool->price, 2);
 
         $booking->update([
             'returned_at' => now(),

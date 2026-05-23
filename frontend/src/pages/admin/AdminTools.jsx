@@ -31,7 +31,15 @@ export default function AdminTools() {
             t.title?.toLowerCase().includes(search.toLowerCase()) ||
             t.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
             t.category?.name?.toLowerCase().includes(search.toLowerCase());
-        const matchFilter = filter === 'all' || t.condition === filter;
+        
+        let matchFilter = true;
+        if (filter === 'deleted') {
+            matchFilter = !!t.deleted_at;
+        } else if (filter === 'all') {
+            matchFilter = !t.deleted_at;
+        } else {
+            matchFilter = !t.deleted_at && t.condition === filter;
+        }
         return matchSearch && matchFilter;
     });
 
@@ -39,6 +47,7 @@ export default function AdminTools() {
         new: { label: 'Neuf', bg: '#d1fae5', color: '#065f46' },
         good: { label: 'Bon état', bg: '#fef9c3', color: '#854d0e' },
         fair: { label: 'Correct', bg: '#fee2e2', color: '#991b1b' },
+        deleted: { label: 'Supprimé', bg: '#334155', color: '#fff' },
     };
 
     if (loading) return (
@@ -53,7 +62,7 @@ export default function AdminTools() {
             <div style={{ marginBottom: '1.5rem' }}>
                 <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Outils</h2>
                 <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-                    {tools.length} outil(s) publié(s)
+                    {tools.filter(t => !t.deleted_at).length} actif(s) · {tools.filter(t => !!t.deleted_at).length} supprimé(s)
                 </p>
             </div>
 
@@ -74,7 +83,7 @@ export default function AdminTools() {
                 </div>
 
                 {/* Condition filter */}
-                {['all', 'new', 'good', 'fair'].map(f => (
+                {['all', 'new', 'good', 'fair', 'deleted'].map(f => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
@@ -86,7 +95,7 @@ export default function AdminTools() {
                             color: filter === f ? '#6366f1' : '#64748b',
                         }}
                     >
-                        {f === 'all' ? 'Tous' : COND[f]?.label}
+                        {f === 'all' ? 'Actifs' : f === 'deleted' ? 'Archive (Supprimés)' : COND[f]?.label}
                     </button>
                 ))}
             </div>
@@ -112,10 +121,11 @@ export default function AdminTools() {
                                 {/* Condition badge overlay */}
                                 <span style={{
                                     position: 'absolute', top: 8, left: 8,
-                                    background: COND[t.condition]?.bg, color: COND[t.condition]?.color,
+                                    background: t.deleted_at ? COND.deleted.bg : COND[t.condition]?.bg, 
+                                    color: t.deleted_at ? COND.deleted.color : COND[t.condition]?.color,
                                     padding: '0.15rem 0.55rem', borderRadius: 20, fontSize: '0.7rem', fontWeight: 700,
                                 }}>
-                                    {COND[t.condition]?.label}
+                                    {t.deleted_at ? COND.deleted.label : COND[t.condition]?.label}
                                 </span>
                             </div>
 
@@ -144,8 +154,13 @@ export default function AdminTools() {
                                     </p>
                                 </div>
 
-                                <button onClick={() => setConfirm(t.id)} style={S.deleteBtn}>
-                                    <i className="fas fa-trash me-1"></i> Supprimer
+                                <button 
+                                    onClick={() => setConfirm(t.id)} 
+                                    style={t.deleted_at ? S.archiveBtn : S.deleteBtn}
+                                    disabled={!!t.deleted_at}
+                                >
+                                    <i className={`fas ${t.deleted_at ? 'fa-archive' : 'fa-trash'} me-1`}></i> 
+                                    {t.deleted_at ? 'Archivé' : 'Supprimer'}
                                 </button>
                             </div>
                         </div>
@@ -187,6 +202,10 @@ const S = {
         width: '100%', background: '#fff', color: '#dc2626', border: '1px solid #fca5a5',
         borderRadius: 8, padding: '0.45rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.8rem',
         transition: 'all 0.15s'
+    },
+    archiveBtn: {
+        width: '100%', background: '#f1f5f9', color: '#64748b', border: '1px solid #e2e8f0',
+        borderRadius: 8, padding: '0.45rem', cursor: 'not-allowed', fontWeight: 600, fontSize: '0.8rem',
     },
     overlay: {
         position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex',
