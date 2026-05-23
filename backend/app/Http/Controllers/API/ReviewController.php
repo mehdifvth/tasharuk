@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Review;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -43,6 +44,16 @@ class ReviewController extends Controller
             'reviewer_id' => $userId,
             'rating'      => $validated['rating'],
             'comment'     => $validated['comment'] ?? null,
+        ]);
+
+        // Notifier le propriétaire
+        Notification::create([
+            'user_id'        => $booking->tool->user_id,
+            'type'           => 'new_review',
+            'title'          => 'Nouvel avis reçu',
+            'message'        => $request->user()->name . ' a laissé un avis de ' . $validated['rating'] . '/5 pour votre "' . $booking->tool->title . '".',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
         ]);
 
         return response()->json([

@@ -98,6 +98,13 @@ export default function BookingsPage() {
   const [activeBlock, setActiveBlock] = useState(location.state?.block || 'pending');
   const [reviewFor, setReviewFor] = useState(null);
   const [actionLoad, setActionLoad] = useState(null);
+
+  // Sync active block with navigation state (from notification clicks)
+  useEffect(() => {
+    if (location.state?.block) {
+      setActiveBlock(location.state.block);
+    }
+  }, [location.state]);
   const [codeLoad, setCodeLoad] = useState(null);
   const [codeError, setCodeError] = useState({});
   const [error, setError] = useState(null);
