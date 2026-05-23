@@ -97,21 +97,21 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
   padding: 0.75rem 1.5rem;
   font-size: 0.95rem;
   user-select: none;
-  touch-action: manipulation; /* Optimizes for touch */
+  touch-action: manipulation;
 }
 
 @media (max-width: 640px) {
   button {
-    padding: 0.85rem 1.5rem; /* Larger touch area for mobile */
+    padding: 0.85rem 1.5rem;
   }
 }
 
 button:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
 }
 
 button:disabled {
@@ -121,24 +121,63 @@ button:disabled {
 }
 
 .btn-primary {
-  background: var(--primary);
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
   color: #fff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+  transform: translateY(-1px);
 }
 
 .btn-outline {
   background: #fff;
-  color: var(--text);
+  color: #1e293b;
   border: 1.5px solid var(--border);
 }
 
 .btn-outline:hover:not(:disabled) {
-  border-color: var(--primary);
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #0f172a;
+  transform: translateY(-1px);
+}
+
+.btn-auth-login {
+  background: transparent;
+  color: #475569;
+  border-radius: 12px;
+  font-weight: 700;
+  padding: 0.65rem 1.25rem;
+  transition: all 0.2s;
+}
+
+.btn-auth-login:hover {
   color: var(--primary);
+  background: #eff6ff;
+}
+
+.btn-auth-register {
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%); /* Vibrant Indigo-Blue Gradient */
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.65rem 1.6rem;
+  font-weight: 800;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: -0.2px;
+}
+
+.btn-auth-register:hover {
+  background: linear-gradient(135deg, #4338ca 0%, #1d4ed8 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.35);
+}
+
+.btn-auth-register:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .card {

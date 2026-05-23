@@ -163,8 +163,8 @@ export default function UserLayout({ children }) {
                             </div>
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                                <Link to="/login" className="btn-outline" style={{ padding: '0.75rem' }}>Connexion</Link>
-                                <Link to="/register" className="btn-primary" style={{ padding: '0.75rem' }}>S'inscrire</Link>
+                                <Link to="/login" className="btn-auth-login" style={{ textAlign: 'center', border: '1.5px solid #e2e8f0' }}>Connexion</Link>
+                                <Link to="/register" className="btn-auth-register" style={{ textAlign: 'center' }}>S'inscrire</Link>
                             </div>
                         )}
                     </div>
