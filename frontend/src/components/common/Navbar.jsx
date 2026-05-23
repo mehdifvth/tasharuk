@@ -166,7 +166,6 @@ export default function Navbar() {
               <Link to="/profile" className={`mobile-link ${isActive('/profile') ? 'active' : ''}`}>
                 <i className="fas fa-user" style={{ width: 18, textAlign: 'center', color: '#2563eb' }}></i>{user?.name}
               </Link>
-              // Remplace le bouton déconnexion
               <button
                 onClick={handleLogout}
                 style={{
