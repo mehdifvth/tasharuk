@@ -180,8 +180,8 @@ export default function AdminBookings() {
                                         </td>
                                         <td style={TD}>
                                             <div style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                                                <p style={{ margin: 0 }}>{b.start_date?.slice(0, 10)}</p>
-                                                <p style={{ margin: 0, color: '#94a3b8' }}>→ {b.end_date?.slice(0, 10)}</p>
+                                                <p style={{ margin: 0 }}>{new Date(b.start_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}</p>
+                                                <p style={{ margin: 0, color: '#94a3b8' }}>→ {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}</p>
                                             </div>
                                         </td>
                                         <td style={TD}>

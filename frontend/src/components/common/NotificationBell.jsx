@@ -46,14 +46,15 @@ export default function NotificationBell() {
     };
 
     const ICONS = {
-    booking_received: { icon: 'fa-box', color: '#2563eb' },
-    booking_approved: { icon: 'fa-check-circle', color: '#16a34a' },
-    booking_rejected: { icon: 'fa-times-circle', color: '#dc2626' },
-    booking_cancelled: { icon: 'fa-ban', color: '#94a3b8' },
-    tool_picked_up: { icon: 'fa-key', color: '#f59e0b' },
-    tool_returned: { icon: 'fa-flag-checkered', color: '#059669' },
-    new_message: { icon: 'fa-comment-dots', color: '#7c3aed' },
-};
+        booking_received: { icon: 'fa-box', color: '#2563eb' },
+        booking_approved: { icon: 'fa-check-circle', color: '#16a34a' },
+        booking_rejected: { icon: 'fa-times-circle', color: '#dc2626' },
+        booking_cancelled: { icon: 'fa-ban', color: '#94a3b8' },
+        tool_picked_up: { icon: 'fa-key', color: '#f59e0b' },
+        tool_returned: { icon: 'fa-flag-checkered', color: '#059669' },
+        leave_review: { icon: 'fa-star', color: '#f59e0b' },
+        new_message: { icon: 'fa-comment-dots', color: '#7c3aed' },
+    };
 
     return (
         <div ref={ref} style={{ position: 'relative' }}>
@@ -88,7 +89,7 @@ export default function NotificationBell() {
 
                                     // Rôles requis par type
                                     const ownerTypes = ['booking_received', 'booking_cancelled', 'tool_picked_up', 'tool_returned'];
-                                    const borrowerTypes = ['booking_approved', 'booking_rejected'];
+                                    const borrowerTypes = ['booking_approved', 'booking_rejected', 'leave_review'];
 
                                     const needsOwner = ownerTypes.includes(n.type);
                                     const needsBorrower = borrowerTypes.includes(n.type);
@@ -113,6 +114,7 @@ export default function NotificationBell() {
                                         if (type === 'booking_cancelled') return 'rejected';
                                         if (type === 'tool_picked_up') return 'approved';
                                         if (type === 'tool_returned') return 'completed';
+                                        if (type === 'leave_review') return 'completed';
                                         return 'pending';
                                     };
 

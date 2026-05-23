@@ -260,7 +260,7 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->tool->user_id,
             'type'           => 'tool_picked_up',
-            'title'          => 'Outil en cours d\'utilisation 🔑',
+                        'title'          => 'Outil en cours d\'utilisation',
             'message'        => $booking->borrower->name . ' vient de récupérer votre "' . $booking->tool->title . '".',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
@@ -308,6 +308,16 @@ class BookingController extends Controller
             'type'           => 'tool_returned',
             'title'          => 'Outil retourné avec succès',
             'message'        => 'Votre "' . $booking->tool->title . '" a bien été restitué. Merci pour le partage !',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
+
+        // NOUVEAU : Notification pour l'emprunteur pour laisser un avis
+        Notification::create([
+            'user_id'        => $booking->borrower_id,
+            'type'           => 'leave_review',
+            'title'          => 'Votre avis compte !',
+            'message'        => 'Comment s\'est passée votre location de "' . $booking->tool->title . '" ? Laissez un avis !',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);

@@ -266,8 +266,10 @@ export default function BookingsPage() {
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px,1fr))', gap: '0.5rem', marginBottom: '0.75rem' }}>
                         <div style={{ background: '#f8fafc', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
                           <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, margin: '0 0 0.15rem', textTransform: 'uppercase' }}>Dates</p>
-                          <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                              {b.start_date?.slice(0, 10)} <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> {b.end_date?.slice(0, 10)}
+                          <p style={{ fontSize: '0.82rem', color: '#374151', fontWeight: 600, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                              {new Date(b.start_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')} 
+                              <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem', opacity: 0.5 }}></i> 
+                              {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
                           </p>
 
                         </div>
@@ -320,7 +322,7 @@ export default function BookingsPage() {
                           <LivePrice startTime={b.picked_up_at} pricePerHour={b.tool?.price || 0} />
                           {!isOverdue && (
                             <p style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600, margin: '0.4rem 0 0' }}>
-                              <i className="fas fa-check-circle me-1"></i> Retournez avant le {new Date(b.end_date + 'Z').toLocaleDateString('fr-FR')}
+                              <i className="fas fa-check-circle me-1"></i> Retournez avant le {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
                             </p>
                           )}
                         </div>
