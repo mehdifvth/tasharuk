@@ -5,8 +5,12 @@ function AdminLivePrice({ pickedUpAt, pricePerDay }) {
     const [price, setPrice] = useState('0.00');
     useEffect(() => {
         const update = () => {
-            const minutes = (Date.now() - new Date(pickedUpAt + 'Z')) / 60000;
-            setPrice((minutes * (pricePerDay / 24 / 60)).toFixed(2));
+            const mins = (Date.now() - new Date(pickedUpAt + 'Z')) / 60000;
+            if (mins <= 720) {
+                setPrice((parseFloat(pricePerDay) / 2).toFixed(2));
+            } else {
+                setPrice((mins * (pricePerDay / 1440)).toFixed(2));
+            }
         };
         update();
         const interval = setInterval(update, 1000);
@@ -134,9 +138,9 @@ export default function AdminBookings() {
                                             {b.picked_up_at && !b.returned_at ? (
                                                 <AdminLivePrice pickedUpAt={b.picked_up_at} pricePerDay={b.tool?.price || 0} />
                                             ) : b.status === 'completed' ? (
-                                                <span style={{ fontWeight: 700, color: '#16a34a' }}>{parseFloat(b.final_price || 0).toFixed(2)} MAD</span>
+                                                <span style={{ fontWeight: 700, color: '#16a34a' }}>{parseFloat(b.display_final_price || 0).toFixed(2)} MAD</span>
                                             ) : (
-                                                <span style={{ fontWeight: 700, color: '#2563eb' }}>{parseFloat(b.total_price || 0).toFixed(2)} MAD</span>
+                                                <span style={{ fontWeight: 700, color: '#2563eb' }}>{parseFloat(b.display_total_price || 0).toFixed(2)} MAD</span>
                                             )}
                                         </td>
                                         <td style={td}>

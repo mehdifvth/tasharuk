@@ -45,7 +45,14 @@ function LivePrice({ startTime, pricePerDay }) {
   useEffect(() => {
     const update = () => {
       const mins = (Date.now() - new Date(startTime + 'Z')) / 60000;
-      setPrice((mins * (pricePerDay / 24 / 60)).toFixed(2));
+      if (mins <= 720) {
+        // Moins de 12h -> 12h minimum
+        setPrice((parseFloat(pricePerDay) / 2).toFixed(2));
+      } else {
+        // Au-delà -> per minute
+        const p = mins * (pricePerDay / 1440);
+        setPrice(p.toFixed(2));
+      }
     };
     update();
     const i = setInterval(update, 1000);
@@ -54,7 +61,7 @@ function LivePrice({ startTime, pricePerDay }) {
   return (
     <div>
       <span style={{ fontWeight: 800, color: '#f59e0b', fontFamily: 'monospace', fontSize: '1.1rem' }}><i className="fas fa-coins me-1"></i> {price} MAD</span>
-      <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0 0' }}><i className="fas fa-info-circle me-1"></i> Minimum 1 jour facturé ({pricePerDay} MAD)</p>
+      <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0.2rem 0 0' }}><i className="fas fa-info-circle me-1"></i> Minimum 12h facturées ({parseFloat(pricePerDay / 2).toFixed(2)} MAD)</p>
     </div>
   );
 }
@@ -304,10 +311,10 @@ export default function BookingsPage() {
                       )}
 
                       {/* Prix estimé avant pickup */}
-                      {!b.picked_up_at && b.status === 'approved' && (
+                      {!b.picked_up_at && (b.status === 'approved' || b.status === 'pending') && (
                         <div style={{ background: '#f0f9ff', borderRadius: 8, padding: '0.6rem 0.75rem', marginBottom: '0.5rem' }}>
                           <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 0.15rem', textTransform: 'uppercase', fontWeight: 600 }}>Prix estimé</p>
-                          <span style={{ fontWeight: 800, color: '#2563eb', fontSize: '1.1rem' }}>{parseFloat(b.total_price || 0).toFixed(2)} MAD</span>
+                          <span style={{ fontWeight: 800, color: '#2563eb', fontSize: '1.1rem' }}>{parseFloat(b.display_total_price || 0).toFixed(2)} MAD</span>
                         </div>
                       )}
 
@@ -342,7 +349,7 @@ export default function BookingsPage() {
                             </div>
                             <div style={{ textAlign: 'right' }}>
                               <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 0.15rem', textTransform: 'uppercase', fontWeight: 600 }}>Prix final</p>
-                              <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#16a34a' }}>{parseFloat(b.final_price || 0).toFixed(2)} MAD</span>
+                              <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#16a34a' }}>{parseFloat(b.display_final_price || 0).toFixed(2)} MAD</span>
                             </div>
                           </div>
                         </div>

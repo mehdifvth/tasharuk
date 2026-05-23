@@ -37,10 +37,15 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
 
   const getTotalPrice = () => {
     if (!form.start_date || !form.end_date || !toolPrice) return null;
-    const diff = new Date(form.end_date) - new Date(form.start_date);
-    const totalHours = diff / 3600000;
-    if (totalHours < 12) return null;
-    return parseFloat(((totalHours / 24) * toolPrice).toFixed(2));
+    const diffMins = (new Date(form.end_date) - new Date(form.start_date)) / 60000;
+    if (diffMins < 12 * 60) return null;
+    
+    if (diffMins <= 1440) {
+      return parseFloat(toolPrice).toFixed(2);
+    } else {
+      const pricePerMin = toolPrice / 1440;
+      return (diffMins * pricePerMin).toFixed(2);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -48,7 +53,7 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
     setError(null);
     const diffHours = (new Date(form.end_date) - new Date(form.start_date)) / 3600000;
     if (diffHours <= 0) { setError('La date de fin doit être après la date de début.'); return; }
-    if (diffHours < 12) { setError('La durée minimale de réservation est 12 heures.'); return; }
+    if (diffHours < 12) { setError("La durée minimale d'une réservation est de 12 heures."); return; }
     setLoading(true);
     try {
       await api.post('/bookings', {
@@ -99,7 +104,7 @@ export default function BookingForm({ toolId, toolPrice, onSuccess }) {
             )}
           </div>
           <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: '0.35rem 0 0' }}>
-            <i className="fas fa-exclamation-triangle me-1" style={{ color: '#f59e0b' }}></i> Minimum 1 jour facturé même en cas de retour anticipé
+            <i className="fas fa-exclamation-triangle me-1" style={{ color: '#f59e0b' }}></i> Minimum 12h facturées par réservation même en cas de retour anticipé
           </p>
         </div>
       )}
