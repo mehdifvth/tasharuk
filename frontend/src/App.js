@@ -12,45 +12,68 @@ import ToolDetailPage from './pages/ToolDetailPage';
 import MyToolsPage from './pages/MyToolsPage';
 import BookingsPage from './pages/BookingsPage';
 import MessagesPage from './pages/MessagesPage';
-import AdminDashboard from './pages/AdminDashboard';
 import ProfilePage from './pages/ProfilePage';
 
-// Composant de protection de route — redirige vers /login si pas connecté
+// Admin
+import AdminLayout from './layouts/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminTools from './pages/admin/AdminTools';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminCategories from './pages/admin/AdminCategories';
+import AdminBookings from './pages/admin/AdminBookings';
+
 function PrivateRoute({ children }) {
   const { token } = useAuth();
   return token ? children : <Navigate to="/login" replace />;
 }
 
-// Protection Admin
 function AdminRoute({ children }) {
   const { user, token } = useAuth();
-  return (token && user?.is_admin) ? children : <Navigate to="/" replace />;
+  return (token && user?.is_admin)
+    ? children
+    : <Navigate to="/" replace />;
+}
+
+// Layout avec Navbar normale
+function UserLayout({ children }) {
+  return (
+    <>
+      <Navbar />
+      <main style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
+        {children}
+      </main>
+    </>
+  );
 }
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-      <main style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
-        <Routes>
-          {/* Routes publiques */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/tools" element={<ToolsPage />} />
-          <Route path="/tools/:id" element={<ToolDetailPage />} />
+      <Routes>
+        {/* Routes publiques avec Navbar normale */}
+        <Route path="/" element={<UserLayout><HomePage /></UserLayout>} />
+        <Route path="/login" element={<UserLayout><LoginPage /></UserLayout>} />
+        <Route path="/register" element={<UserLayout><RegisterPage /></UserLayout>} />
+        <Route path="/tools" element={<UserLayout><ToolsPage /></UserLayout>} />
+        <Route path="/tools/:id" element={<UserLayout><ToolDetailPage /></UserLayout>} />
 
-          {/* Routes protégées (token requis) */}
-          <Route path="/my-tools" element={<PrivateRoute><MyToolsPage /></PrivateRoute>} />
-          <Route path="/bookings" element={<PrivateRoute><BookingsPage /></PrivateRoute>} />
-          <Route path="/messages/:bookingId" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
-          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+        {/* Routes protégées avec Navbar normale */}
+        <Route path="/my-tools" element={<UserLayout><PrivateRoute><MyToolsPage /></PrivateRoute></UserLayout>} />
+        <Route path="/bookings" element={<UserLayout><PrivateRoute><BookingsPage /></PrivateRoute></UserLayout>} />
+        <Route path="/messages/:bookingId" element={<UserLayout><PrivateRoute><MessagesPage /></PrivateRoute></UserLayout>} />
+        <Route path="/profile" element={<UserLayout><PrivateRoute><ProfilePage /></PrivateRoute></UserLayout>} />
 
-          {/* Fallback */}
-          <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
-      </main>
+        {/* Routes Admin — layout séparé sans Navbar normale */}
+        <Route path="/admin" element={<AdminRoute><Navigate to="/admin/dashboard" replace /></AdminRoute>} />
+        <Route path="/admin/dashboard" element={<AdminRoute><AdminLayout><AdminDashboard /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/tools" element={<AdminRoute><AdminLayout><AdminTools /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/users" element={<AdminRoute><AdminLayout><AdminUsers /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/categories" element={<AdminRoute><AdminLayout><AdminCategories /></AdminLayout></AdminRoute>} />
+        <Route path="/admin/bookings" element={<AdminRoute><AdminLayout><AdminBookings /></AdminLayout></AdminRoute>} />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
     </BrowserRouter>
   );
 }
