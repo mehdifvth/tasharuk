@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/common/Logo';
 
 const NAV_ITEMS = [
     { path: '/admin/dashboard', icon: 'fa-chart-pie', label: 'Dashboard' },
@@ -88,17 +89,9 @@ export default function AdminLayout({ children }) {
                 <aside className={`adm-side ${open ? 'open' : ''}`}>
                     {/* Logo */}
                     <div style={{ padding: '1.25rem 1rem', borderBottom: '1px solid #f1f5f9' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <div style={{
-                                background: '#6366f1', borderRadius: 10, width: 36, height: 36,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                            }}>
-                                <i className="fas fa-wrench" style={{ color: '#fff', fontSize: '0.9rem' }}></i>
-                            </div>
-                            <div>
-                                <p style={{ fontWeight: 800, fontSize: '0.95rem', color: '#0f172a', margin: 0 }}>Tasharuk</p>
-                                <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: 0 }}>Admin Panel</p>
-                            </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                            <Logo size={34} />
+                            <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: 0, paddingLeft: '2.8rem', marginTop: '-0.4rem' }}>Admin Panel</p>
                         </div>
                     </div>
 
