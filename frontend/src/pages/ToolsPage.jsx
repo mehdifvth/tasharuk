@@ -47,14 +47,42 @@ export default function ToolsPage() {
   const handleNearMe = () => {
     if (nearMe) { setNearMe(false); return; }
     if (userCoords) { setNearMe(true); return; }
+
+    if (!navigator.geolocation) {
+      alert("Votre navigateur ne supporte pas la géolocalisation.");
+      return;
+    }
+
     setGpsLoading(true);
+    
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
       pos => {
         setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setNearMe(true);
         setGpsLoading(false);
       },
-      () => { alert('Impossible d\'obtenir votre position'); setGpsLoading(false); }
+      err => {
+        setGpsLoading(false);
+        console.error("GPS Error:", err);
+        let msg = "Impossible d'obtenir votre position.";
+        
+        if (err.code === 1) msg = "Accès à la position refusé. Veuillez autoriser la géolocalisation dans vos réglages.";
+        else if (err.code === 2) msg = "Position non disponible (vérifiez votre connexion GPS).";
+        else if (err.code === 3) msg = "Délai d'attente dépassé.";
+
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+          msg += "\n\nNote : La géolocalisation nécessite une connexion sécurisée (HTTPS).";
+        }
+        
+        alert(msg);
+      },
+      options
     );
   };
 
