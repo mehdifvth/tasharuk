@@ -15,6 +15,8 @@ import MessagesPage from './pages/MessagesPage';
 import ProfilePage from './pages/ProfilePage';
 import PublicProfilePage from './pages/PublicProfilePage';
 
+import UserLayout from './layouts/UserLayout';
+
 // Admin
 import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -37,15 +39,8 @@ function AdminRoute({ children }) {
 }
 
 // Layout avec Navbar normale
-function UserLayout({ children }) {
-  return (
-    <>
-      <Navbar />
-      <main style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
-        {children}
-      </main>
-    </>
-  );
+function UserLayoutWrapper({ children }) {
+  return <UserLayout>{children}</UserLayout>;
 }
 
 export default function App() {
@@ -53,8 +48,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Routes publiques avec Navbar normale */}
-        <Route path="/" element={<UserLayout><HomePage /></UserLayout>} />
-        <Route path="/login" element={<UserLayout><LoginPage /></UserLayout>} />
+        <Route path="/" element={<UserLayoutWrapper><HomePage /></UserLayoutWrapper>} />
+        <Route path="/login" element={<UserLayoutWrapper><LoginPage /></UserLayoutWrapper>} />
         <Route path="/register" element={<UserLayout><RegisterPage /></UserLayout>} />
         <Route path="/tools" element={<UserLayout><ToolsPage /></UserLayout>} />
         <Route path="/tools/:id" element={<UserLayout><ToolDetailPage /></UserLayout>} />
