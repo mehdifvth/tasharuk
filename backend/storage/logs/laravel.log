@@ -2850,3 +2850,12 @@ Did you mean one of these?
 #56 C:/Users/user/Documents/laravel/tasharuk-full/backend/artisan(21): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
 #57 {main}
 "} 
+[2026-05-23 20:43:53] local.ERROR: Command "tinker" is not defined. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\CommandNotFoundException(code: 0): Command \"tinker\" is not defined. at C:/Users/user/Documents/laravel/tasharuk-full/backend/vendor/symfony/console/Application.php:759)
+[stacktrace]
+#0 C:/Users/user/Documents/laravel/tasharuk-full/backend/vendor/symfony/console/Application.php(298): Symfony/Component/Console/Application->find('tinker')
+#1 C:/Users/user/Documents/laravel/tasharuk-full/backend/vendor/symfony/console/Application.php(195): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#2 C:/Users/user/Documents/laravel/tasharuk-full/backend/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#3 C:/Users/user/Documents/laravel/tasharuk-full/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#4 C:/Users/user/Documents/laravel/tasharuk-full/backend/artisan(21): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#5 {main}
+"} 

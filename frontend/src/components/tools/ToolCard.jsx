@@ -64,13 +64,20 @@ export default function ToolCard({ tool, onClick }) {
               )}
             </div>
           )}
+{/* Footer */}
+<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
+  <div>
+    <span style={{ fontWeight: 800, fontSize: '1rem', color: tool.price > 0 ? '#2563eb' : '#16a34a', display: 'block' }}>
+      {tool.price > 0 ? `${parseFloat(tool.price).toFixed(2)} MAD/h` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
+    </span>
+    {tool.city && (
+      <span style={{ fontSize: '0.7rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.1rem' }}>
+        <i className="fas fa-location-dot"></i> {tool.city}
+      </span>
+    )}
+  </div>
 
-          {/* Footer */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid #f1f5f9' }}>
-            <span style={{ fontWeight: 800, fontSize: '1rem', color: tool.price > 0 ? '#6366f1' : '#16a34a' }}>
-              {tool.price > 0 ? `${parseFloat(tool.price).toFixed(2)} MAD/h` : <><i className="fas fa-gift me-1"></i>Gratuit</>}
-            </span>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <span onClick={handleProfileClick} style={{ fontSize: '0.78rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#eef2ff', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', fontWeight: 700 }}>
                   {tool.user?.name?.charAt(0).toUpperCase()}

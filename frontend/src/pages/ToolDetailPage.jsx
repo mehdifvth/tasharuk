@@ -128,7 +128,15 @@ export default function ToolDetailPage() {
                 <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b' }}>
                   <i className="fas fa-folder" style={{ color: '#6366f1' }}></i> {tool.category?.name}
                 </span>
-                <span onClick={() => navigate(`/profile/${tool.user_id}`)} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b', cursor: 'pointer' }}>
+                {tool.city && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b' }}>
+                    <i className="fas fa-location-dot" style={{ color: '#6366f1' }}></i> {tool.city}
+                  </span>
+                )}
+                <span 
+                  onClick={() => navigate(`/profile/${tool.user_id}`)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', color: '#64748b', cursor: 'pointer' }}
+                >
                   <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#eef2ff', color: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}>
                     {tool.user?.name?.charAt(0).toUpperCase()}
                   </div>
