@@ -256,7 +256,27 @@ export default function BookingsPage() {
                         <h4 style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a', margin: 0 }}>{b.tool?.title || 'Outil supprimé'}</h4>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.2rem' }}>
                           <p style={{ margin: 0, fontSize: '0.82rem', color: '#64748b' }}>
-                            {isOwner ? <><i className="fas fa-user me-1"></i>Emprunteur : <strong>{b.borrower?.name}</strong></> : <><i className="fas fa-user-tie me-1"></i>Propriétaire : <strong>{b.tool?.user?.name}</strong></>}
+                            {isOwner ? (
+                              <>
+                                <i className="fas fa-user me-1"></i>Emprunteur : 
+                                <strong 
+                                  onClick={() => navigate(`/profile/${b.borrower_id}`, { state: { tab: 'reviews', reviewType: 'as_borrower' } })}
+                                  style={{ color: '#2563eb', cursor: 'pointer', marginLeft: '0.3rem', textDecoration: 'underline' }}
+                                >
+                                  {b.borrower?.name}
+                                </strong>
+                              </>
+                            ) : (
+                              <>
+                                <i className="fas fa-user-tie me-1"></i>Propriétaire : 
+                                <strong 
+                                  onClick={() => navigate(`/profile/${b.tool?.user_id}`, { state: { tab: 'reviews', reviewType: 'as_owner' } })}
+                                  style={{ color: '#2563eb', cursor: 'pointer', marginLeft: '0.3rem', textDecoration: 'underline' }}
+                                >
+                                  {b.tool?.user?.name}
+                                </strong>
+                              </>
+                            )}
                           </p>
                           {isOwner && b.borrower?.borrower_rating && (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', background: '#fef9c3', padding: '0.1rem 0.4rem', borderRadius: 6 }}>
