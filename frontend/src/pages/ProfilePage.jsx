@@ -15,7 +15,7 @@ export default function ProfilePage() {
         const res = await updateRole(newRole);
         setLoading(false);
         if (res.success) {
-            setMsg(<><i className="fas fa-check-circle me-1"></i>Rôle changé en {newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'}</>);
+            setMsg(`Rôle changé en ${newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'}`);
             setTimeout(() => setMsg(null), 3000);
         } else {
             setMsg(res.error);
@@ -36,10 +36,10 @@ export default function ProfilePage() {
     if (!user) return null;
 
     const roleConfig = user.is_admin
-        ? { label: 'Administrateur', icon: 'fa-shield-alt', color: '#92400e', bg: '#fef3c7' }
+        ? { label: 'Administrateur', color: '#92400e', bg: '#fef3c7' }
         : user.role === 'owner'
-            ? { label: 'Propriétaire', icon: 'fa-wrench', color: '#1d4ed8', bg: '#dbeafe' }
-            : { label: 'Emprunteur', icon: 'fa-user', color: '#16a34a', bg: '#dcfce7' };
+            ? { label: 'Propriétaire', color: '#1d4ed8', bg: '#dbeafe' }
+            : { label: 'Emprunteur', color: '#16a34a', bg: '#dcfce7' };
 
     return (
         <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 1rem' }}>
@@ -99,17 +99,11 @@ export default function ProfilePage() {
 
                 <div style={{ padding: '1.5rem' }}>
                     {/* Role badge */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: roleConfig.bg, borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem' }}>
-                                <i className={`fas ${roleConfig.icon}`} style={{ color: roleConfig.color }}></i>
-                            </div>
-                            <div>
-                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Rôle actuel</p>
-                                <p style={{ fontWeight: 700, color: roleConfig.color, margin: 0 }}>{roleConfig.label}</p>
-                            </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: roleConfig.bg, borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+                        <div style={{ textAlign: 'center' }}>
+                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Rôle actuel</p>
+                            <p style={{ fontWeight: 800, color: roleConfig.color, margin: 0, fontSize: '1.1rem' }}>{roleConfig.label}</p>
                         </div>
-                        <i className={`fas ${roleConfig.icon}`} style={{ color: roleConfig.color, fontSize: '1.1rem', opacity: 0.5 }}></i>
                     </div>
 
                     {/* Info */}
@@ -134,20 +128,20 @@ export default function ProfilePage() {
                     {user.is_admin ? (
                         <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                             <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '0.75rem' }}>
-                                <i className="fas fa-shield-alt me-1"></i> Accès complet à la plateforme
+                                Accès complet à la plateforme
                             </p>
                             <button className="switch-btn" onClick={() => navigate('/admin')}>
-                                <i className="fas fa-cog me-2"></i>Tableau de bord Admin
+                                Tableau de bord Admin
                             </button>
                         </div>
                     ) : (
                         <div style={{ background: '#f8fafc', borderRadius: 12, padding: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>
                             <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '0.85rem' }}>
-                                {user.role === 'owner' ? <><i className="fas fa-user me-2"></i>Vous voulez louer des outils ?</> : <><i className="fas fa-tools me-2"></i>Vous voulez proposer des outils ?</>}
+                                {user.role === 'owner' ? "Vous voulez louer des outils ?" : "Vous voulez proposer des outils ?"}
                             </p>
                             <button className="switch-btn" onClick={handleSwitch} disabled={loading}>
                                 {loading
-                                    ? <><i className="fas fa-spinner fa-spin me-2"></i>Changement...</>
+                                    ? "Changement..."
                                     : `Passer en ${user.role === 'owner' ? 'Emprunteur' : 'Propriétaire'}`
                                 }
                             </button>

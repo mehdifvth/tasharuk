@@ -99,7 +99,7 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $tool->user_id,
             'type'           => 'booking_received',
-            'title'          => 'Nouvelle demande reçue 📥',
+            'title'          => 'Nouvelle demande reçue',
             'message'        => $request->user()->name . ' souhaite réserver votre "' . $tool->title . '".',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
@@ -139,7 +139,7 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->borrower_id,
             'type'           => 'booking_approved',
-            'title'          => 'Réservation confirmée ✅',
+            'title'          => 'Réservation confirmée',
             'message'        => 'Bonne nouvelle ! Votre réservation pour "' . $booking->tool->title . '" a été approuvée.',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
@@ -206,7 +206,7 @@ class BookingController extends Controller
         Notification::create([
             'user_id'        => $booking->tool->user_id,
             'type'           => 'booking_cancelled',
-            'title'          => 'Réservation annulée ⚠️',
+            'title'          => 'Réservation annulée',
             'message'        => $booking->borrower->name . ' a annulé sa demande pour "' . $booking->tool->title . '".',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
@@ -314,12 +314,22 @@ class BookingController extends Controller
             'reference_type' => 'booking',
         ]);
 
-        // NOUVEAU : Notification pour l'emprunteur pour laisser un avis
+        // Notification pour l'emprunteur pour laisser un avis sur le proprio/outil
         Notification::create([
             'user_id'        => $booking->borrower_id,
             'type'           => 'leave_review',
             'title'          => 'Votre avis compte !',
             'message'        => 'Comment s\'est passée votre location de "' . $booking->tool->title . '" ? Laissez un avis !',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ]);
+
+        // NOUVEAU : Notification pour le propriétaire pour noter l'emprunteur
+        Notification::create([
+            'user_id'        => $booking->tool->user_id,
+            'type'           => 'leave_review',
+            'title'          => 'Évaluez votre emprunteur',
+            'message'        => $booking->borrower->name . ' a rendu votre outil. Comment s\'est passée la remise ? Laissez une note !',
             'reference_id'   => $booking->id,
             'reference_type' => 'booking',
         ]);
