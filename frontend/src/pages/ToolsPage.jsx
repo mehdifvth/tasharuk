@@ -9,6 +9,7 @@ export default function ToolsPage() {
   const navigate = useNavigate();
 
   const [tools, setTools] = useState([]);
+  const [totalTools, setTotalTools] = useState(0);
   const [categories, setCategories] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState('');
@@ -36,8 +37,12 @@ export default function ToolsPage() {
       params.lng = userCoords.lng;
     }
     api.get('/tools', { params })
-      .then(r => { setTools(r.data.data || []); setLastPage(r.data.last_page || 1); })
-      .catch(() => setTools([]))
+      .then(r => { 
+        setTools(r.data.data || []); 
+        setTotalTools(r.data.total || 0);
+        setLastPage(r.data.last_page || 1); 
+      })
+      .catch(() => { setTools([]); setTotalTools(0); })
       .finally(() => setLoading(false));
   }, [keyword, category, city, page, nearMe, userCoords]);
 
@@ -140,8 +145,8 @@ export default function ToolsPage() {
           <div>
             <h1 style={{ margin: 0 }}>Explorer les outils</h1>
             <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '0.5rem' }}>
-              {loading ? 'Recherche en cours...' : `${tools.length} outil(s) trouvé(s)`}
-              {nearMe && <span style={{ color: '#2563eb', fontWeight: 700, marginLeft: '0.5rem' }}>• <i className="fas fa-location-arrow me-1"></i>Rayon 30km</span>}
+              {loading ? 'Recherche en cours...' : `${totalTools} outil(s) trouvé(s)`}
+              {nearMe && <span style={{ color: '#2563eb', fontWeight: 700, marginLeft: '0.5rem' }}>• <i className="fas fa-location-arrow me-1"></i>Rayon 50km</span>}
             </p>
           </div>
           {user?.role === 'owner' && (
@@ -219,7 +224,7 @@ export default function ToolsPage() {
                   className={nearMe ? "btn-primary" : "btn-outline"}
                   style={{ width: '100%', padding: '1rem', justifyContent: 'center' }}
                 >
-                  <i className="fas fa-location-arrow"></i> {nearMe ? 'Rayon 30km actif ✓' : 'Chercher à moins de 30km'}
+                  <i className="fas fa-location-arrow"></i> {nearMe ? 'Rayon 50km actif ✓' : 'Chercher à moins de 50km'}
                 </button>
               </div>
             </div>

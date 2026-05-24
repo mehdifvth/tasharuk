@@ -15,8 +15,10 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
+  const activeTools = data.tools.filter(t => !t.deleted_at);
+
   const stats = [
-    { label: 'Outils', value: data.tools.filter(t => !t.deleted_at).length, icon: 'fa-tools', color: '#2563eb', bg: '#dbeafe', path: '/admin/tools' },
+    { label: 'Outils', value: activeTools.length, icon: 'fa-tools', color: '#2563eb', bg: '#dbeafe', path: '/admin/tools' },
     { label: 'Utilisateurs', value: data.users.length, icon: 'fa-users', color: '#16a34a', bg: '#dcfce7', path: '/admin/users' },
     { label: 'Réservations', value: data.bookings.length, icon: 'fa-calendar-alt', color: '#10b981', bg: '#d1fae5', path: '/admin/bookings' },
     { label: 'Avis', value: data.reviews.length, icon: 'fa-star', color: '#7c3aed', bg: '#f5f3ff', path: '/admin/reviews' },
@@ -179,14 +181,14 @@ export default function AdminDashboard() {
         <div style={S.cardHeader}>
           <div>
             <h3 style={S.cardTitle}>Outils récents</h3>
-            <p style={S.cardSub}>{data.tools.length} publiés</p>
+            <p style={S.cardSub}>{activeTools.length} actifs ({data.tools.length} au total)</p>
           </div>
           <button onClick={() => navigate('/admin/tools')} style={S.linkBtn}>
             Tout voir →
           </button>
         </div>
         <div style={S.toolsGrid}>
-          {data.tools.slice(0, 6).map(t => (
+          {activeTools.slice(0, 6).map(t => (
             <div key={t.id} style={S.toolCard}>
               {t.image_url
                 ? <img src={t.image_url} alt={t.title} style={S.toolImg} />
