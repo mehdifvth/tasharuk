@@ -123,6 +123,11 @@ export default function NotificationBell() {
                                     // Redirection
                                     if (n.type === 'new_message' && n.reference_id) {
                                         navigate(`/messages/${n.reference_id}`);
+                                    } else if (n.type === 'new_review') {
+                                        // Rediriger vers son propre profil public, onglet avis
+                                        // On détermine si on regarde les avis "en tant que proprio" ou "emprunteur"
+                                        const rType = user?.role === 'owner' ? 'as_owner' : 'as_borrower';
+                                        navigate(`/profile/${user.id}`, { state: { tab: 'reviews', reviewType: rType } });
                                     } else {
                                         navigate('/bookings', { state: { block: getBlock(n.type) } });
                                     }

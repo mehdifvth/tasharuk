@@ -6,18 +6,16 @@ import ToolCard from '../components/tools/ToolCard';
 export default function PublicProfilePage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('tools'); // 'tools' or 'reviews'
-    const [reviewType, setReviewType] = useState('as_owner'); // 'as_owner' or 'as_borrower'
+    const [activeTab, setActiveTab] = useState(location.state?.tab || 'tools'); // 'tools' or 'reviews'
+    const [reviewType, setReviewType] = useState(location.state?.reviewType || 'as_owner'); // 'as_owner' or 'as_borrower'
 
     useEffect(() => {
-        setLoading(true);
-        api.get(`/users/${id}/profile`)
-            .then(res => setData(res.data))
-            .catch(() => navigate('/'))
-            .finally(() => setLoading(false));
-    }, [id, navigate]);
+        if (location.state?.tab) setActiveTab(location.state.tab);
+        if (location.state?.reviewType) setReviewType(location.state.reviewType);
+    }, [location.state]);
 
     if (loading) return (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '5rem' }}>
