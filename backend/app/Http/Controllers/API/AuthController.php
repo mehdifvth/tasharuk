@@ -165,6 +165,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Les administrateurs ne peuvent pas être supprimés via cette route'], 403);
         }
 
+        // Renommer l'email pour libérer l'adresse d'origine pour une future inscription
+        // tout en gardant la trace pour l'admin dashboard.
+        $oldEmail = $user->email;
+        $user->email = 'deleted_' . time() . '_' . $oldEmail;
+        $user->save();
+
         // Supprimer ses tokens avant la suppression du compte
         $user->tokens()->delete();
         $user->delete();

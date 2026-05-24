@@ -42,6 +42,11 @@ class AdminController extends Controller
             return response()->json(['message' => 'Cannot delete yourself'], 400);
         }
 
+        // Renommer l'email pour libérer l'adresse d'origine
+        $oldEmail = $user->email;
+        $user->email = 'deleted_' . time() . '_' . $oldEmail;
+        $user->save();
+
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
