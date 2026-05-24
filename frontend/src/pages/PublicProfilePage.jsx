@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import ToolCard from '../components/tools/ToolCard';
 
@@ -9,9 +9,19 @@ export default function PublicProfilePage() {
     const location = useLocation();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState(location.state?.tab || 'tools'); // 'tools' or 'reviews'
-    const [reviewType, setReviewType] = useState(location.state?.reviewType || 'as_owner'); // 'as_owner' or 'as_borrower'
+    const [activeTab, setActiveTab] = useState('tools'); // 'tools' or 'reviews'
+    const [reviewType, setReviewType] = useState('as_owner'); // 'as_owner' or 'as_borrower'
 
+    // Fetch data
+    useEffect(() => {
+        setLoading(true);
+        api.get(`/users/${id}/profile`)
+            .then(res => setData(res.data))
+            .catch(() => navigate('/'))
+            .finally(() => setLoading(false));
+    }, [id, navigate]);
+
+    // Handle initial state from navigation (e.g. notifications)
     useEffect(() => {
         if (location.state?.tab) setActiveTab(location.state.tab);
         if (location.state?.reviewType) setReviewType(location.state.reviewType);
