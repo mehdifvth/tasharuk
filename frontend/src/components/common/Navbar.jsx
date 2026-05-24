@@ -119,6 +119,13 @@ export default function Navbar() {
                   <Link to="/my-tools" className={`nav-link ${isActive('/my-tools') ? 'active' : ''}`}>Mes Outils</Link>
                 )}
                 <Link to="/bookings" className={`nav-link ${isActive('/bookings') ? 'active' : ''}`}>Réservations</Link>
+                <Link 
+                  to={`/profile/${user?.id}`} 
+                  state={{ tab: 'reviews', reviewType: user?.role === 'owner' ? 'as_owner' : 'as_borrower' }}
+                  className={`nav-link ${location.pathname === `/profile/${user?.id}` && location.state?.tab === 'reviews' ? 'active' : ''}`}
+                >
+                  Mes Avis
+                </Link>
                 <div style={{ margin: '0 0.4rem' }}><NotificationBell /></div>
                 <Link to="/profile" style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.4rem 0.85rem', borderRadius: 14, background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)', border: '1.5px solid #e2e8f0', marginLeft: '0.5rem', transition: 'all 0.2s' }}>
                   <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #2563eb, #6366f1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', fontWeight: 800 }}>
@@ -185,6 +192,13 @@ export default function Navbar() {
               )}
               <Link to="/bookings" className={`mobile-link ${isActive('/bookings') ? 'active' : ''}`}>
                 <i className="fas fa-calendar-check" style={{ width: 24, color: '#2563eb' }}></i>Réservations
+              </Link>
+              <Link 
+                to={`/profile/${user?.id}`} 
+                state={{ tab: 'reviews', reviewType: user?.role === 'owner' ? 'as_owner' : 'as_borrower' }}
+                className={`mobile-link ${location.pathname === `/profile/${user?.id}` && location.state?.tab === 'reviews' ? 'active' : ''}`}
+              >
+                <i className="fas fa-star" style={{ width: 24, color: '#2563eb' }}></i>Mes Avis
               </Link>
               <Link to="/profile" className={`mobile-link ${isActive('/profile') ? 'active' : ''}`}>
                 <i className="fas fa-circle-user" style={{ width: 24, color: '#2563eb' }}></i>Mon Profil
