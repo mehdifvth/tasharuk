@@ -18,6 +18,8 @@ use App\Http\Controllers\API\NotificationController;
 */
 
 
+Route::get('/ping', fn() => response()->json(['status' => 'ok']));
+
 // ─── Auth (Public) ────────────────────────────────────────────────────────────
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
