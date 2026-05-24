@@ -17,6 +17,12 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Empêcher le seeding si des utilisateurs existent déjà (sauf admin par défaut)
+        if (User::where('email', '!=', 'admin@tasharuk.com')->count() > 0) {
+            $this->command->info('Base de données déjà peuplée. Seeding annulé.');
+            return;
+        }
+
         // Désactiver les contraintes de clés étrangères pour le nettoyage
         Schema::disableForeignKeyConstraints();
         DB::table('reviews')->truncate();
