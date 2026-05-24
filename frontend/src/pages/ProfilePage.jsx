@@ -1,198 +1,156 @@
+// src/pages/ProfilePage.jsx
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function ProfilePage() {
-    const { user, updateRole, logout, deleteAccount } = useAuth();
-    const navigate = useNavigate();
-    const [msg, setMsg] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const { user, updateRole, logout } = useAuth();
+  const navigate = useNavigate();
+  const [msg,     setMsg]     = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [confirm, setConfirm] = useState(false);
 
-    const handleSwitch = async () => {
-        const newRole = user.role === 'owner' ? 'borrower' : 'owner';
-        setLoading(true);
-        const res = await updateRole(newRole);
-        setLoading(false);
-        if (res.success) {
-            setMsg(`Rôle changé en ${newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'}`);
-            setTimeout(() => setMsg(null), 3000);
-        } else {
-            setMsg(res.error);
-        }
-    };
+  const handleSwitch = async () => {
+    const newRole = user.role === 'owner' ? 'borrower' : 'owner';
+    setLoading(true);
+    const res = await updateRole(newRole);
+    setLoading(false);
+    if (res.success) {
+      setMsg(`Rôle changé en ${newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'} `);
+      setTimeout(() => setMsg(null), 3000);
+    } else setMsg(res.error);
+  };
 
-    const handleDelete = async () => {
-        setLoading(true);
-        const res = await deleteAccount();
-        setLoading(false);
-        if (res.success) {
-            navigate('/login');
-        } else {
-            setMsg(res.error);
-        }
-    };
+  if (!user) return null;
 
-    if (!user) return null;
+  const ROLE = user.is_admin
+    ? { label: 'Administrateur', icon: 'fa-shield-alt', color: '#6366f1', bg: '#eef2ff' }
+    : user.role === 'owner'
+    ? { label: 'Propriétaire',   icon: 'fa-tools',      color: '#2563eb', bg: '#dbeafe' }
+    : { label: 'Emprunteur',     icon: 'fa-user',       color: '#059669', bg: '#d1fae5' };
 
-    const roleConfig = user.is_admin
-        ? { label: 'Administrateur', color: '#92400e', bg: '#fef3c7' }
-        : user.role === 'owner'
-            ? { label: 'Propriétaire', color: '#1d4ed8', bg: '#dbeafe' }
-            : { label: 'Emprunteur', color: '#16a34a', bg: '#dcfce7' };
-
-    return (
-        <div style={{ background: '#f8fafc', minHeight: '100vh', padding: '2rem 1rem' }}>
-            <style>{`
-        .profile-card {
-          background: #fff;
-          border-radius: 20px;
-          border: 1px solid #f1f5f9;
-          box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-          overflow: hidden;
-          max-width: 480px;
-          margin: 0 auto;
-        }
-        .switch-btn {
-          width: 100%;
-          padding: 0.75rem;
-          border-radius: 10px;
-          border: none;
-          background: #2563eb;
-          color: #fff;
-          font-weight: 700;
-          font-size: 0.95rem;
-          cursor: pointer;
-          transition: background 0.15s, transform 0.1s;
-        }
-        .switch-btn:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-1px); }
-        .switch-btn:disabled { opacity: 0.6; cursor: not-allowed; }
-        .delete-btn {
-          width: 100%;
-          padding: 0.7rem;
-          margin-top: 0.75rem;
-          border-radius: 10px;
-          border: none;
-          background: #fff;
-          color: #94a3b8;
-          font-weight: 600;
-          cursor: pointer;
-          font-size: 0.82rem;
-          transition: all 0.2s;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 0.4rem;
-        }
-        .delete-btn:hover { color: #dc2626; background: #fef2f2; }
+  return (
+    <div style={{ maxWidth: 520, margin: '0 auto' }}>
+      <style>{`
+        .prof-btn { width: 100%; padding: 0.75rem; border-radius: 12px; border: none; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.15s; }
+        .prof-btn:hover:not(:disabled) { transform: translateY(-1px); }
+        .prof-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .info-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem; background: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9; }
       `}</style>
 
-            <div className="profile-card">
-                {/* Header */}
-                <div style={{ background: 'linear-gradient(135deg, #bad7df 0%, #1f7bde 100%)', padding: '2rem', textAlign: 'center' }}>
-                    <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '3px solid rgba(255,255,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.75rem', fontWeight: 800, color: '#fff' }}>
-                        {user.name?.charAt(0).toUpperCase()}
-                    </div>
-                    <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '1.25rem', margin: '0 0 0.25rem' }}>{user.name}</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.88rem', margin: 0 }}>{user.email}</p>
-                </div>
-
-                <div style={{ padding: '1.5rem' }}>
-                    {/* Role badge */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: roleConfig.bg, borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>Rôle actuel</p>
-                            <p style={{ fontWeight: 800, color: roleConfig.color, margin: 0, fontSize: '1.1rem' }}>{roleConfig.label}</p>
-                        </div>
-                    </div>
-
-                    {/* Info */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                        {[
-                            { icon: 'fa-user', label: 'Nom', value: user.name },
-                            { icon: 'fa-envelope', label: 'Email', value: user.email },
-                        ].map(item => (
-                            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem', background: '#f8fafc', borderRadius: 10 }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 8, background: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <i className={`fas ${item.icon}`} style={{ color: '#2563eb', fontSize: '0.85rem' }}></i>
-                                </div>
-                                <div>
-                                    <p style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: 0.4 }}>{item.label}</p>
-                                    <p style={{ fontWeight: 600, color: '#374151', margin: 0, fontSize: '0.92rem' }}>{item.value}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    {/* Actions */}
-                    {user.is_admin ? (
-                        <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                            <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '0.75rem' }}>
-                                Accès complet à la plateforme
-                            </p>
-                            <button className="switch-btn" onClick={() => navigate('/admin')}>
-                                Tableau de bord Admin
-                            </button>
-                        </div>
-                    ) : (
-                        <div style={{ background: '#f8fafc', borderRadius: 12, padding: '1.25rem', marginBottom: '1rem', textAlign: 'center' }}>
-                            <p style={{ color: '#64748b', fontSize: '0.88rem', marginBottom: '0.85rem' }}>
-                                {user.role === 'owner' ? "Vous voulez louer des outils ?" : "Vous voulez proposer des outils ?"}
-                            </p>
-                            <button className="switch-btn" onClick={handleSwitch} disabled={loading}>
-                                {loading
-                                    ? "Changement..."
-                                    : `Passer en ${user.role === 'owner' ? 'Emprunteur' : 'Propriétaire'}`
-                                }
-                            </button>
-                        </div>
-                    )}
-
-                    {msg && (
-                        <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '0.75rem', textAlign: 'center', marginBottom: '1rem' }}>
-                            <p style={{ color: '#16a34a', fontWeight: 600, fontSize: '0.88rem', margin: 0 }}>{msg}</p>
-                        </div>
-                    )}
-
-                    <button
-                        onClick={logout}
-                        style={{ width: '100%', padding: '0.7rem', borderRadius: 10, border: '1.5px solid #fca5a5', background: '#fff', color: '#dc2626', fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'background 0.15s' }}
-                    >
-                        <i className="fas fa-sign-out-alt"></i> Se déconnecter
-                    </button>
-
-                    {!user.is_admin && (
-                        <>
-                            {showDeleteConfirm ? (
-                                <div style={{ marginTop: '1rem', padding: '1rem', background: '#fef2f2', borderRadius: 12, border: '1px solid #fee2e2' }}>
-                                    <p style={{ color: '#991b1b', fontSize: '0.82rem', fontWeight: 700, textAlign: 'center', marginBottom: '0.75rem' }}>
-                                        Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.
-                                    </p>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                        <button 
-                                            onClick={handleDelete}
-                                            disabled={loading}
-                                            style={{ flex: 1, padding: '0.5rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-                                        >
-                                            {loading ? '...' : 'Confirmer'}
-                                        </button>
-                                        <button 
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                            style={{ flex: 1, padding: '0.5rem', background: '#fff', color: '#374151', border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-                                        >
-                                            Annuler
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <button className="delete-btn" onClick={() => setShowDeleteConfirm(true)}>
-                                    <i className="fas fa-trash-alt"></i> Supprimer mon compte
-                                </button>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
+      {/* Header card */}
+      <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', overflow: 'hidden', marginBottom: '1rem' }}>
+        {/* Gradient banner */}
+        <div style={{ background: 'linear-gradient(135deg, #2563eb 0%, #6366f1 100%)', padding: '2rem 1.5rem', textAlign: 'center', position: 'relative' }}>
+          <div style={{ width: 76, height: 76, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: '3px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '2rem', fontWeight: 800, color: '#fff' }}>
+            {user.name?.charAt(0).toUpperCase()}
+          </div>
+          <h2 style={{ color: '#fff', fontWeight: 800, fontSize: '1.25rem', margin: '0 0 0.25rem' }}>{user.name}</h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: '0 0 1rem' }}>{user.email}</p>
+          <span style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.3rem 0.9rem', borderRadius: 20, fontSize: '0.78rem', fontWeight: 700 }}>
+            <i className={`fas ${ROLE.icon} me-1`}></i>{ROLE.label}
+          </span>
         </div>
-    );
+
+        {/* Info rows */}
+        <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          {[
+            { icon: 'fa-user',     label: 'Nom',   value: user.name  },
+            { icon: 'fa-envelope', label: 'Email', value: user.email },
+          ].map(item => (
+            <div key={item.label} className="info-row">
+              <div style={{ width: 34, height: 34, borderRadius: 9, background: ROLE.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <i className={`fas ${item.icon}`} style={{ color: ROLE.color, fontSize: '0.82rem' }}></i>
+              </div>
+              <div>
+                <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: 0.5 }}>{item.label}</p>
+                <p style={{ fontWeight: 600, color: '#0f172a', margin: 0, fontSize: '0.9rem' }}>{item.value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Role switch / Admin */}
+      <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', padding: '1.25rem', marginBottom: '1rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+        {user.is_admin ? (
+          <>
+            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '0 0 0.75rem', textAlign: 'center' }}>
+              <i className="fas fa-shield-alt me-1" style={{ color: '#6366f1' }}></i>
+              Accès complet à la plateforme
+            </p>
+            <button className="prof-btn" onClick={() => navigate('/admin/dashboard')} style={{ background: '#6366f1', color: '#fff', boxShadow: '0 4px 12px rgba(99,102,241,0.25)' }}>
+              <i className="fas fa-cog"></i> Tableau de bord Admin
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', padding: '0.85rem', background: ROLE.bg, borderRadius: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <i className={`fas ${ROLE.icon}`} style={{ color: ROLE.color, fontSize: '1rem' }}></i>
+              </div>
+              <div>
+                <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, margin: 0, textTransform: 'uppercase' }}>Rôle actuel</p>
+                <p style={{ fontWeight: 800, color: ROLE.color, margin: 0 }}>{ROLE.label}</p>
+              </div>
+            </div>
+            <p style={{ color: '#64748b', fontSize: '0.85rem', margin: '0 0 0.75rem', textAlign: 'center' }}>
+              {user.role === 'owner' ? 'Vous voulez louer des outils ?' : 'Vous voulez proposer des outils ?'}
+            </p>
+            <button className="prof-btn" onClick={handleSwitch} disabled={loading} style={{ background: '#2563eb', color: '#fff', boxShadow: '0 4px 12px rgba(37,99,235,0.2)' }}>
+              {loading
+                ? <><i className="fas fa-spinner fa-spin"></i> Changement...</>
+                : `Passer en ${user.role === 'owner' ? 'Emprunteur' : 'Propriétaire'}`
+              }
+            </button>
+          </>
+        )}
+
+        {msg && (
+          <div style={{ marginTop: '0.75rem', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '0.65rem', textAlign: 'center' }}>
+            <p style={{ color: '#16a34a', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>{msg}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Logout */}
+      <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', padding: '1.25rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+        <button
+          onClick={logout}
+          className="prof-btn"
+          style={{ background: '#fff', color: '#dc2626', border: '1.5px solid #fca5a5' }}
+          onMouseEnter={e => e.currentTarget.style.background = '#fee2e2'}
+          onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+        >
+          <i className="fas fa-sign-out-alt"></i> Se déconnecter
+        </button>
+
+        {/* Delete account */}
+        {!user.is_admin && !confirm && (
+          <button
+            onClick={() => setConfirm(true)}
+            style={{ width: '100%', marginTop: '0.5rem', background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.8rem', cursor: 'pointer', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+          >
+            <i className="fas fa-trash-alt"></i> Supprimer mon compte
+          </button>
+        )}
+
+        {confirm && (
+          <div style={{ marginTop: '0.75rem', background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 12, padding: '1rem' }}>
+            <p style={{ color: '#991b1b', fontSize: '0.82rem', fontWeight: 600, textAlign: 'center', margin: '0 0 0.75rem' }}>
+              Cette action est irréversible. Confirmer ?
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button onClick={() => setConfirm(false)} style={{ flex: 1, padding: '0.5rem', background: '#fff', color: '#374151', border: '1px solid #e2e8f0', borderRadius: 8, fontWeight: 600, cursor: 'pointer', fontSize: '0.82rem' }}>
+                Annuler
+              </button>
+              <button style={{ flex: 1, padding: '0.5rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}>
+                Supprimer
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
