@@ -88,9 +88,9 @@ export default function NotificationBell() {
                                 onClick={async () => {
                                     setOpen(false);
 
-                                    // Rôles requis par type
-                                    const ownerTypes = ['booking_received', 'booking_cancelled', 'tool_picked_up', 'tool_returned', 'new_review'];
-                                    const borrowerTypes = ['booking_approved', 'booking_rejected', 'leave_review'];
+                                    // Rôles requis par type (uniquement pour les actions exclusives)
+                                    const ownerTypes = ['booking_received', 'booking_cancelled', 'tool_picked_up', 'tool_returned'];
+                                    const borrowerTypes = ['booking_approved', 'booking_rejected'];
 
                                     const needsOwner = ownerTypes.includes(n.type);
                                     const needsBorrower = borrowerTypes.includes(n.type);
