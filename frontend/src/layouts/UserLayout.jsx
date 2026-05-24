@@ -14,7 +14,11 @@ export default function UserLayout({ children }) {
     useEffect(() => { setOpen(false); }, [location.pathname]);
 
     const handleLogout = async () => { await logout(); navigate('/login'); };
-    const isActive = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(path));
+    
+    const isActive = (path, exact = false) => {
+        if (exact) return location.pathname === path;
+        return location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/'));
+    };
 
     const NAV = [
         { path: '/', icon: 'fa-house', label: 'Accueil', always: true },
@@ -28,7 +32,7 @@ export default function UserLayout({ children }) {
             state: { tab: 'reviews', reviewType: user?.role === 'owner' ? 'as_owner' : 'as_borrower' } 
         },
         { path: '/my-tools', icon: 'fa-toolbox', label: 'Mes Outils', owner: true },
-        { path: '/profile', icon: 'fa-circle-user', label: 'Profil', auth: true },
+        { path: '/profile', icon: 'fa-circle-user', label: 'Profil', auth: true, exact: true },
     ];
 
     const visible = NAV.filter(n => {
@@ -137,7 +141,8 @@ export default function UserLayout({ children }) {
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className={`ul-link ${isActive(item.path) ? 'active' : ''}`}
+                                state={item.state}
+                                className={`ul-link ${isActive(item.path, item.exact) ? 'active' : ''}`}
                             >
                                 <i className={`fas ${item.icon}`} style={{ width: 20, textAlign: 'center', fontSize: '1.1rem' }}></i>
                                 {item.label}
@@ -188,7 +193,7 @@ export default function UserLayout({ children }) {
                                 <i className="fas fa-bars-staggered"></i>
                             </button>
                             <div>
-                                <h4 style={{ margin: 0, fontWeight: 800 }}>{visible.find(n => isActive(n.path))?.label || 'Tasharuk'}</h4>
+                                <h4 style={{ margin: 0, fontWeight: 800 }}>{visible.find(n => isActive(n.path, n.exact))?.label || 'Tasharuk'}</h4>
                             </div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
