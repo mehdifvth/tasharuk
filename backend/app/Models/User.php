@@ -56,6 +56,10 @@ class User extends Authenticatable
      */
     public function getOwnerRatingAttribute()
     {
+        if (isset($this->attributes['owner_rating_avg'])) {
+            return $this->attributes['owner_rating_avg'] ? round($this->attributes['owner_rating_avg'], 1) : null;
+        }
+
         $rating = Review::where('reviewee_id', $this->id)
             ->whereHas('booking.tool', fn($q) => $q->where('user_id', $this->id))
             ->avg('rating');
@@ -65,6 +69,10 @@ class User extends Authenticatable
 
     public function getOwnerReviewsCountAttribute()
     {
+        if (isset($this->attributes['owner_reviews_received_count'])) {
+            return (int) $this->attributes['owner_reviews_received_count'];
+        }
+
         return Review::where('reviewee_id', $this->id)
             ->whereHas('booking.tool', fn($q) => $q->where('user_id', $this->id))
             ->count();
@@ -75,6 +83,10 @@ class User extends Authenticatable
      */
     public function getBorrowerRatingAttribute()
     {
+        if (isset($this->attributes['borrower_rating_avg'])) {
+            return $this->attributes['borrower_rating_avg'] ? round($this->attributes['borrower_rating_avg'], 1) : null;
+        }
+
         $rating = Review::where('reviewee_id', $this->id)
             ->whereHas('booking', fn($q) => $q->where('borrower_id', $this->id))
             ->avg('rating');
@@ -84,6 +96,10 @@ class User extends Authenticatable
 
     public function getBorrowerReviewsCountAttribute()
     {
+        if (isset($this->attributes['borrower_reviews_received_count'])) {
+            return (int) $this->attributes['borrower_reviews_received_count'];
+        }
+
         return Review::where('reviewee_id', $this->id)
             ->whereHas('booking', fn($q) => $q->where('borrower_id', $this->id))
             ->count();

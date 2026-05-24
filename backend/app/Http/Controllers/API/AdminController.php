@@ -22,7 +22,18 @@ class AdminController extends Controller
         }
 
         return response()->json([
-            'users'      => User::withTrashed()->orderBy('created_at', 'desc')->get(),
+            'users' => User::withTrashed()
+                ->withCount([
+                    'reviewsReceived as owner_reviews_received_count' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
+                    'reviewsReceived as borrower_reviews_received_count' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
+                ])
+                ->withAvg([
+                    'reviewsReceived as owner_rating_avg' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
+                    'reviewsReceived as borrower_rating_avg' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
+                ], 'rating')
+                ->orderBy('created_at', 'desc')
+                ->get(),
+
             'tools'      => Tool::withTrashed()->with(['user', 'category'])->orderBy('created_at', 'desc')->get(),
             'categories' => Category::withCount('tools')->get(),
             'bookings'   => Booking::with(['tool', 'borrower'])->orderBy('created_at', 'desc')->get(),

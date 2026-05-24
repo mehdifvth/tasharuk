@@ -21,10 +21,16 @@ class BookingController extends Controller
         $userId = $request->user()->id;
 
         $bookings = Booking::with([
-            'tool.user',
+            'tool.user' => function($q) {
+                // Charger la note du proprio en une seule fois
+                $q->withAvg(['reviewsReceived as owner_rating_avg' => fn($qr) => $qr->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id'))], 'rating');
+            },
             'tool.category',
-            'borrower.reviewsReceived' => function($q) {
-                $q->latest()->take(5);
+            'borrower' => function($q) {
+                // Charger la note de l'emprunteur en une seule fois
+                $q->withCount(['reviewsReceived as borrower_reviews_received_count' => fn($qr) => $qr->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))])
+                  ->withAvg(['reviewsReceived as borrower_rating_avg' => fn($qr) => $qr->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))], 'rating')
+                  ->with(['reviewsReceived' => function($qr) { $qr->latest()->take(3); }]); // Juste les 3 derniers
             },
             'reviews',
         ])
