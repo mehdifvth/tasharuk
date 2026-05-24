@@ -8,31 +8,40 @@ export default function AdminUsers() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [confirm, setConfirm] = useState(null);
+    const [page, setPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
 
-    const fetchUsers = () => {
-        api.get('/admin/data')
-            .then(r => setUsers(r.data.users))
+    const fetchUsers = (pageNumber = 1) => {
+        setLoading(true);
+        api.get(`/admin/users?page=${pageNumber}`)
+            .then(r => {
+                setUsers(r.data.data);
+                setLastPage(r.data.last_page);
+                setPage(r.data.current_page);
+            })
             .catch(console.error)
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => { fetchUsers(); }, []);
+    useEffect(() => { fetchUsers(1); }, []);
 
     const handleDelete = async (id) => {
         try {
             await api.delete(`/admin/users/${id}`);
             setConfirm(null);
-            fetchUsers();
+            fetchUsers(page);
         } catch (err) { alert(err.response?.data?.message || 'Erreur'); }
     };
 
     const handleRestore = async (id) => {
         try {
             await api.post(`/admin/users/${id}/restore`);
-            fetchUsers();
+            fetchUsers(page);
         } catch (err) { alert(err.response?.data?.message || 'Erreur'); }
     };
 
+    // Note: On client-side filtering only for current page for simplicity, 
+    // real pagination with filters would require backend keyword support.
     const filtered = users.filter(u => {
         const matchRole =
             filter === 'all' ||
@@ -45,14 +54,6 @@ export default function AdminUsers() {
             u.email?.toLowerCase().includes(search.toLowerCase());
         return matchRole && matchSearch;
     });
-
-    const counts = {
-        all: users.length,
-        admin: users.filter(u => u.is_admin).length,
-        owner: users.filter(u => !u.is_admin && u.role === 'owner').length,
-        borrower: users.filter(u => !u.is_admin && u.role === 'borrower').length,
-        deleted: users.filter(u => u.deleted_at).length,
-    };
 
     const FILTERS = [
         { key: 'all', label: 'Tous', color: '#6366f1', bg: '#eef2ff', icon: 'fa-users' },
@@ -70,46 +71,30 @@ export default function AdminUsers() {
 
     const getRoleKey = (u) => u.is_admin ? 'admin' : u.role === 'owner' ? 'owner' : 'borrower';
 
-    if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.75rem', color: '#6366f1' }}></i>
-        </div>
-    );
-
     return (
         <div>
             {/* Header */}
             <div style={{ marginBottom: '1.5rem' }}>
                 <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Utilisateurs</h2>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-                    {users.length} utilisateur(s) inscrit(s)
-                </p>
             </div>
 
-            {/* Filter cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px,1fr))', gap: '0.75rem', marginBottom: '1.25rem' }}>
+            {/* Filter buttons */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
                 {FILTERS.map(f => (
-                    <div
+                    <button
                         key={f.key}
                         onClick={() => setFilter(f.key)}
                         style={{
-                            background: '#fff', borderRadius: 12, padding: '0.85rem', cursor: 'pointer',
-                            border: `2px solid ${filter === f.key ? f.color : '#f1f5f9'}`,
-                            transition: 'border-color 0.15s',
+                            padding: '0.5rem 1rem', borderRadius: 10, border: '1.5px solid',
+                            fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                            borderColor: filter === f.key ? f.color : '#e2e8f0',
+                            background: filter === f.key ? f.bg : '#fff',
+                            color: filter === f.key ? f.color : '#64748b',
+                            display: 'flex', alignItems: 'center', gap: '0.4rem'
                         }}
                     >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: f.color }}>{counts[f.key]}</span>
-                            <div style={{
-                                background: filter === f.key ? f.bg : '#f8fafc', borderRadius: 8,
-                                width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                transition: 'background 0.15s'
-                            }}>
-                                <i className={`fas ${f.icon}`} style={{ color: filter === f.key ? f.color : '#94a3b8', fontSize: '0.82rem' }}></i>
-                            </div>
-                        </div>
-                        <p style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 600, margin: 0 }}>{f.label}</p>
-                    </div>
+                        <i className={`fas ${f.icon}`}></i> {f.label}
+                    </button>
                 ))}
             </div>
 
@@ -132,6 +117,11 @@ export default function AdminUsers() {
                 background: '#fff', borderRadius: 14, border: '1px solid #f1f5f9',
                 boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden'
             }}>
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '3rem' }}>
+                        <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.5rem', color: '#6366f1' }}></i>
+                    </div>
+                ) : (
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead>
@@ -227,7 +217,29 @@ export default function AdminUsers() {
                         </tbody>
                     </table>
                 </div>
+                )}
             </div>
+
+            {/* Pagination */}
+            {lastPage > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+                    <button 
+                        disabled={page === 1 || loading}
+                        onClick={() => fetchUsers(page - 1)}
+                        style={{ padding: '0.4rem 0.8rem', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer' }}
+                    >
+                        <i className="fas fa-chevron-left"></i>
+                    </button>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Page {page} / {lastPage}</span>
+                    <button 
+                        disabled={page === lastPage || loading}
+                        onClick={() => fetchUsers(page + 1)}
+                        style={{ padding: '0.4rem 0.8rem', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer' }}
+                    >
+                        <i className="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            )}
 
             {/* Modal */}
             {confirm && (

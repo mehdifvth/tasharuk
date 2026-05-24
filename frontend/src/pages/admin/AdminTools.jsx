@@ -8,21 +8,28 @@ export default function AdminTools() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
     const [confirm, setConfirm] = useState(null);
+    const [page, setPage] = useState(1);
+    const [lastPage, setLastPage] = useState(1);
 
-    const load = () => {
-        api.get('/admin/data')
-            .then(r => setTools(r.data.tools))
+    const loadTools = (pageNumber = 1) => {
+        setLoading(true);
+        api.get(`/admin/tools?page=${pageNumber}`)
+            .then(r => {
+                setTools(r.data.data);
+                setLastPage(r.data.last_page);
+                setPage(r.data.current_page);
+            })
             .catch(console.error)
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => { load(); }, []);
+    useEffect(() => { loadTools(1); }, []);
 
     const handleDelete = async (id) => {
         try {
             await api.delete(`/admin/tools/${id}`);
             setConfirm(null);
-            load();
+            loadTools(page);
         } catch { alert('Erreur lors de la suppression'); }
     };
 
@@ -50,20 +57,11 @@ export default function AdminTools() {
         deleted: { label: 'Supprimé', bg: '#334155', color: '#fff' },
     };
 
-    if (loading) return (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 300 }}>
-            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.75rem', color: '#6366f1' }}></i>
-        </div>
-    );
-
     return (
         <div>
             {/* Header */}
             <div style={{ marginBottom: '1.5rem' }}>
-                <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Outils</h2>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-                    {tools.filter(t => !t.deleted_at).length} actif(s) · {tools.filter(t => !!t.deleted_at).length} supprimé(s)
-                </p>
+                <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Gestion des outils</h2>
             </div>
 
             {/* Filters + Search */}
@@ -95,16 +93,20 @@ export default function AdminTools() {
                             color: filter === f ? '#6366f1' : '#64748b',
                         }}
                     >
-                        {f === 'all' ? 'Actifs' : f === 'deleted' ? 'Archive (Supprimés)' : COND[f]?.label}
+                        {f === 'all' ? 'Actifs' : f === 'deleted' ? 'Archive' : COND[f]?.label}
                     </button>
                 ))}
             </div>
 
-            {/* Grid */}
-            {filtered.length === 0 ? (
+            {/* Content */}
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: '4rem' }}>
+                    <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#6366f1' }}></i>
+                </div>
+            ) : filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
                     <i className="fas fa-tools" style={{ fontSize: '2.5rem', marginBottom: '0.75rem', display: 'block' }}></i>
-                    <p style={{ fontSize: '0.9rem' }}>Aucun outil trouvé</p>
+                    <p style={{ fontSize: '0.9rem' }}>Aucun outil trouvé sur cette page</p>
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
@@ -165,6 +167,27 @@ export default function AdminTools() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Pagination */}
+            {lastPage > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+                    <button 
+                        disabled={page === 1 || loading}
+                        onClick={() => loadTools(page - 1)}
+                        style={{ padding: '0.4rem 0.8rem', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer' }}
+                    >
+                        <i className="fas fa-chevron-left"></i>
+                    </button>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Page {page} / {lastPage}</span>
+                    <button 
+                        disabled={page === lastPage || loading}
+                        onClick={() => loadTools(page + 1)}
+                        style={{ padding: '0.4rem 0.8rem', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', cursor: 'pointer' }}
+                    >
+                        <i className="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             )}
 

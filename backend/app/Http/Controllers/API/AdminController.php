@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 class AdminController extends Controller
 {
     /**
-     * Get overview stats and data for admin
+     * Get overview stats and recent data for dashboard
      */
     public function index(Request $request)
     {
@@ -22,23 +22,82 @@ class AdminController extends Controller
         }
 
         return response()->json([
-            'users' => User::withTrashed()
-                ->withCount([
-                    'reviewsReceived as owner_reviews_received_count' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
-                    'reviewsReceived as borrower_reviews_received_count' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
-                ])
-                ->withAvg([
-                    'reviewsReceived as owner_rating_avg' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
-                    'reviewsReceived as borrower_rating_avg' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
-                ], 'rating')
-                ->orderBy('created_at', 'desc')
-                ->get(),
-
-            'tools'      => Tool::withTrashed()->with(['user', 'category'])->orderBy('created_at', 'desc')->get(),
+            'counts' => [
+                'users'      => User::count(),
+                'tools'      => Tool::whereNull('deleted_at')->count(),
+                'bookings'   => Booking::count(),
+                'reviews'    => Review::count(),
+            ],
+            'recent_users' => User::latest()->take(5)->get(),
+            'recent_tools' => Tool::with(['user', 'category'])->latest()->take(5)->get(),
+            'recent_bookings' => Booking::with(['tool', 'borrower'])->latest()->take(5)->get(),
             'categories' => Category::withCount('tools')->get(),
-            'bookings'   => Booking::with(['tool', 'borrower'])->orderBy('created_at', 'desc')->get(),
-            'reviews'    => Review::with(['reviewer', 'reviewee', 'booking.tool'])->latest()->get(),
         ]);
+    }
+
+    /**
+     * GET /api/admin/users
+     */
+    public function users(Request $request)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $users = User::withTrashed()
+            ->withCount([
+                'reviewsReceived as owner_reviews_received_count' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
+                'reviewsReceived as borrower_reviews_received_count' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
+            ])
+            ->withAvg([
+                'reviewsReceived as owner_rating_avg' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
+                'reviewsReceived as borrower_rating_avg' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
+            ], 'rating')
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return response()->json($users);
+    }
+
+    /**
+     * GET /api/admin/tools
+     */
+    public function tools(Request $request)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $tools = Tool::withTrashed()
+            ->with(['user', 'category'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return response()->json($tools);
+    }
+
+    /**
+     * GET /api/admin/bookings
+     */
+    public function bookings(Request $request)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $bookings = Booking::with(['tool', 'borrower'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return response()->json($bookings);
+    }
+
+    /**
+     * GET /api/admin/reviews
+     */
+    public function reviews(Request $request)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $reviews = Review::with(['reviewer', 'reviewee', 'booking.tool'])
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($reviews);
     }
 
     /**

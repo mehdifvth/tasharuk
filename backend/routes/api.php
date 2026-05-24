@@ -60,6 +60,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin Data
     Route::get('/admin/data',             [AdminController::class, 'index']);
+    Route::get('/admin/users',            [AdminController::class, 'users']);
+    Route::get('/admin/tools',            [AdminController::class, 'tools']);
+    Route::get('/admin/bookings',         [AdminController::class, 'bookings']);
+    Route::get('/admin/reviews',          [AdminController::class, 'reviews']);
+
     Route::delete('/admin/users/{id}',    [AdminController::class, 'deleteUser']);
     Route::post('/admin/users/{id}/restore', [AdminController::class, 'restoreUser']);
     Route::delete('/admin/tools/{id}',    [AdminController::class, 'deleteTool']);

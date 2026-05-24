@@ -5,7 +5,13 @@ import api from '../../services/api';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [data, setData] = useState({ users: [], tools: [], categories: [], bookings: [], reviews: [] });
+  const [data, setData] = useState({ 
+      counts: { users: 0, tools: 0, bookings: 0, reviews: 0 },
+      recent_users: [],
+      recent_tools: [],
+      recent_bookings: [],
+      categories: []
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,13 +21,11 @@ export default function AdminDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  const activeTools = data.tools.filter(t => !t.deleted_at);
-
   const stats = [
-    { label: 'Outils', value: activeTools.length, icon: 'fa-tools', color: '#2563eb', bg: '#dbeafe', path: '/admin/tools' },
-    { label: 'Utilisateurs', value: data.users.length, icon: 'fa-users', color: '#16a34a', bg: '#dcfce7', path: '/admin/users' },
-    { label: 'Réservations', value: data.bookings.length, icon: 'fa-calendar-alt', color: '#10b981', bg: '#d1fae5', path: '/admin/bookings' },
-    { label: 'Avis', value: data.reviews.length, icon: 'fa-star', color: '#7c3aed', bg: '#f5f3ff', path: '/admin/reviews' },
+    { label: 'Outils', value: data.counts.tools, icon: 'fa-tools', color: '#2563eb', bg: '#dbeafe', path: '/admin/tools' },
+    { label: 'Utilisateurs', value: data.counts.users, icon: 'fa-users', color: '#16a34a', bg: '#dcfce7', path: '/admin/users' },
+    { label: 'Réservations', value: data.counts.bookings, icon: 'fa-calendar-alt', color: '#10b981', bg: '#d1fae5', path: '/admin/bookings' },
+    { label: 'Avis', value: data.counts.reviews, icon: 'fa-star', color: '#7c3aed', bg: '#f5f3ff', path: '/admin/reviews' },
   ];
 
   const STATUS_STYLE = {
@@ -97,16 +101,16 @@ export default function AdminDashboard() {
           <div style={S.cardHeader}>
             <div>
               <h3 style={S.cardTitle}>Réservations récentes</h3>
-              <p style={S.cardSub}>{data.bookings.length} au total</p>
+              <p style={S.cardSub}>Dernières demandes</p>
             </div>
             <button onClick={() => navigate('/admin/bookings')} style={S.linkBtn}>
               Tout voir →
             </button>
           </div>
-          {data.bookings.slice(0, 5).length === 0 ? (
+          {data.recent_bookings.length === 0 ? (
             <p style={S.empty}>Aucune réservation</p>
           ) : (
-            data.bookings.slice(0, 5).map(b => (
+            data.recent_bookings.map(b => (
               <div key={b.id} style={S.listItem}>
                 <div style={{
                   width: 8, height: 8, borderRadius: '50%',
@@ -136,16 +140,16 @@ export default function AdminDashboard() {
           <div style={S.cardHeader}>
             <div>
               <h3 style={S.cardTitle}>Utilisateurs récents</h3>
-              <p style={S.cardSub}>{data.users.length} inscrits</p>
+              <p style={S.cardSub}>Dernières inscriptions</p>
             </div>
             <button onClick={() => navigate('/admin/users')} style={S.linkBtn}>
               Tout voir →
             </button>
           </div>
-          {data.users.slice(0, 5).length === 0 ? (
+          {data.recent_users.length === 0 ? (
             <p style={S.empty}>Aucun utilisateur</p>
           ) : (
-            data.users.slice(0, 5).map(u => (
+            data.recent_users.map(u => (
               <div key={u.id} style={S.listItem}>
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%',
@@ -181,14 +185,14 @@ export default function AdminDashboard() {
         <div style={S.cardHeader}>
           <div>
             <h3 style={S.cardTitle}>Outils récents</h3>
-            <p style={S.cardSub}>{activeTools.length} actifs ({data.tools.length} au total)</p>
+            <p style={S.cardSub}>Dernières publications</p>
           </div>
           <button onClick={() => navigate('/admin/tools')} style={S.linkBtn}>
             Tout voir →
           </button>
         </div>
         <div style={S.toolsGrid}>
-          {activeTools.slice(0, 6).map(t => (
+          {data.recent_tools.map(t => (
             <div key={t.id} style={S.toolCard}>
               {t.image_url
                 ? <img src={t.image_url} alt={t.title} style={S.toolImg} />
@@ -217,7 +221,6 @@ const S = {
   statCard: {
     background: '#fff', borderRadius: 14, padding: '1.25rem', border: '1px solid #f1f5f9',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'box-shadow 0.2s',
-    ':hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }
   },
   twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px,1fr))', gap: '1rem', marginBottom: '1rem' },
   card: {
