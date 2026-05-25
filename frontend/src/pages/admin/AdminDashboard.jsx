@@ -124,7 +124,7 @@ export default function AdminDashboard() {
                     {b.tool?.title}
                   </p>
                   <p style={{ color: '#94a3b8', margin: 0, fontSize: '0.75rem' }}>
-                    {b.borrower?.name} · {b.start_date?.slice(0, 10)}
+                    {b.borrower?.name} · {new Date(b.start_date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
                 <span style={{ ...S.badge, background: STATUS_STYLE[b.status]?.bg, color: STATUS_STYLE[b.status]?.color }}>

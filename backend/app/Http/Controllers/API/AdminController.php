@@ -79,9 +79,18 @@ class AdminController extends Controller
     {
         if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
 
-        $bookings = Booking::with(['tool', 'borrower'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = Booking::with(['tool', 'borrower']);
+
+        if ($request->filled('status')) {
+            $status = $request->status;
+            if ($status === 'cancelled') {
+                $query->whereIn('status', ['rejected', 'cancelled']);
+            } else {
+                $query->where('status', $status);
+            }
+        }
+
+        $bookings = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return response()->json($bookings);
     }

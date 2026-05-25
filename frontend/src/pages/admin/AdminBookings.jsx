@@ -7,10 +7,12 @@ export default function AdminBookings() {
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
+    const [filter, setFilter] = useState('all');
 
-    const load = (pageNumber = 1) => {
+    const load = (pageNumber = 1, currentFilter = filter) => {
         setLoading(true);
-        api.get(`/admin/bookings?page=${pageNumber}`)
+        const statusParam = currentFilter === 'all' ? '' : `&status=${currentFilter}`;
+        api.get(`/admin/bookings?page=${pageNumber}${statusParam}`)
             .then(r => {
                 setBookings(r.data.data);
                 setLastPage(r.data.last_page);
@@ -20,7 +22,15 @@ export default function AdminBookings() {
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => { load(1); }, []);
+    useEffect(() => { load(1, filter); }, [filter]);
+
+    const FILTERS = [
+        { key: 'all', label: 'Toutes', color: '#6366f1', bg: '#eef2ff', icon: 'fa-list' },
+        { key: 'pending', label: 'En attente', color: '#f59e0b', bg: '#fef9c3', icon: 'fa-hourglass-half' },
+        { key: 'approved', label: 'Approuvées', color: '#10b981', bg: '#d1fae5', icon: 'fa-check-circle' },
+        { key: 'completed', label: 'Terminées', color: '#0ea5e9', bg: '#e0f2fe', icon: 'fa-flag-checkered' },
+        { key: 'cancelled', label: 'Annulées', color: '#dc2626', bg: '#fee2e2', icon: 'fa-ban' },
+    ];
 
     const STATUS_STYLE = {
         approved: { bg: '#d1fae5', color: '#065f46', text: 'Approuvée' },
@@ -33,6 +43,26 @@ export default function AdminBookings() {
     return (
         <div>
             <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', marginBottom: '1.5rem' }}>Réservations</h2>
+
+            {/* Filter Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                {FILTERS.map(f => (
+                    <button
+                        key={f.key}
+                        onClick={() => setFilter(f.key)}
+                        style={{
+                            padding: '0.5rem 1rem', borderRadius: 10, border: '1.5px solid',
+                            fontSize: '0.82rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+                            borderColor: filter === f.key ? f.color : '#e2e8f0',
+                            background: filter === f.key ? f.bg : '#fff',
+                            color: filter === f.key ? f.color : '#64748b',
+                            display: 'flex', alignItems: 'center', gap: '0.4rem'
+                        }}
+                    >
+                        <i className={`fas ${f.icon}`}></i> {f.label}
+                    </button>
+                ))}
+            </div>
 
             <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #f1f5f9', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' }}>
                 {loading ? (
@@ -50,7 +80,13 @@ export default function AdminBookings() {
                             </tr>
                         </thead>
                         <tbody>
-                            {bookings.map(b => (
+                            {bookings.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                                        Aucune réservation trouvée
+                                    </td>
+                                </tr>
+                            ) : bookings.map(b => (
                                 <tr key={b.id} style={{ borderBottom: '1px solid #f8fafc' }}>
                                     <td style={TD}>
                                         <p style={{ fontWeight: 700, margin: 0, fontSize: '0.85rem' }}>{b.tool?.title}</p>
@@ -61,8 +97,8 @@ export default function AdminBookings() {
                                         <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0 }}>{b.borrower?.email}</p>
                                     </td>
                                     <td style={TD}>
-                                        <p style={{ fontSize: '0.8rem', margin: 0 }}>Du {new Date(b.start_date).toLocaleDateString()}</p>
-                                        <p style={{ fontSize: '0.8rem', margin: 0 }}>Au {new Date(b.end_date).toLocaleDateString()}</p>
+                                        <p style={{ fontSize: '0.8rem', margin: 0 }}>Du {new Date(b.start_date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p style={{ fontSize: '0.8rem', margin: 0 }}>Au {new Date(b.end_date).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</p>
                                     </td>
                                     <td style={TD}>
                                         <span style={{
