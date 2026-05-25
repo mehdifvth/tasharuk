@@ -65,6 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/users',            [AdminController::class, 'users']);
     Route::get('/admin/tools',            [AdminController::class, 'tools']);
     Route::get('/admin/bookings',         [AdminController::class, 'bookings']);
+    Route::put('/admin/bookings/{id}/cancel', [AdminController::class, 'cancelBooking']);
     Route::get('/admin/reviews',          [AdminController::class, 'reviews']);
 
     Route::delete('/admin/users/{id}',    [AdminController::class, 'deleteUser']);

@@ -8,6 +8,7 @@ export default function AdminBookings() {
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
     const [filter, setFilter] = useState('all');
+    const [actionLoad, setActionLoad] = useState(null);
 
     const load = (pageNumber = 1, currentFilter = filter) => {
         setLoading(true);
@@ -24,6 +25,19 @@ export default function AdminBookings() {
 
     useEffect(() => { load(1, filter); }, [filter]);
 
+    const handleCancel = async (id) => {
+        if (!window.confirm('Annuler cette réservation en tant qu\'administrateur ?')) return;
+        setActionLoad(id);
+        try {
+            await api.put(`/admin/bookings/${id}/cancel`);
+            load(page);
+        } catch (err) {
+            alert(err.response?.data?.message || 'Erreur lors de l\'annulation');
+        } finally {
+            setActionLoad(null);
+        }
+    };
+
     const FILTERS = [
         { key: 'all', label: 'Toutes', color: '#6366f1', bg: '#eef2ff', icon: 'fa-list' },
         { key: 'pending', label: 'En attente', color: '#f59e0b', bg: '#fef9c3', icon: 'fa-hourglass-half' },
@@ -39,6 +53,8 @@ export default function AdminBookings() {
         cancelled: { bg: '#f1f5f9', color: '#475569', text: 'Annulée' },
         pending: { bg: '#fef9c3', color: '#854d0e', text: 'En attente' },
     };
+
+    const showActionsCol = ['all', 'pending'].includes(filter);
 
     return (
         <div>
@@ -77,12 +93,13 @@ export default function AdminBookings() {
                                 {['Outil', 'Emprunteur', 'Dates', 'Statut', 'Prix'].map(h => (
                                     <th key={h} style={TH}>{h}</th>
                                 ))}
+                                {showActionsCol && <th style={TH}>Actions</th>}
                             </tr>
                         </thead>
                         <tbody>
                             {bookings.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                                    <td colSpan={showActionsCol ? 6 : 5} style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
                                         Aucune réservation trouvée
                                     </td>
                                 </tr>
@@ -111,6 +128,23 @@ export default function AdminBookings() {
                                     <td style={TD}>
                                         <p style={{ fontWeight: 800, color: '#0f172a', margin: 0 }}>{b.total_price} MAD</p>
                                     </td>
+                                    {showActionsCol && (
+                                        <td style={TD}>
+                                            {b.status === 'pending' && (
+                                                <button
+                                                    disabled={actionLoad === b.id}
+                                                    onClick={() => handleCancel(b.id)}
+                                                    style={{
+                                                        padding: '0.35rem 0.75rem', borderRadius: 8, border: '1px solid #fca5a5',
+                                                        background: '#fff', color: '#dc2626', cursor: 'pointer',
+                                                        fontSize: '0.75rem', fontWeight: 700, transition: 'all 0.15s'
+                                                    }}
+                                                >
+                                                    {actionLoad === b.id ? <i className="fas fa-spinner fa-spin"></i> : 'Annuler'}
+                                                </button>
+                                            )}
+                                        </td>
+                                    )}
                                 </tr>
                             ))}
                         </tbody>

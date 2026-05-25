@@ -8,6 +8,7 @@ use App\Models\Tool;
 use App\Models\Category;
 use App\Models\Booking;
 use App\Models\Review;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -141,6 +142,36 @@ class AdminController extends Controller
         $user->restore();
 
         return response()->json(['message' => 'Utilisateur restauré avec succès']);
+    }
+
+    /**
+     * Cancel a booking as admin
+     */
+    public function cancelBooking(Request $request, $id)
+    {
+        if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
+
+        $booking = Booking::with(['tool.user', 'borrower'])->findOrFail($id);
+        
+        if ($booking->status === 'completed') {
+            return response()->json(['message' => 'Cannot cancel a completed booking'], 422);
+        }
+
+        $booking->update(['status' => 'cancelled']);
+
+        // Notifier les deux parties
+        $notifData = [
+            'type'           => 'booking_cancelled',
+            'title'          => 'Réservation annulée par l\'admin',
+            'message'        => 'La réservation pour "' . $booking->tool->title . '" a été annulée par l\'administration.',
+            'reference_id'   => $booking->id,
+            'reference_type' => 'booking',
+        ];
+
+        Notification::create(array_merge($notifData, ['user_id' => $booking->borrower_id]));
+        Notification::create(array_merge($notifData, ['user_id' => $booking->tool->user_id]));
+
+        return response()->json(['message' => 'Réservation annulée avec succès']);
     }
 
     /**
