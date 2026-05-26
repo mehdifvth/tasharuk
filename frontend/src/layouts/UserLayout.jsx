@@ -1,4 +1,3 @@
-// src/layouts/UserLayout.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -14,7 +13,7 @@ export default function UserLayout({ children }) {
     useEffect(() => { setOpen(false); }, [location.pathname]);
 
     const handleLogout = async () => { await logout(); navigate('/login'); };
-    
+
     const isActive = (path, exact = false) => {
         if (exact) return location.pathname === path;
         return location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/'));
@@ -24,12 +23,12 @@ export default function UserLayout({ children }) {
         { path: '/', icon: 'fa-house', label: 'Accueil', always: true },
         { path: '/tools', icon: 'fa-magnifying-glass', label: 'Explorer', always: true },
         { path: '/bookings', icon: 'fa-calendar-check', label: 'Réservations', auth: true },
-        { 
-            path: `/profile/${user?.id}`, 
-            icon: 'fa-star', 
-            label: 'Mes Avis', 
-            auth: true, 
-            state: { tab: 'reviews', reviewType: user?.role === 'owner' ? 'as_owner' : 'as_borrower' } 
+        {
+            path: `/profile/${user?.id}`,
+            icon: 'fa-star',
+            label: 'Mes Avis',
+            auth: true,
+            state: { tab: 'reviews', reviewType: user?.role === 'owner' ? 'as_owner' : 'as_borrower' }
         },
         { path: '/my-tools', icon: 'fa-toolbox', label: 'Mes Outils', owner: true },
         { path: '/profile', icon: 'fa-circle-user', label: 'Profil', auth: true, exact: true },

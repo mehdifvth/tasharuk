@@ -28,7 +28,7 @@ export default function Navbar() {
   useEffect(() => { setMenuOpen(false); }, [location.pathname]);
 
   const handleLogout = async () => { await logout(); navigate('/login'); };
-  
+
   const isActive = (path, exact = false) => {
     if (exact) return location.pathname === path;
     return location.pathname === path || (path !== '/' && location.pathname.startsWith(path + '/'));
@@ -154,7 +154,7 @@ export default function Navbar() {
             <Link to="/tools" className={`nav-link ${isActive('/tools') ? 'active' : ''}`}>
               Explorer
             </Link>
-            
+
             {token ? (
               <>
                 {user?.is_admin && (
@@ -170,23 +170,23 @@ export default function Navbar() {
                 <Link to="/bookings" className={`nav-link ${isActive('/bookings') ? 'active' : ''}`}>
                   Réservations
                 </Link>
-                
+
                 <div style={{ width: '1.5px', height: '24px', background: '#e2e8f0', margin: '0 0.75rem' }}></div>
-                
+
                 <NotificationBell />
-                
+
                 <Link to="/profile" className="btn-profile-desktop">
                   <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#1e293b' }}>{user?.name?.split(' ')[0]}</span>
-                  <div style={{ 
-                    width: 32, 
-                    height: 32, 
-                    borderRadius: '50%', 
-                    background: 'linear-gradient(135deg, #2563eb, #6366f1)', 
-                    color: '#fff', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    justifyContent: 'center', 
-                    fontSize: '0.8rem', 
+                  <div style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #2563eb, #6366f1)',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.8rem',
                     fontWeight: 800,
                     boxShadow: '0 2px 8px rgba(37,99,235,0.2)'
                   }}>
@@ -200,14 +200,14 @@ export default function Navbar() {
                   Connexion
                 </Link>
                 <Link to="/register">
-                  <button style={{ 
-                    background: '#2563eb', 
-                    color: '#fff', 
-                    border: 'none', 
-                    borderRadius: '12px', 
-                    padding: '0.65rem 1.25rem', 
-                    fontWeight: 800, 
-                    fontSize: '0.88rem', 
+                  <button style={{
+                    background: '#2563eb',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '0.65rem 1.25rem',
+                    fontWeight: 800,
+                    fontSize: '0.88rem',
                     cursor: 'pointer',
                     boxShadow: '0 4px 12px rgba(37,99,235,0.2)'
                   }}>
@@ -223,16 +223,16 @@ export default function Navbar() {
             {token && <NotificationBell />}
             <button
               onClick={() => setMenuOpen(true)}
-              style={{ 
-                background: '#fff', 
-                border: '1.5px solid #e2e8f0', 
-                cursor: 'pointer', 
-                width: 44, 
-                height: 44, 
-                borderRadius: '14px', 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center' 
+              style={{
+                background: '#fff',
+                border: '1.5px solid #e2e8f0',
+                cursor: 'pointer',
+                width: 44,
+                height: 44,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
               aria-label="Menu"
             >
@@ -247,7 +247,7 @@ export default function Navbar() {
       <div className="mobile-menu">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2rem' }}>
           <Logo size={36} />
-          <button 
+          <button
             onClick={() => setMenuOpen(false)}
             style={{ background: '#f8fafc', border: 'none', width: 40, height: 40, borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}
           >
@@ -256,21 +256,21 @@ export default function Navbar() {
         </div>
 
         {token && (
-          <div style={{ 
-            background: '#f8fafc', 
-            borderRadius: '20px', 
-            padding: '1rem', 
-            marginBottom: '1.5rem', 
-            display: 'flex', 
-            alignItems: 'center', 
+          <div style={{
+            background: '#f8fafc',
+            borderRadius: '20px',
+            padding: '1rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
             gap: '0.85rem',
             border: '1px solid #f1f5f9'
           }}>
-            <div style={{ 
-              width: 44, height: 44, borderRadius: '50%', 
-              background: 'linear-gradient(135deg, #2563eb, #6366f1)', 
-              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              fontSize: '1rem', fontWeight: 800 
+            <div style={{
+              width: 44, height: 44, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #2563eb, #6366f1)',
+              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '1rem', fontWeight: 800
             }}>
               {user?.name?.charAt(0).toUpperCase()}
             </div>
@@ -285,7 +285,7 @@ export default function Navbar() {
           <Link to="/tools" className={`mobile-link ${isActive('/tools') ? 'active' : ''}`}>
             <i className="fas fa-compass" style={{ width: 20, color: '#2563eb' }}></i>Explorer
           </Link>
-          
+
           {token ? (
             <>
               {user?.is_admin && (
@@ -301,8 +301,8 @@ export default function Navbar() {
               <Link to="/bookings" className={`mobile-link ${isActive('/bookings') ? 'active' : ''}`}>
                 <i className="fas fa-calendar-alt" style={{ width: 20, color: '#2563eb' }}></i>Réservations
               </Link>
-              <Link 
-                to={`/profile/${user?.id}`} 
+              <Link
+                to={`/profile/${user?.id}`}
                 state={{ tab: 'reviews', reviewType: user?.role === 'owner' ? 'as_owner' : 'as_borrower' }}
                 className={`mobile-link ${location.pathname === `/profile/${user?.id}` ? 'active' : ''}`}
               >
