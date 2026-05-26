@@ -222,63 +222,145 @@ export default function ToolsPage() {
         </div>
       </div>
 
-      {/* ── Desktop filters ── */}
-      <div className="ts-desktop-filters" style={{ gap: '0.75rem', marginBottom: '1.25rem', alignItems: 'center' }}>
-        {/* Search */}
-        <div className="ts-search-wrap" style={{ maxWidth: 380 }}>
-          <i className="fas fa-search" style={{ color: '#94a3b8', fontSize: '0.85rem', flexShrink: 0 }}></i>
-          <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Rechercher un outil..." />
-          {keyword && (
-            <button onClick={() => setKeyword('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0 }}>
-              <i className="fas fa-times" style={{ fontSize: '0.8rem' }}></i>
-            </button>
+      {/* ── Desktop filters (Modern Search Bar) ── */}
+      <div className="ts-desktop-filters" style={{ 
+        background: '#fff', 
+        border: '1.5px solid #e2e8f0', 
+        borderRadius: '20px', 
+        padding: '0.4rem', 
+        marginBottom: '1.25rem',
+        alignItems: 'center',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
+        gap: '0',
+        width: '100%',
+        maxWidth: '1000px',
+        margin: '0 auto 1.5rem'
+      }}>
+        {/* Keyword Search */}
+        <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0 1.5rem', borderRight: '1.5px solid #f1f5f9' }}>
+          <i className="fas fa-search" style={{ color: '#2563eb', fontSize: '1rem' }}></i>
+          <div style={{ flex: 1 }}>
+            
+            <input 
+              value={keyword} 
+              onChange={e => setKeyword(e.target.value)} 
+              placeholder="Perceuse, Échelle, Tondeuse..." 
+              style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.98rem', fontWeight: 600, color: '#0f172a', background: 'transparent' }}
+            />
+          </div>
+          {keyword && <button onClick={() => setKeyword('')} style={{ color: '#cbd5e1', border: 'none', background: 'none', cursor: 'pointer' }}><i className="fas fa-times-circle"></i></button>}
+        </div>
+
+        {/* City Search */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0 1.5rem' }}>
+          <i className="fas fa-map-marker-alt" style={{ color: '#2563eb', fontSize: '1rem' }}></i>
+          <div style={{ flex: 1 }}>
+            
+            <input 
+              value={city} 
+              onChange={e => setCity(e.target.value)} 
+              placeholder="Ville..." 
+              style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.98rem', fontWeight: 600, color: '#0f172a', background: 'transparent' }}
+            />
+          </div>
+          {city && <button onClick={() => setCity('')} style={{ color: '#cbd5e1', border: 'none', background: 'none', cursor: 'pointer' }}><i className="fas fa-times-circle"></i></button>}
+        </div>
+
+        {/* Filters Toggle Button (Matches Phone Sliders) */}
+        <button 
+          onClick={() => setShowFilters(true)}
+          style={{ 
+            height: '48px',
+            width: '48px',
+            borderRadius: '16px',
+            border: 'none',
+            background: '#f8fafc',
+            color: '#334155',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 0.5rem',
+            position: 'relative',
+            transition: 'background 0.2s'
+          }}
+          title="Plus de filtres"
+        >
+          <i className="fas fa-sliders" style={{ fontSize: '1.1rem' }}></i>
+          {activeCount > 0 && (
+            <span style={{ position: 'absolute', top: -4, right: -4, background: '#2563eb', color: '#fff', borderRadius: '50%', width: 18, height: 18, fontSize: '0.65rem', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff' }}>
+              {activeCount}
+            </span>
           )}
-        </div>
-
-        {/* City */}
-        <div className="ts-search-wrap" style={{ maxWidth: 200 }}>
-          <i className="fas fa-map-marker-alt" style={{ color: '#94a3b8', fontSize: '0.85rem', flexShrink: 0 }}></i>
-          <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." />
-          {city && <button onClick={() => setCity('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0 }}><i className="fas fa-times" style={{ fontSize: '0.8rem' }}></i></button>}
-        </div>
-
-        {/* Category */}
-        <select
-          className="ts-chip"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-          style={{ paddingRight: '1.5rem', background: category ? '#2563eb' : '#fff', color: category ? '#fff' : '#64748b', borderColor: category ? '#2563eb' : '#e2e8f0' }}
-        >
-          <option value="">Toutes catégories</option>
-          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-
-        {/* GPS */}
-        <button
-          onClick={handleNearMe}
-          disabled={gpsLoading}
-          className={`ts-chip ${nearMe ? 'active' : ''}`}
-        >
-          <i className={`fas ${gpsLoading ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'}`}></i>
-          {gpsLoading ? 'Localisation...' : nearMe ? 'Proche ✓' : 'Près de moi'}
         </button>
 
-        {/* Clear */}
-        {hasFilters && (
-          <button onClick={clearFilters} style={{ background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 8, padding: '0.45rem 0.85rem', fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <i className="fas fa-times"></i> Effacer
-          </button>
-        )}
+        {/* GPS / Location */}
+        <button 
+          onClick={handleNearMe}
+          disabled={gpsLoading}
+          style={{ 
+            height: '48px',
+            padding: '0 1.25rem',
+            borderRadius: '16px',
+            border: 'none',
+            background: nearMe ? '#dbeafe' : '#f8fafc',
+            color: nearMe ? '#1e40af' : '#64748b',
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.6rem',
+            marginRight: '0.4rem',
+            transition: 'all 0.2s'
+          }}
+        >
+          <i className={`fas ${gpsLoading ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'}`} style={{ fontSize: '1rem' }}></i>
+          <span>{nearMe ? 'Proche' : 'Ma position'}</span>
+        </button>
+
+        {/* Action Button */}
+        <button 
+          onClick={loadTools}
+          style={{ 
+            height: '48px',
+            padding: '0 1.75rem',
+            borderRadius: '16px',
+            border: 'none',
+            background: '#2563eb',
+            color: '#fff',
+            fontWeight: 800,
+            fontSize: '1rem',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(37,99,235,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.7rem'
+          }}
+        >
+          <i className="fas fa-search"></i>
+          <span>Chercher</span>
+        </button>
       </div>
 
       {/* Category pills — desktop */}
-      <div className="ts-desktop-filters" style={{ gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-        <button className={`ts-chip ${!category ? 'active' : ''}`} onClick={() => setCategory('')}>Tous</button>
+      <div className="ts-desktop-filters" style={{ gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem', justifyContent: 'center' }}>
+        <button className={`ts-chip ${!category ? 'active' : ''}`} onClick={() => setCategory('')} style={{ padding: '0.5rem 1.25rem' }}>Tous</button>
         {categories.map(c => (
-          <button key={c.id} className={`ts-chip ${category === String(c.id) ? 'active' : ''}`} onClick={() => setCategory(category === String(c.id) ? '' : String(c.id))}>
+          <button 
+            key={c.id} 
+            className={`ts-chip ${category === String(c.id) ? 'active' : ''}`} 
+            onClick={() => setCategory(category === String(c.id) ? '' : String(c.id))}
+            style={{ padding: '0.5rem 1.25rem' }}
+          >
             {c.name}
           </button>
         ))}
+        {hasFilters && (
+          <button onClick={clearFilters} style={{ background: 'none', border: 'none', color: '#94a3b8', fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer', marginLeft: '0.5rem', textDecoration: 'underline' }}>
+            Réinitialiser
+          </button>
+        )}
       </div>
 
       {/* ── Mobile top bar ── */}
