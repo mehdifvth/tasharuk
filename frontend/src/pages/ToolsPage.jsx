@@ -7,30 +7,30 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ToolsPage() {
   const { user } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  const [tools,      setTools]      = useState([]);
-  const [total,      setTotal]      = useState(0);
+  const [tools, setTools] = useState([]);
+  const [total, setTotal] = useState(0);
   const [categories, setCategories] = useState([]);
-  const [keyword,    setKeyword]    = useState('');
-  const [category,   setCategory]  = useState('');
-  const [city,       setCity]      = useState('');
-  const [loading,    setLoading]   = useState(false);
-  const [page,       setPage]      = useState(1);
-  const [lastPage,   setLastPage]  = useState(1);
-  const [nearMe,     setNearMe]    = useState(false);
-  const [userCoords, setUserCoords]= useState(null);
-  const [gpsLoading, setGpsLoading]= useState(false);
-  const [showFilters,setShowFilters]= useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [category, setCategory] = useState('');
+  const [city, setCity] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [nearMe, setNearMe] = useState(false);
+  const [userCoords, setUserCoords] = useState(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => { api.get('/categories').then(r => setCategories(r.data)); }, []);
 
   const loadTools = useCallback(() => {
     setLoading(true);
     const params = { page };
-    if (keyword)  params.keyword  = keyword;
+    if (keyword) params.keyword = keyword;
     if (category) params.category = category;
-    if (city)     params.city     = city;
+    if (city) params.city = city;
     if (nearMe && userCoords) { params.lat = userCoords.lat; params.lng = userCoords.lng; }
     api.get('/tools', { params })
       .then(r => { setTools(r.data.data || []); setTotal(r.data.total || 0); setLastPage(r.data.last_page || 1); })
@@ -54,8 +54,8 @@ export default function ToolsPage() {
   };
 
   const clearFilters = () => { setKeyword(''); setCategory(''); setCity(''); setNearMe(false); };
-  const hasFilters   = keyword || category || city || nearMe;
-  const activeCount  = [keyword, category, city, nearMe].filter(Boolean).length;
+  const hasFilters = keyword || category || city || nearMe;
+  const activeCount = [keyword, category, city, nearMe].filter(Boolean).length;
 
   return (
     <>
@@ -223,11 +223,11 @@ export default function ToolsPage() {
       </div>
 
       {/* ── Desktop filters (Modern Search Bar) ── */}
-      <div className="ts-desktop-filters" style={{ 
-        background: '#fff', 
-        border: '1.5px solid #e2e8f0', 
-        borderRadius: '20px', 
-        padding: '0.4rem', 
+      <div className="ts-desktop-filters" style={{
+        background: '#fff',
+        border: '1.5px solid #e2e8f0',
+        borderRadius: '20px',
+        padding: '0.4rem',
         marginBottom: '1.25rem',
         alignItems: 'center',
         boxShadow: '0 8px 30px rgba(0,0,0,0.04)',
@@ -240,11 +240,11 @@ export default function ToolsPage() {
         <div style={{ flex: 2, display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0 1.5rem', borderRight: '1.5px solid #f1f5f9' }}>
           <i className="fas fa-search" style={{ color: '#2563eb', fontSize: '1rem' }}></i>
           <div style={{ flex: 1 }}>
-            
-            <input 
-              value={keyword} 
-              onChange={e => setKeyword(e.target.value)} 
-              placeholder="Perceuse, Échelle, Tondeuse..." 
+
+            <input
+              value={keyword}
+              onChange={e => setKeyword(e.target.value)}
+              placeholder="Perceuse, Échelle, Tondeuse..."
               style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.98rem', fontWeight: 600, color: '#0f172a', background: 'transparent' }}
             />
           </div>
@@ -255,11 +255,11 @@ export default function ToolsPage() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.8rem', padding: '0 1.5rem' }}>
           <i className="fas fa-map-marker-alt" style={{ color: '#2563eb', fontSize: '1rem' }}></i>
           <div style={{ flex: 1 }}>
-            
-            <input 
-              value={city} 
-              onChange={e => setCity(e.target.value)} 
-              placeholder="Ville..." 
+
+            <input
+              value={city}
+              onChange={e => setCity(e.target.value)}
+              placeholder="Ville..."
               style={{ border: 'none', outline: 'none', width: '100%', fontSize: '0.98rem', fontWeight: 600, color: '#0f172a', background: 'transparent' }}
             />
           </div>
@@ -267,9 +267,9 @@ export default function ToolsPage() {
         </div>
 
         {/* Filters Toggle Button (Matches Phone Sliders) */}
-        <button 
+        <button
           onClick={() => setShowFilters(true)}
-          style={{ 
+          style={{
             height: '48px',
             width: '48px',
             borderRadius: '16px',
@@ -295,10 +295,10 @@ export default function ToolsPage() {
         </button>
 
         {/* GPS / Location */}
-        <button 
+        <button
           onClick={handleNearMe}
           disabled={gpsLoading}
-          style={{ 
+          style={{
             height: '48px',
             padding: '0 1.25rem',
             borderRadius: '16px',
@@ -320,9 +320,9 @@ export default function ToolsPage() {
         </button>
 
         {/* Action Button */}
-        <button 
+        <button
           onClick={loadTools}
-          style={{ 
+          style={{
             height: '48px',
             padding: '0 1.75rem',
             borderRadius: '16px',
@@ -347,9 +347,9 @@ export default function ToolsPage() {
       <div className="ts-desktop-filters" style={{ gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem', justifyContent: 'center' }}>
         <button className={`ts-chip ${!category ? 'active' : ''}`} onClick={() => setCategory('')} style={{ padding: '0.5rem 1.25rem' }}>Tous</button>
         {categories.map(c => (
-          <button 
-            key={c.id} 
-            className={`ts-chip ${category === String(c.id) ? 'active' : ''}`} 
+          <button
+            key={c.id}
+            className={`ts-chip ${category === String(c.id) ? 'active' : ''}`}
             onClick={() => setCategory(category === String(c.id) ? '' : String(c.id))}
             style={{ padding: '0.5rem 1.25rem' }}
           >
