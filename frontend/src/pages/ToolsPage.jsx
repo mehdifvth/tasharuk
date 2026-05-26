@@ -1,4 +1,3 @@
-// src/pages/ToolsPage.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
@@ -7,33 +6,43 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ToolsPage() {
   const { user } = useAuth();
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
 
-  const [tools,      setTools]      = useState([]);
-  const [total,      setTotal]      = useState(0);
+  const [tools, setTools] = useState([]);
+  const [totalTools, setTotalTools] = useState(0);
   const [categories, setCategories] = useState([]);
-  const [keyword,    setKeyword]    = useState('');
-  const [category,   setCategory]  = useState('');
-  const [city,       setCity]      = useState('');
-  const [loading,    setLoading]   = useState(false);
-  const [page,       setPage]      = useState(1);
-  const [lastPage,   setLastPage]  = useState(1);
-  const [nearMe,     setNearMe]    = useState(false);
-  const [userCoords, setUserCoords]= useState(null);
-  const [gpsLoading, setGpsLoading]= useState(false);
+  const [keyword, setKeyword] = useState('');
+  const [category, setCategory] = useState('');
+  const [city, setCity] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [userCoords, setUserCoords] = useState(null); 
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [nearMe, setNearMe] = useState(false);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  useEffect(() => { api.get('/categories').then(r => setCategories(r.data)); }, []);
+  useEffect(() => {
+    api.get('/categories').then(r => setCategories(r.data));
+  }, []);
 
   const loadTools = useCallback(() => {
     setLoading(true);
     const params = { page };
-    if (keyword)  params.keyword  = keyword;
+    if (keyword) params.keyword = keyword;
     if (category) params.category = category;
-    if (city)     params.city     = city;
-    if (nearMe && userCoords) { params.lat = userCoords.lat; params.lng = userCoords.lng; }
+    if (city) params.city = city;
+    if (nearMe && userCoords) {
+      params.lat = userCoords.lat;
+      params.lng = userCoords.lng;
+    }
     api.get('/tools', { params })
-      .then(r => { setTools(r.data.data || []); setTotal(r.data.total || 0); setLastPage(r.data.last_page || 1); })
-      .catch(() => { setTools([]); setTotal(0); })
+      .then(r => { 
+        setTools(r.data.data || []); 
+        setTotalTools(r.data.total || 0);
+        setLastPage(r.data.last_page || 1); 
+      })
+      .catch(() => { setTools([]); setTotalTools(0); })
       .finally(() => setLoading(false));
   }, [keyword, category, city, page, nearMe, userCoords]);
 
@@ -43,158 +52,259 @@ export default function ToolsPage() {
   const handleNearMe = () => {
     if (nearMe) { setNearMe(false); return; }
     if (userCoords) { setNearMe(true); return; }
-    if (!navigator.geolocation) { alert('Géolocalisation non supportée.'); return; }
+
+    if (!navigator.geolocation) {
+      alert("Votre navigateur ne supporte pas la géolocalisation.");
+      return;
+    }
+
     setGpsLoading(true);
+    
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
-      pos => { setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setNearMe(true); setGpsLoading(false); },
+      pos => {
+        setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setNearMe(true);
+        setGpsLoading(false);
+      },
       err => {
         setGpsLoading(false);
-        if (err.code === 1) alert('Accès refusé. Autorisez la géolocalisation.');
-        else alert('Position non disponible.');
+        console.error("GPS Error:", err);
+        let msg = "Impossible d'obtenir votre position.";
+        
+        if (err.code === 1) msg = "Accès à la position refusé. Veuillez autoriser la géolocalisation dans vos réglages.";
+        else if (err.code === 2) msg = "Position non disponible (vérifiez votre connexion GPS).";
+        else if (err.code === 3) msg = "Délai d'attente dépassé.";
+
+        if (window.location.protocol !== 'https:' && window.location.hostname !== 'localhost') {
+          msg += "\n\nNote : La géolocalisation nécessite une connexion sécurisée (HTTPS).";
+        }
+        
+        alert(msg);
       },
-      { enableHighAccuracy: true, timeout: 10000 }
+      options
     );
   };
 
-  const clearFilters = () => { setKeyword(''); setCategory(''); setCity(''); setNearMe(false); };
-  const hasFilters   = keyword || category || city || nearMe;
+  const clearFilters = () => {
+    setKeyword('');
+    setCategory('');
+    setCity('');
+    setNearMe(false);
+  };
 
   return (
-    <div>
+    <div style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '5rem' }}>
       <style>{`
-        .tf-input { width: 100%; padding: 0.65rem 0.9rem; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 0.88rem; outline: none; transition: border-color 0.15s; background: #fff; color: #374151; box-sizing: border-box; }
-        .tf-input:focus { border-color: #2563eb; }
-        .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
-        .page-btn { padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid #e2e8f0; background: #fff; color: #374151; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
-        .page-btn:hover:not(:disabled) { border-color: #2563eb; color: #2563eb; }
-        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        @media (max-width: 640px) {
-          .tools-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
-          .filter-grid { grid-template-columns: 1fr !important; }
+        .tools-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+          gap: 1.5rem;
         }
-        @media (max-width: 400px) { .tools-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+          .tools-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .filters-desktop { 
+            display: flex; 
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem; 
+          }
+          .filter-row-mobile {
+            display: flex;
+            gap: 0.5rem;
+          }
+          .hide-mobile { display: none !important; }
+          .filter-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: #fff; border-top: 1px solid #e2e8f0;
+            padding: 1rem; z-index: 50; display: flex; gap: 0.5rem;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+          }
+          .filters-panel {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: #fff; z-index: 100; padding: 1.5rem;
+            display: ${showMobileFilters ? 'flex' : 'none'};
+            flex-direction: column; gap: 1rem;
+            animation: slideUp 0.3s ease;
+          }
+        }
+        @media (min-width: 641px) {
+          .filter-bar { display: none; }
+          .filters-desktop {
+            display: grid;
+            grid-template-columns: 2fr 1.25fr 1fr auto auto;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            align-items: center;
+          }
+          .filter-row-mobile { display: contents; }
+          .filters-panel { display: contents; }
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
       `}</style>
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-        <div>
-          <h1 style={{ fontWeight: 800, fontSize: '1.5rem', color: '#0f172a', margin: 0 }}>Parcourir les outils</h1>
-          <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-            {loading ? 'Recherche...' : `${total} outil${total !== 1 ? 's' : ''} disponible${total !== 1 ? 's' : ''}`}
-            {nearMe && <span style={{ color: '#2563eb', fontWeight: 700, marginLeft: '0.5rem' }}>• <i className="fas fa-location-arrow me-1"></i>Rayon 50km</span>}
-          </p>
-        </div>
-        {user?.role === 'owner' && (
-          <button onClick={() => navigate('/my-tools')} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 10, padding: '0.6rem 1.1rem', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <i className="fas fa-plus"></i> Publier
-          </button>
-        )}
-      </div>
+      <div className="container" style={{ paddingTop: '2.5rem' }}>
 
-      {/* Filters */}
-      <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', padding: '1.25rem', marginBottom: '1.5rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
-        <div className="filter-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1.5fr 1fr', gap: '0.75rem', marginBottom: '0.75rem' }}>
-          {/* Search */}
-          <div style={{ position: 'relative' }}>
-            <i className="fas fa-search" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.8rem', pointerEvents: 'none' }}></i>
-            <input className="tf-input" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Rechercher un outil..." style={{ paddingLeft: 32 }} />
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h1 style={{ margin: 0 }}>Explorer les outils</h1>
+            <p style={{ color: '#64748b', fontSize: '1rem', marginTop: '0.5rem' }}>
+              {loading ? 'Recherche en cours...' : `${totalTools} outil(s) trouvé(s)`}
+              {nearMe && <span style={{ color: '#2563eb', fontWeight: 700, marginLeft: '0.5rem' }}>• <i className="fas fa-location-arrow me-1"></i>Rayon 50km</span>}
+            </p>
           </div>
-
-          {/* Category */}
-          <select className="tf-input" value={category} onChange={e => setCategory(e.target.value)}>
-            <option value="">Toutes catégories</option>
-            {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
-
-          {/* City */}
-          <div style={{ position: 'relative' }}>
-            <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', fontSize: '0.8rem', pointerEvents: 'none' }}></i>
-            <input className="tf-input" value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." style={{ paddingLeft: 30 }} />
-          </div>
-        </div>
-
-        {/* Second row */}
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          {/* GPS */}
-          <button
-            onClick={handleNearMe}
-            disabled={gpsLoading}
-            style={{
-              padding: '0.5rem 1rem', borderRadius: 8, border: '1.5px solid', fontWeight: 600, fontSize: '0.82rem', cursor: gpsLoading ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.15s',
-              borderColor: nearMe ? '#2563eb' : '#e2e8f0',
-              background: nearMe ? '#dbeafe' : '#fff',
-              color: nearMe ? '#1e40af' : '#64748b',
-            }}
-          >
-            <i className={`fas ${gpsLoading ? 'fa-spinner fa-spin' : nearMe ? 'fa-location-arrow' : 'fa-location-crosshairs'}`}></i>
-            {gpsLoading ? 'Localisation...' : nearMe ? 'Près de moi ✓' : 'Près de moi'}
-          </button>
-
-          {/* Category pills */}
-          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', flex: 1 }}>
-            <button
-              onClick={() => setCategory('')}
-              style={{ padding: '0.3rem 0.75rem', borderRadius: 20, border: '1.5px solid', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', borderColor: !category ? '#2563eb' : '#f1f5f9', background: !category ? '#dbeafe' : '#f8fafc', color: !category ? '#1e40af' : '#94a3b8' }}
-            >
-              Tous
-            </button>
-            {categories.slice(0, 5).map(c => (
-              <button
-                key={c.id}
-                onClick={() => setCategory(String(c.id))}
-                style={{ padding: '0.3rem 0.75rem', borderRadius: 20, border: '1.5px solid', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', borderColor: category === String(c.id) ? '#2563eb' : '#f1f5f9', background: category === String(c.id) ? '#dbeafe' : '#f8fafc', color: category === String(c.id) ? '#1e40af' : '#94a3b8' }}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Clear */}
-          {hasFilters && (
-            <button onClick={clearFilters} style={{ padding: '0.5rem 0.9rem', borderRadius: 8, border: 'none', background: '#fee2e2', color: '#dc2626', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <i className="fas fa-times"></i> Effacer
+          {user?.role === 'owner' && (
+            <button className="btn-primary" onClick={() => navigate('/my-tools')}>
+              <i className="fas fa-plus"></i> Publier un outil
             </button>
           )}
         </div>
-      </div>
 
-      {/* Grid */}
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
-          <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '2rem', color: '#2563eb', marginBottom: '0.75rem', display: 'block' }}></i>
-          Chargement...
-        </div>
-      ) : tools.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '4rem 2rem', background: '#fff', borderRadius: 16, border: '1px dashed #e2e8f0' }}>
-          <i className="fas fa-search" style={{ fontSize: '2.5rem', color: '#e2e8f0', marginBottom: '0.75rem', display: 'block' }}></i>
-          <p style={{ fontWeight: 700, color: '#374151', margin: '0 0 0.3rem' }}>Aucun outil trouvé</p>
-          <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0 0 1.25rem' }}>
-            {keyword ? `Aucun résultat pour "${keyword}"` : 'Aucun outil disponible'}
-          </p>
-          {hasFilters && <button onClick={clearFilters} style={{ background: '#f1f5f9', color: '#374151', border: 'none', borderRadius: 8, padding: '0.6rem 1.25rem', fontWeight: 600, cursor: 'pointer', fontSize: '0.85rem' }}>Effacer les filtres</button>}
-        </div>
-      ) : (
-        <div className="tools-grid">
-          {tools.map(tool => <ToolCard key={tool.id} tool={tool} onClick={() => navigate(`/tools/${tool.id}`)} />)}
-        </div>
-      )}
+        {/* Filters Top Bar */}
+        <div className="filters-desktop">
+          {/* Search */}
+          <div style={{ position: 'relative' }}>
+            <i className="fas fa-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+            <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Que cherchez-vous ?" style={{ paddingLeft: '2.75rem' }} />
+          </div>
 
-      {/* Pagination */}
-      {lastPage > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', marginTop: '2.5rem' }}>
-          <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-            <i className="fas fa-chevron-left"></i>
-          </button>
-          {[...Array(Math.min(lastPage, 7))].map((_, i) => (
-            <button key={i} onClick={() => setPage(i + 1)} style={{ width: 36, height: 36, borderRadius: 8, border: '1.5px solid', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', transition: 'all 0.15s', borderColor: page === i + 1 ? '#2563eb' : '#e2e8f0', background: page === i + 1 ? '#2563eb' : '#fff', color: page === i + 1 ? '#fff' : '#374151' }}>
-              {i + 1}
+          <div className="filter-row-mobile">
+            {/* Category Selection back below/next to search */}
+            <select value={category} onChange={e => setCategory(e.target.value)}>
+              <option value="">Catégories...</option>
+              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+
+            {/* City */}
+            <div style={{ position: 'relative', flex: 1 }}>
+              <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+              <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ville..." style={{ paddingLeft: '2.5rem' }} />
+            </div>
+
+            {/* Near Me */}
+            <button 
+              onClick={handleNearMe} 
+              disabled={gpsLoading}
+              className={nearMe ? "btn-primary" : "btn-outline"}
+              style={{ whiteSpace: 'nowrap', minWidth: 44 }}
+            >
+              <i className={`fas ${gpsLoading ? 'fa-spinner fa-spin' : 'fa-location-crosshairs'}`}></i>
+              <span className="hide-mobile">{nearMe ? 'À proximité' : 'Près de moi'}</span>
             </button>
-          ))}
-          <button className="page-btn" disabled={page === lastPage} onClick={() => setPage(p => p + 1)}>
-            <i className="fas fa-chevron-right"></i>
+          </div>
+
+          {/* Clear Filters (Desktop only) */}
+          {(keyword || category || city || nearMe) && (
+            <button className="hide-mobile" onClick={clearFilters} style={{ background: '#f1f5f9', color: '#64748b', borderRadius: '50%', width: 42, height: 42, padding: 0 }} title="Effacer les filtres">
+              <i className="fas fa-times"></i>
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Filter Panel */}
+        {showMobileFilters && (
+          <div className="filters-panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h3 style={{ margin: 0 }}>Tous les filtres</h3>
+              <button onClick={() => setShowMobileFilters(false)} style={{ background: '#f1f5f9', border: 'none', width: 36, height: 36, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fas fa-times" style={{ color: '#64748b' }}></i>
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1 }}>
+              <div>
+                <label style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Catégorie</label>
+                <select value={category} onChange={e => setCategory(e.target.value)} style={{ fontSize: '1rem', padding: '0.85rem' }}>
+                  <option value="">Toutes les catégories</option>
+                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
+              </div>
+              
+              <div>
+                <label style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Ville</label>
+                <div style={{ position: 'relative' }}>
+                  <i className="fas fa-map-marker-alt" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}></i>
+                  <input value={city} onChange={e => setCity(e.target.value)} placeholder="Ex: Casablanca" style={{ paddingLeft: '2.5rem', fontSize: '1rem', padding: '0.85rem 0.85rem 0.85rem 2.5rem' }} />
+                </div>
+              </div>
+              
+              <div>
+                <label style={{ fontWeight: 800, fontSize: '0.85rem', color: '#94a3b8', textTransform: 'uppercase', marginBottom: '0.5rem', display: 'block' }}>Localisation GPS</label>
+                <button 
+                  onClick={handleNearMe} 
+                  className={nearMe ? "btn-primary" : "btn-outline"}
+                  style={{ width: '100%', padding: '1rem', justifyContent: 'center' }}
+                >
+                  <i className="fas fa-location-arrow"></i> {nearMe ? 'Rayon 50km actif ✓' : 'Chercher autour de moi'}
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 'auto', display: 'flex', gap: '1rem', paddingTop: '1.5rem', borderTop: '1px solid #f1f5f9' }}>
+              <button className="btn-outline" style={{ flex: 1 }} onClick={() => { clearFilters(); setShowMobileFilters(false); }}>Réinitialiser</button>
+              <button className="btn-primary" style={{ flex: 1 }} onClick={() => setShowMobileFilters(false)}>Appliquer</button>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Sticky Bar */}
+        <div className="filter-bar">
+          <button className="btn-outline" style={{ flex: 1, height: '3.5rem' }} onClick={() => setShowMobileFilters(true)}>
+            <i className="fas fa-sliders" style={{ color: '#2563eb' }}></i> Filtres {(category || city || nearMe) ? '•' : ''}
+          </button>
+          <button 
+            className={nearMe ? "btn-primary" : "btn-outline"} 
+            style={{ flex: 1, height: '3.5rem' }} 
+            onClick={handleNearMe}
+          >
+            <i className="fas fa-location-arrow"></i> {nearMe ? 'Proche ✓' : 'Près de moi'}
           </button>
         </div>
-      )}
+
+        {/* Grid */}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+            <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '3rem', color: '#2563eb' }}></i>
+            <p style={{ marginTop: '1rem', color: '#64748b' }}>Recherche des meilleurs outils...</p>
+          </div>
+        ) : tools.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '5rem 2rem', background: '#fff', borderRadius: 24, border: '1px solid #f1f5f9' }} className="animate-up">
+            <div style={{ fontSize: '4rem', marginBottom: '1.5rem', color: '#e2e8f0' }}>
+              <i className="fas fa-search"></i>
+            </div>
+            <h3>Aucun résultat</h3>
+            <p style={{ color: '#64748b', maxWidth: 400, margin: '0.5rem auto 2rem' }}>
+              Nous n'avons pas trouvé d'outils correspondant à vos critères. Essayez d'élargir votre recherche.
+            </p>
+            <button className="btn-outline" onClick={clearFilters}>Effacer tous les filtres</button>
+          </div>
+        ) : (
+          <div className="tools-grid animate-up">
+            {tools.map(tool => (
+              <ToolCard key={tool.id} tool={tool} onClick={() => navigate(`/tools/${tool.id}`)} />
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {lastPage > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '4rem' }}>
+            <button className="btn-outline" disabled={page === 1} onClick={() => setPage(p => p - 1)} style={{ padding: '0.6rem 1rem' }}>
+              <i className="fas fa-chevron-left"></i>
+            </button>
+            <span style={{ fontWeight: 700, color: '#1e293b' }}>Page {page} sur {lastPage}</span>
+            <button className="btn-outline" disabled={page === lastPage} onClick={() => setPage(p => p + 1)} style={{ padding: '0.6rem 1rem' }}>
+              <i className="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
