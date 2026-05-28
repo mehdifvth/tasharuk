@@ -131,9 +131,9 @@ export default function UserLayout({ children }) {
                 <div className={`ul-ov ${open ? 'show' : ''}`} onClick={() => setOpen(false)} />
 
                 <aside className={`ul-side ${open ? 'open' : ''}`}>
-                    <div style={{ padding: '2rem 1.5rem', marginBottom: '1rem' }}>
+                    <Link to="/" style={{ display: 'flex', padding: '2rem 1.5rem', marginBottom: '1rem', textDecoration: 'none' }}>
                         <Logo size={40} />
-                    </div>
+                    </Link>
 
                     <nav style={{ flex: 1, overflowY: 'auto' }}>
                         {visible.map(item => (
