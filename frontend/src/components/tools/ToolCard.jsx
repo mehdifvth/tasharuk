@@ -71,7 +71,7 @@ export default function ToolCard({ tool, onClick }) {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding-top: 0.75rem;
+          padding-top: 0.85rem;
           border-top: 1px solid #f1f5f9;
           gap: 0.5rem;
         }
@@ -87,11 +87,11 @@ export default function ToolCard({ tool, onClick }) {
           flex-direction: column;
           flex-shrink: 0;
         }
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
           .tool-footer {
             flex-direction: column;
             align-items: flex-start;
-            gap: 0.75rem;
+            gap: 0.9rem;
           }
           .tool-owner-section {
             width: 100%;
@@ -168,9 +168,18 @@ export default function ToolCard({ tool, onClick }) {
                   {tool.user?.name?.split(' ')[0]}
                 </span>
                 {tool.user?.owner_rating > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.2rem', 
+                    background: '#fef9c3', 
+                    padding: '1px 6px', 
+                    borderRadius: '6px', 
+                    marginTop: '2px', 
+                    width: 'fit-content' 
+                  }}>
                     <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.6rem' }}></i>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b' }}>{tool.user.owner_rating}</span>
+                    <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#854d0e' }}>{tool.user.owner_rating}</span>
                   </div>
                 )}
               </div>
