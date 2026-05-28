@@ -66,6 +66,25 @@ export default function ToolCard({ tool, onClick }) {
           align-items: center;
           gap: 0.3rem;
         }
+        .tool-footer {
+          margin-top: auto;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 1rem;
+          border-top: 1px solid #f1f5f9;
+        }
+        @media (max-width: 480px) {
+          .tool-footer {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+          }
+          .tool-owner-section {
+            width: 100%;
+            justify-content: flex-start;
+          }
+        }
       `}</style>
       
       <div className="tool-card" onClick={onClick}>
@@ -106,7 +125,7 @@ export default function ToolCard({ tool, onClick }) {
             {tool.city || 'Localisation non précisée'}
           </div>
 
-          <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+          <div className="tool-footer">
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontWeight: 900, fontSize: '1.25rem', color: tool.price > 0 ? '#1e293b' : '#16a34a' }}>
                 {tool.price > 0 ? `${parseFloat(tool.price).toFixed(0)} MAD` : 'Gratuit'}
@@ -115,6 +134,7 @@ export default function ToolCard({ tool, onClick }) {
             </div>
 
             <div 
+              className="tool-owner-section"
               onClick={handleProfileClick}
               style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
             >
