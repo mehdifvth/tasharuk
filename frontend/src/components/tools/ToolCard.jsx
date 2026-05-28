@@ -116,20 +116,35 @@ export default function ToolCard({ tool, onClick }) {
 
             <div 
               onClick={handleProfileClick}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.2rem' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 800 }}>
-                  {tool.user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569' }}>{tool.user?.name?.split(' ')[0]}</span>
+              <div style={{ 
+                width: 34, 
+                height: 34, 
+                borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #2563eb, #6366f1)', 
+                color: '#fff', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center', 
+                fontSize: '0.9rem', 
+                fontWeight: 800,
+                boxShadow: '0 2px 8px rgba(37,99,235,0.15)',
+                flexShrink: 0
+              }}>
+                {tool.user?.name?.charAt(0).toUpperCase()}
               </div>
-              {tool.user?.owner_rating > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                  <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#1e293b' }}>{tool.user.owner_rating}</span>
-                </div>
-              )}
+              <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {tool.user?.name?.split(' ')[0]}
+                </span>
+                {tool.user?.owner_rating > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.1rem' }}>
+                    <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b' }}>{tool.user.owner_rating}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
