@@ -165,8 +165,18 @@ export default function ToolDetailPage() {
                 )}
               </div>
 
-              {/* Price */}
-              <div style={{ background: 'linear-gradient(135deg, #eff6ff, #eef2ff)', borderRadius: 12, padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              {/* Price & Owner Banner */}
+              <div className="td-banner" style={{ 
+                background: 'linear-gradient(135deg, #eff6ff, #eef2ff)', 
+                borderRadius: 12, 
+                padding: '1rem 1.25rem', 
+                marginBottom: '1.25rem', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                gap: '1rem',
+                flexWrap: 'wrap'
+              }}>
                 <div>
                   <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 0.15rem' }}>Prix</p>
                   <span style={{ fontWeight: 900, fontSize: '1.6rem', color: '#2563eb' }}>
@@ -174,18 +184,22 @@ export default function ToolDetailPage() {
                   </span>
                   {tool.price > 0 && <span style={{ color: '#94a3b8', fontSize: '0.82rem', marginLeft: '0.3rem' }}>/ heure</span>}
                 </div>
-                <div style={{ textAlign: 'right' }}>
+                
+                <div style={{ textAlign: 'right', flex: 1, minWidth: '140px' }}>
                   <p style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, margin: '0 0 0.3rem' }}>Propriétaire</p>
-                  <div className="td-owner-link" onClick={() => navigate(`/profile/${tool.user_id}`)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end' }}>
-                    <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#dbeafe', color: '#1d4ed8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.78rem' }}>
+                  <div className="td-owner-link" onClick={() => navigate(`/profile/${tool.user_id}`)} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', justifyContent: 'flex-end' }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#fff', border: '1.5px solid #dbeafe', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', flexShrink: 0 }}>
                       {tool.user?.name?.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <span style={{ fontWeight: 600, fontSize: '0.82rem', color: '#374151' }}>{tool.user?.name}</span>
-                      {tool.user?.owner_rating > 0 && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                          <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.6rem' }}></i>
-                          <span style={{ fontSize: '0.68rem', color: '#94a3b8', fontWeight: 700 }}>{tool.user.owner_rating}</span>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 0 }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                        {tool.user?.name}
+                      </span>
+                      {avgRating && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.1rem' }}>
+                          <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb' }}>{avgRating}</span>
+                          <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>({reviews.length} avis)</span>
                         </div>
                       )}
                     </div>
