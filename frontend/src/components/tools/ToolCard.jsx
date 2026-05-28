@@ -71,18 +71,30 @@ export default function ToolCard({ tool, onClick }) {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding-top: 1rem;
+          padding-top: 0.75rem;
           border-top: 1px solid #f1f5f9;
+          gap: 0.5rem;
+        }
+        .tool-owner-section {
+          display: flex;
+          align-items: center;
+          gap: 0.6rem;
+          min-width: 0;
+          cursor: pointer;
+        }
+        .tool-price-section {
+          display: flex;
+          flex-direction: column;
+          flex-shrink: 0;
         }
         @media (max-width: 480px) {
           .tool-footer {
             flex-direction: column;
             align-items: flex-start;
-            gap: 1rem;
+            gap: 0.75rem;
           }
           .tool-owner-section {
             width: 100%;
-            justify-content: flex-start;
           }
         }
       `}</style>
@@ -112,56 +124,53 @@ export default function ToolCard({ tool, onClick }) {
         </div>
 
         <div style={{ padding: '1.25rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '0.5rem' }}>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: '0.4rem' }}>
             {tool.category?.name}
           </div>
 
-          <h3 style={{ fontWeight: 800, fontSize: '1.05rem', color: '#1e293b', margin: '0 0 0.75rem', lineHeight: 1.4, height: '2.8rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          <h3 style={{ fontWeight: 800, fontSize: '1rem', color: '#1e293b', margin: '0 0 0.5rem', lineHeight: 1.4, height: '2.8rem', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
             {tool.title}
           </h3>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#64748b', fontSize: '0.85rem', marginBottom: '1.25rem' }}>
-            <i className="fas fa-location-dot" style={{ color: '#2563eb' }}></i>
-            {tool.city || 'Localisation non précisée'}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#64748b', fontSize: '0.8rem', marginBottom: '1rem' }}>
+            <i className="fas fa-location-dot" style={{ color: '#2563eb', fontSize: '0.75rem' }}></i>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {tool.city || 'Maroc'}
+            </span>
           </div>
 
           <div className="tool-footer">
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontWeight: 900, fontSize: '1.25rem', color: tool.price > 0 ? '#1e293b' : '#16a34a' }}>
+            <div className="tool-price-section">
+              <span style={{ fontWeight: 900, fontSize: '1.15rem', color: tool.price > 0 ? '#1e293b' : '#16a34a' }}>
                 {tool.price > 0 ? `${parseFloat(tool.price).toFixed(0)} MAD` : 'Gratuit'}
               </span>
-              <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 600 }}>par heure</span>
+              <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700 }}>/ heure</span>
             </div>
 
-            <div 
-              className="tool-owner-section"
-              onClick={handleProfileClick}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}
-            >
+            <div className="tool-owner-section" onClick={handleProfileClick}>
               <div style={{ 
-                width: 34, 
-                height: 34, 
+                width: 32, 
+                height: 32, 
                 borderRadius: '50%', 
                 background: 'linear-gradient(135deg, #2563eb, #6366f1)', 
                 color: '#fff', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center', 
-                fontSize: '0.9rem', 
+                fontSize: '0.85rem', 
                 fontWeight: 800,
-                boxShadow: '0 2px 8px rgba(37,99,235,0.15)',
                 flexShrink: 0
               }}>
                 {tool.user?.name?.charAt(0).toUpperCase()}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#1e293b', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {tool.user?.name?.split(' ')[0]}
                 </span>
                 {tool.user?.owner_rating > 0 && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.1rem' }}>
-                    <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b' }}>{tool.user.owner_rating}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                    <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.6rem' }}></i>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#64748b' }}>{tool.user.owner_rating}</span>
                   </div>
                 )}
               </div>
