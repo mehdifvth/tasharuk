@@ -192,16 +192,25 @@ export default function ToolDetailPage() {
                       {tool.user?.name?.charAt(0).toUpperCase()}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 0 }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
-                        {tool.user?.name}
-                      </span>
-                      {avgRating && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginTop: '0.1rem' }}>
-                          <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
-                          <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb' }}>{avgRating}</span>
-                          <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>({reviews.length} avis)</span>
-                        </div>
-                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        {tool.user?.is_online && (
+                          <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.6)' }}></div>
+                        )}
+                        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>
+                          {tool.user?.name}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {avgRating && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            <i className="fas fa-star" style={{ color: '#f59e0b', fontSize: '0.65rem' }}></i>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb' }}>{avgRating}</span>
+                          </div>
+                        )}
+                        <span style={{ fontSize: '0.65rem', color: tool.user?.is_online ? '#16a34a' : '#94a3b8', fontWeight: 700 }}>
+                          {tool.user?.is_online ? 'En ligne' : 'Hors ligne'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -9,19 +9,38 @@ export default function MessagesPage() {
   const navigate      = useNavigate();
   const { user }      = useAuth();
 
-  const [messages, setMessages] = useState([]);
-  const [text,     setText]     = useState('');
-  const [loading,  setLoading]  = useState(true);
-  const [sending,  setSending]  = useState(false);
-  const [error,    setError]    = useState(null);
+  const [messages,  setMessages]  = useState([]);
+  const [otherUser, setOtherUser] = useState(null);
+  const [text,      setText]      = useState('');
+  const [loading,   setLoading]   = useState(true);
+  const [sending,   setSending]   = useState(false);
+  const [error,     setError]     = useState(null);
   const bottomRef   = useRef(null);
   const intervalRef = useRef(null);
   const textareaRef = useRef(null);
 
   const loadMessages = useCallback(() => {
     api.get('/messages', { params: { booking_id: bookingId } })
-      .then(r => { setMessages(r.data); setError(null); })
-      .catch(err => { if (err.response?.status === 403) setError('Accès non autorisé à cette conversation.'); })
+      .then(r => { 
+        if (!r.data) return;
+        
+        let newMessages = [];
+        let newOtherUser = null;
+
+        if (Array.isArray(r.data)) {
+          newMessages = r.data;
+        } else {
+          newMessages = r.data.messages || [];
+          newOtherUser = r.data.other_user || null;
+        }
+
+        setMessages(newMessages);
+        if (newOtherUser) setOtherUser(newOtherUser);
+        setError(null); 
+      })
+      .catch(err => { 
+        if (err.response?.status === 403) setError('Accès non autorisé à cette conversation.'); 
+      })
       .finally(() => setLoading(false));
   }, [bookingId]);
 
@@ -90,12 +109,41 @@ export default function MessagesPage() {
 
         /* Chat header */
         .msg-header {
-          padding: 1rem 1.25rem;
+          padding: 0.85rem 1.25rem;
           border-bottom: 1px solid #f1f5f9;
           display: flex;
           align-items: center;
-          gap: 0.75rem;
+          gap: 0.85rem;
           flex-shrink: 0;
+          background: #fff;
+        }
+        .msg-header-avatar {
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          background: linear-gradient(135deg, #2563eb, #6366f1);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 800;
+          font-size: 1.1rem;
+          box-shadow: 0 4px 12px rgba(37,99,235,0.2);
+          position: relative;
+          flex-shrink: 0;
+        }
+        .msg-header-status-dot {
+          position: absolute;
+          bottom: -2px;
+          right: -2px;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          border: 2.5px solid #fff;
+          background: #cbd5e1;
+        }
+        .msg-header-status-dot.online {
+          background: #22c55e;
         }
 
         /* Messages area */
@@ -181,16 +229,29 @@ export default function MessagesPage() {
         <div className="msg-card">
           {/* Header */}
           <div className="msg-header">
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(135deg, #dbeafe, #eef2ff)', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
-              <i className="fas fa-comments"></i>
+            <div className="msg-header-avatar" onClick={() => otherUser && navigate(`/profile/${otherUser.id}`)} style={{ cursor: 'pointer' }}>
+              {otherUser ? otherUser.name?.charAt(0).toUpperCase() : '?'}
+              <div className={`msg-header-status-dot ${otherUser?.is_online ? 'online' : ''}`}></div>
             </div>
+            
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 style={{ fontWeight: 700, fontSize: '0.95rem', color: '#0f172a', margin: 0 }}>Conversation</h2>
-              <p style={{ color: '#94a3b8', fontSize: '0.75rem', margin: 0 }}>Réservation #{bookingId}</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', background: '#f0fdf4', padding: '0.25rem 0.65rem', borderRadius: 20 }}>
-              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#16a34a' }}></div>
-              <span style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 700 }}>En ligne</span>
+              <h2 
+                style={{ fontWeight: 850, fontSize: '1.05rem', color: '#0f172a', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}
+                onClick={() => otherUser && navigate(`/profile/${otherUser.id}`)}
+              >
+                {otherUser ? otherUser.name : 'Conversation'}
+              </h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.05rem' }}>
+                <span style={{ 
+                  fontSize: '0.72rem', 
+                  color: otherUser?.is_online ? '#16a34a' : '#94a3b8', 
+                  fontWeight: 700 
+                }}>
+                  {otherUser?.is_online ? 'En ligne' : 'Hors ligne'}
+                </span>
+                <span style={{ color: '#cbd5e1', fontSize: '0.6rem' }}>•</span>
+                <span style={{ color: '#94a3b8', fontSize: '0.7rem', fontWeight: 600 }}>Réservation #{bookingId}</span>
+              </div>
             </div>
           </div>
 

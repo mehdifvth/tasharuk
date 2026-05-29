@@ -19,7 +19,7 @@ class MessageController extends Controller
             'booking_id' => 'required|exists:bookings,id',
         ]);
 
-        $booking = Booking::with('tool')->findOrFail($request->booking_id);
+        $booking = Booking::with(['tool.user', 'borrower'])->findOrFail($request->booking_id);
         $userId  = $request->user()->id;
 
         // Only owner or borrower can read messages
@@ -32,7 +32,19 @@ class MessageController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        return response()->json($messages);
+        // Find the "other" participant info
+        $otherUser = $userId === $booking->borrower_id 
+            ? $booking->tool->user 
+            : $booking->borrower;
+
+        return response()->json([
+            'messages' => $messages,
+            'other_user' => $otherUser ? [
+                'id' => $otherUser->id,
+                'name' => $otherUser->name,
+                'is_online' => $otherUser->is_online,
+            ] : null
+        ]);
     }
 
     /**

@@ -19,9 +19,10 @@ class User extends Authenticatable
         'password',
         'is_admin',
         'role',
+        'last_seen_at',
     ];
 
-    protected $appends = ['owner_rating', 'borrower_rating', 'owner_reviews_count', 'borrower_reviews_count'];
+    protected $appends = ['owner_rating', 'borrower_rating', 'owner_reviews_count', 'borrower_reviews_count', 'is_online'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -29,7 +30,17 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'is_admin' => 'boolean',
+        'last_seen_at' => 'datetime',
     ];
+
+    /**
+     * Check if user is online (active in the last 5 minutes)
+     */
+    public function getIsOnlineAttribute()
+    {
+        if (!$this->last_seen_at) return false;
+        return $this->last_seen_at->gt(now()->subMinutes(5));
+    }
 
     public function tools()
     {
