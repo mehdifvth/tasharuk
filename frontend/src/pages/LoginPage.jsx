@@ -26,7 +26,7 @@ export default function LoginPage() {
         .auth-field input:focus { border-color: #2563eb; }
         .auth-field .field-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.82rem; pointer-events: none; }
         .auth-field .pwd-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 0.2rem; }
-        .auth-label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: '#374151'; }
+        .auth-label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.35rem; color: #374151; }
         .auth-submit { width: 100%; padding: 0.75rem; border-radius: 10px; border: none; background: #2563eb; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.15s; }
         .auth-submit:hover:not(:disabled) { background: #1d4ed8; }
         .auth-submit:disabled { background: #93c5fd; cursor: not-allowed; }
@@ -55,7 +55,7 @@ export default function LoginPage() {
                 <input
                   type="email" value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  required placeholder="ahmed@example.com"
+                  required placeholder="votre@email.com"
                 />
               </div>
             </div>
@@ -67,7 +67,7 @@ export default function LoginPage() {
                 <input
                   type={showPwd ? 'text' : 'password'} value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  required placeholder="••••••••"
+                  required placeholder="Saisissez votre mot de passe"
                   style={{ paddingRight: '2.5rem' }}
                 />
                 <button type="button" className="pwd-toggle" onClick={() => setShowPwd(!showPwd)}>

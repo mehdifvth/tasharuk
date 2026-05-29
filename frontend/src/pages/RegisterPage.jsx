@@ -78,7 +78,7 @@ export default function RegisterPage() {
                 <label className="reg-label">Nom complet</label>
                 <div className="reg-field">
                   <i className="fas fa-user fi"></i>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="Ahmed Benali" />
+                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="Ex: Jean Dupont" />
                 </div>
               </div>
 
@@ -86,7 +86,7 @@ export default function RegisterPage() {
                 <label className="reg-label">Email</label>
                 <div className="reg-field">
                   <i className="fas fa-envelope fi"></i>
-                  <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required placeholder="ahmed@example.com" />
+                  <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required placeholder="nom@exemple.com" />
                 </div>
               </div>
 
@@ -97,7 +97,7 @@ export default function RegisterPage() {
                   <input
                     type={showPwd ? 'text' : 'password'} value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    required placeholder="Minimum 8 caractères"
+                    required placeholder="Choisissez un mot de passe robuste"
                     style={{ paddingRight: '2.5rem' }}
                   />
                   <button type="button" className="pt" onClick={() => setShowPwd(!showPwd)}>
@@ -107,10 +107,20 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="reg-label">Confirmer le mot de passe</label>
+                <label className="reg-label">Confirmation</label>
                 <div className="reg-field">
                   <i className="fas fa-lock fi"></i>
-                  <input type="password" value={form.password_confirmation} onChange={e => setForm(f => ({ ...f, password_confirmation: e.target.value }))} required placeholder="Répéter le mot de passe" />
+                  <input
+                    type={showPwd ? 'text' : 'password'}
+                    value={form.password_confirmation}
+                    onChange={e => setForm(f => ({ ...f, password_confirmation: e.target.value }))}
+                    required
+                    placeholder="Confirmez votre mot de passe"
+                    style={{ paddingRight: '2.5rem' }}
+                  />
+                  <button type="button" className="pt" onClick={() => setShowPwd(!showPwd)}>
+                    <i className={`fas ${showPwd ? 'fa-eye-slash' : 'fa-eye'}`} style={{ fontSize: '0.82rem' }}></i>
+                  </button>
                 </div>
               </div>
 
