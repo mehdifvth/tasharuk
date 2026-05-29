@@ -183,6 +183,28 @@ export default function BookingsPage() {
           margin: 0 -1rem 1.5rem;
           padding: 0.5rem 1rem;
         }
+
+        .bp-tabs-scroll-area {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+
+        /* Subtle gradient to show there is more content */
+        .bp-tabs-scroll-area::after {
+          content: '';
+          position: absolute;
+          right: 0; top: 0; bottom: 0;
+          width: 50px;
+          background: linear-gradient(to left, #f8fafc, transparent);
+          pointer-events: none;
+          z-index: 2;
+          border-radius: 0 18px 18px 0;
+        }
+
+        @media (min-width: 769px) {
+          .bp-tabs-scroll-area::after { display: none; }
+        }
         
         .bp-tabs { 
           display: flex; 
@@ -192,10 +214,41 @@ export default function BookingsPage() {
           border-radius: 18px; 
           border: 1.5px solid #e2e8f0; 
           overflow-x: auto;
-          scrollbar-width: none; /* Firefox */
-          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none; 
+          -ms-overflow-style: none;
+          width: 100%;
+          scroll-behavior: smooth;
         }
-        .bp-tabs::-webkit-scrollbar { display: none; } /* Chrome, Safari, Opera */
+        .bp-tabs::-webkit-scrollbar { display: none; }
+
+        /* Animated Arrow Hint */
+        .bp-scroll-hint {
+          position: absolute;
+          right: 12px;
+          width: 28px;
+          height: 28px;
+          background: #2563eb;
+          color: #fff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          z-index: 3;
+          box-shadow: 0 4px 10px rgba(37,99,235,0.3);
+          animation: slideHint 1.5s infinite;
+          pointer-events: none;
+        }
+
+        @keyframes slideHint {
+          0% { transform: translateX(0); opacity: 0.2; }
+          50% { transform: translateX(-8px); opacity: 1; }
+          100% { transform: translateX(0); opacity: 0.2; }
+        }
+
+        @media (min-width: 769px) {
+          .bp-scroll-hint { display: none; }
+        }
 
         .bp-tab { 
           flex: 0 0 auto;
@@ -258,36 +311,44 @@ export default function BookingsPage() {
 
       {/* Tabs Navigation */}
       <div className="bp-tabs-container">
-        <div className="bp-tabs">
-          {BLOCKS.map(b => {
-            const count = bookings.filter(x => b.key === 'rejected' ? (x.status === 'rejected' || x.status === 'cancelled') : x.status === b.key).length;
-            const isActive = activeBlock === b.key;
-            return (
-              <button
-                key={b.key}
-                className={`bp-tab ${isActive ? 'active' : ''}`}
-                onClick={() => setActiveBlock(b.key)}
-                style={{ 
-                  background: isActive ? b.bg : 'transparent', 
-                  color: isActive ? b.color : '#64748b' 
-                }}
-              >
-                <i className={`fas ${b.icon}`} style={{ fontSize: '0.9rem' }}></i>
-                <span>{b.label}</span>
-                <span style={{ 
-                  background: isActive ? 'rgba(255,255,255,0.5)' : '#f1f5f9', 
-                  color: isActive ? b.color : '#94a3b8', 
-                  padding: '0.1rem 0.5rem', 
-                  borderRadius: '8px', 
-                  fontSize: '0.75rem', 
-                  fontWeight: 800,
-                  marginLeft: '2px'
-                }}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
+        <div className="bp-tabs-scroll-area">
+          <div className="bp-tabs" id="bp-tabs-scroll" onScroll={(e) => {
+            const hint = e.currentTarget.parentElement.querySelector('.bp-scroll-hint');
+            if (hint) hint.style.opacity = e.currentTarget.scrollLeft > 20 ? '0' : '1';
+          }}>
+            {BLOCKS.map(b => {
+              const count = bookings.filter(x => b.key === 'rejected' ? (x.status === 'rejected' || x.status === 'cancelled') : x.status === b.key).length;
+              const isActive = activeBlock === b.key;
+              return (
+                <button
+                  key={b.key}
+                  className={`bp-tab ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveBlock(b.key)}
+                  style={{ 
+                    background: isActive ? b.bg : 'transparent', 
+                    color: isActive ? b.color : '#64748b' 
+                  }}
+                >
+                  <i className={`fas ${b.icon}`} style={{ fontSize: '0.9rem' }}></i>
+                  <span>{b.label}</span>
+                  <span style={{ 
+                    background: isActive ? 'rgba(255,255,255,0.5)' : '#f1f5f9', 
+                    color: isActive ? b.color : '#94a3b8', 
+                    padding: '0.1rem 0.5rem', 
+                    borderRadius: '8px', 
+                    fontSize: '0.75rem', 
+                    fontWeight: 800,
+                    marginLeft: '2px'
+                  }}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="bp-scroll-hint">
+            <i className="fas fa-chevron-right"></i>
+          </div>
         </div>
       </div>
 
