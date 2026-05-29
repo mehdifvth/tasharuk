@@ -174,11 +174,55 @@ export default function BookingsPage() {
   return (
     <>
       <style>{`
-        /* Tabs */
-        .bp-tabs { display: flex; gap: 0.4rem; background: #fff; padding: 0.35rem; borderRadius: 16px; border: 1px solid #f1f5f9; margin-bottom: 1.5rem; flex-wrap: wrap; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
-        .bp-tab { flex: 1; min-width: 110px; padding: 0.65rem 0.75rem; border-radius: 12px; border: none; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.4rem; transition: all 0.2s; }
+        /* ── Tabs Navigation ── */
+        .bp-tabs-container {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          background: #f8fafc;
+          margin: 0 -1rem 1.5rem;
+          padding: 0.5rem 1rem;
+        }
+        
+        .bp-tabs { 
+          display: flex; 
+          gap: 0.5rem; 
+          background: #fff; 
+          padding: 0.4rem; 
+          border-radius: 18px; 
+          border: 1.5px solid #e2e8f0; 
+          overflow-x: auto;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none;  /* IE and Edge */
+        }
+        .bp-tabs::-webkit-scrollbar { display: none; } /* Chrome, Safari, Opera */
 
-        /* Card */
+        .bp-tab { 
+          flex: 0 0 auto;
+          padding: 0.7rem 1.25rem; 
+          border-radius: 14px; 
+          border: none; 
+          font-weight: 700; 
+          font-size: 0.85rem; 
+          cursor: pointer; 
+          display: flex; 
+          align-items: center; 
+          justify-content: center; 
+          gap: 0.6rem; 
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+          color: #64748b;
+          background: transparent;
+          white-space: nowrap;
+        }
+        .bp-tab:hover:not(.active) {
+          background: #f1f5f9;
+          color: #0f172a;
+        }
+        .bp-tab.active {
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* ── Card ── */
         .bp-card { background: #fff; border-radius: 18px; border: 1px solid #f1f5f9; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; margin-bottom: 1rem; }
         .bp-card-header { padding: 1.1rem 1.25rem; border-bottom: 1px solid #f8fafc; display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap; }
         .bp-card-body { padding: 1.1rem 1.25rem; }
@@ -201,38 +245,50 @@ export default function BookingsPage() {
           .bp-body-inner { flex-direction: column !important; }
           .bp-actions { width: 100% !important; flex-direction: row !important; flex-wrap: wrap; }
           .act-btn { flex: 1; min-width: 80px; }
-          .bp-tab { min-width: 80px; font-size: 0.75rem; }
         }
       `}</style>
 
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <h1 style={{ fontWeight: 800, fontSize: '1.5rem', color: '#0f172a', margin: 0 }}>Mes Réservations</h1>
-        <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.25rem 0 0' }}>
-          Suivez vos locations et l'historique de vos partages.
+        <h1 style={{ fontWeight: 850, fontSize: '1.6rem', color: '#0f172a', margin: 0, letterSpacing: '-0.5px' }}>Mes Réservations</h1>
+        <p style={{ color: '#94a3b8', fontSize: '0.88rem', margin: '0.35rem 0 0', fontWeight: 500 }}>
+          Gérez vos locations et l'historique de vos partages.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="bp-tabs">
-        {BLOCKS.map(b => {
-          const count = bookings.filter(x => b.key === 'rejected' ? (x.status === 'rejected' || x.status === 'cancelled') : x.status === b.key).length;
-          const isActive = activeBlock === b.key;
-          return (
-            <button
-              key={b.key}
-              className="bp-tab"
-              onClick={() => setActiveBlock(b.key)}
-              style={{ background: isActive ? b.bg : 'transparent', color: isActive ? b.color : '#94a3b8' }}
-            >
-              <i className={`fas ${b.icon}`} style={{ fontSize: '0.8rem', opacity: isActive ? 1 : 0.6 }}></i>
-              <span className="bp-tab-label">{b.label}</span>
-              <span style={{ background: isActive ? 'rgba(0,0,0,0.1)' : '#f1f5f9', color: isActive ? b.color : '#94a3b8', padding: '0.1rem 0.45rem', borderRadius: 20, fontSize: '0.72rem', fontWeight: 800 }}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
+      {/* Tabs Navigation */}
+      <div className="bp-tabs-container">
+        <div className="bp-tabs">
+          {BLOCKS.map(b => {
+            const count = bookings.filter(x => b.key === 'rejected' ? (x.status === 'rejected' || x.status === 'cancelled') : x.status === b.key).length;
+            const isActive = activeBlock === b.key;
+            return (
+              <button
+                key={b.key}
+                className={`bp-tab ${isActive ? 'active' : ''}`}
+                onClick={() => setActiveBlock(b.key)}
+                style={{ 
+                  background: isActive ? b.bg : 'transparent', 
+                  color: isActive ? b.color : '#64748b' 
+                }}
+              >
+                <i className={`fas ${b.icon}`} style={{ fontSize: '0.9rem' }}></i>
+                <span>{b.label}</span>
+                <span style={{ 
+                  background: isActive ? 'rgba(255,255,255,0.5)' : '#f1f5f9', 
+                  color: isActive ? b.color : '#94a3b8', 
+                  padding: '0.1rem 0.5rem', 
+                  borderRadius: '8px', 
+                  fontSize: '0.75rem', 
+                  fontWeight: 800,
+                  marginLeft: '2px'
+                }}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {error && (
