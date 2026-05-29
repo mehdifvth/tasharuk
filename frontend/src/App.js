@@ -6,6 +6,8 @@ import { useAuth } from './context/AuthContext';
 import Navbar from './components/common/Navbar';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import RegisterPage from './pages/RegisterPage';
 import ToolsPage from './pages/ToolsPage';
 import ToolDetailPage from './pages/ToolDetailPage';
@@ -50,6 +52,8 @@ export default function App() {
         {/* Routes publiques avec Navbar normale */}
         <Route path="/" element={<UserLayoutWrapper><HomePage /></UserLayoutWrapper>} />
         <Route path="/login" element={<UserLayoutWrapper><LoginPage /></UserLayoutWrapper>} />
+        <Route path="/forgot-password" element={<UserLayoutWrapper><ForgotPasswordPage /></UserLayoutWrapper>} />
+        <Route path="/reset-password" element={<UserLayoutWrapper><ResetPasswordPage /></UserLayoutWrapper>} />
         <Route path="/register" element={<UserLayout><RegisterPage /></UserLayout>} />
         <Route path="/tools" element={<UserLayout><ToolsPage /></UserLayout>} />
         <Route path="/tools/:id" element={<UserLayout><ToolDetailPage /></UserLayout>} />

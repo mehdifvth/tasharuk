@@ -61,7 +61,12 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="auth-label">Mot de passe</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <label className="auth-label" style={{ margin: 0 }}>Mot de passe</label>
+                <Link to="/forgot-password" style={{ fontSize: '0.78rem', color: '#2563eb', fontWeight: 700, textDecoration: 'none' }}>
+                  Mot de passe oublié ?
+                </Link>
+              </div>
               <div className="auth-field">
                 <i className="fas fa-lock field-icon"></i>
                 <input
