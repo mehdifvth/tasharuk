@@ -77,6 +77,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/categories/{id}', [AdminController::class, 'deleteCategory']);
 
     Route::put('/user/role', [AuthController::class, 'updateRole']);
+    Route::put('/user/password', [AuthController::class, 'updatePassword']);
     Route::delete('/user',   [AuthController::class, 'destroy']);
     Route::put('/bookings/{id}/cancel', [BookingController::class, 'cancel']);
     Route::post('/bookings/{id}/confirm-pickup', [BookingController::class, 'confirmPickup']);

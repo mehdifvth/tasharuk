@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
 
 export default function ProfilePage() {
   const { user, updateRole, logout } = useAuth();
@@ -9,6 +10,14 @@ export default function ProfilePage() {
   const [msg,     setMsg]     = useState(null);
   const [loading, setLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
+
+  // Password change state
+  const [pwdForm, setPwdForm] = useState({ current_password: '', password: '', password_confirmation: '' });
+  const [showPwd, setShowPwd] = useState(false);
+  const [pwdLoading, setPwdLoading] = useState(false);
+  const [pwdMsg, setPwdMsg] = useState(null);
+  const [pwdError, setPwdError] = useState(null);
+  const [showSecurity, setShowSecurity] = useState(false);
 
   const handleSwitch = async () => {
     const newRole = user.role === 'owner' ? 'borrower' : 'owner';
@@ -19,6 +28,28 @@ export default function ProfilePage() {
       setMsg(`Rôle changé en ${newRole === 'owner' ? 'Propriétaire' : 'Emprunteur'} `);
       setTimeout(() => setMsg(null), 3000);
     } else setMsg(res.error);
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setPwdError(null);
+    setPwdMsg(null);
+    
+    if (pwdForm.password !== pwdForm.password_confirmation) {
+      setPwdError('Les nouveaux mots de passe ne correspondent pas.');
+      return;
+    }
+    
+    setPwdLoading(true);
+    try {
+      const res = await api.put('/user/password', pwdForm);
+      setPwdMsg(res.data.message || 'Mot de passe mis à jour avec succès.');
+      setPwdForm({ current_password: '', password: '', password_confirmation: '' });
+    } catch (err) {
+      setPwdError(err.response?.data?.message || 'Erreur lors de la mise à jour.');
+    } finally {
+      setPwdLoading(false);
+    }
   };
 
   if (!user) return null;
@@ -36,6 +67,13 @@ export default function ProfilePage() {
         .prof-btn:hover:not(:disabled) { transform: translateY(-1px); }
         .prof-btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .info-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem; background: #f8fafc; border-radius: 12px; border: 1px solid #f1f5f9; }
+        
+        .prof-field { position: relative; margin-bottom: 0.85rem; }
+        .prof-field input { width: 100%; padding: 0.7rem 0.9rem 0.7rem 2.6rem; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 0.88rem; color: #1e293b; outline: none; transition: all 0.2s; box-sizing: border-box; background: #f8fafc; }
+        .prof-field input:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .prof-field .field-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 0.85rem; pointer-events: none; }
+        .prof-field .pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: #94a3b8; padding: 0.2rem; }
+        .prof-label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.35rem; color: #475569; }
       `}</style>
 
       {/* Header card */}
@@ -110,6 +148,103 @@ export default function ProfilePage() {
           <div style={{ marginTop: '0.75rem', background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '0.65rem', textAlign: 'center' }}>
             <p style={{ color: '#16a34a', fontWeight: 600, fontSize: '0.85rem', margin: 0 }}>{msg}</p>
           </div>
+        )}
+      </div>
+
+      {/* Change Password Section (Accordion) */}
+      <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', padding: '1.25rem', marginBottom: '1rem', boxShadow: '0 1px 4px rgba(0,0,0,0.04)' }}>
+        <button 
+          onClick={() => setShowSecurity(!showSecurity)}
+          style={{ 
+            width: '100%', 
+            background: 'none', 
+            border: 'none', 
+            padding: 0, 
+            margin: 0, 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between', 
+            cursor: 'pointer' 
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+            <div style={{ width: 32, height: 32, borderRadius: 10, background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <i className="fas fa-shield-alt" style={{ color: '#2563eb', fontSize: '0.9rem' }}></i>
+            </div>
+            Sécurité et connexion
+          </h3>
+          <i 
+            className={`fas fa-chevron-${showSecurity ? 'up' : 'down'}`} 
+            style={{ color: '#94a3b8', transition: 'transform 0.3s' }}
+          ></i>
+        </button>
+        
+        {showSecurity && (
+          <form onSubmit={handlePasswordChange} style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px dashed #e2e8f0', animation: 'fadeIn 0.3s ease' }}>
+            <div>
+              <label className="prof-label">Mot de passe actuel</label>
+              <div className="prof-field">
+                <i className="fas fa-unlock field-icon"></i>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={pwdForm.current_password}
+                  onChange={e => setPwdForm({ ...pwdForm, current_password: e.target.value })}
+                  required
+                  placeholder="Votre mot de passe actuel"
+                  style={{ paddingRight: '2.5rem' }}
+                  autoComplete="current-password"
+                />
+                <button type="button" className="pwd-toggle" onClick={() => setShowPwd(!showPwd)}>
+                  <i className={`fas ${showPwd ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="prof-label">Nouveau mot de passe</label>
+              <div className="prof-field">
+                <i className="fas fa-key field-icon"></i>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={pwdForm.password}
+                  onChange={e => setPwdForm({ ...pwdForm, password: e.target.value })}
+                  required
+                  placeholder="Nouveau mot de passe"
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="prof-label">Confirmer le nouveau mot de passe</label>
+              <div className="prof-field" style={{ marginBottom: '1.25rem' }}>
+                <i className="fas fa-check-circle field-icon"></i>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={pwdForm.password_confirmation}
+                  onChange={e => setPwdForm({ ...pwdForm, password_confirmation: e.target.value })}
+                  required
+                  placeholder="Répétez le nouveau mot de passe"
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+
+            {pwdError && (
+              <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: 10, padding: '0.75rem', color: '#dc2626', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontWeight: 600 }}>
+                <i className="fas fa-circle-exclamation"></i> {pwdError}
+              </div>
+            )}
+            {pwdMsg && (
+              <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: 10, padding: '0.75rem', color: '#166534', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', fontWeight: 600 }}>
+                <i className="fas fa-circle-check"></i> {pwdMsg}
+              </div>
+            )}
+
+            <button type="submit" className="prof-btn" disabled={pwdLoading || !pwdForm.current_password || !pwdForm.password || !pwdForm.password_confirmation} style={{ background: '#0f172a', color: '#fff' }}>
+              {pwdLoading ? <><i className="fas fa-spinner fa-spin"></i> Mise à jour...</> : 'Mettre à jour le mot de passe'}
+            </button>
+          </form>
         )}
       </div>
 
