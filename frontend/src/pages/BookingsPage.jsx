@@ -6,18 +6,18 @@ import ReviewForm from '../components/reviews/ReviewForm';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const STATUS = {
-  pending:   { icon: 'fa-hourglass-half',  text: 'En attente', bg: '#fef9c3', color: '#854d0e' },
-  approved:  { icon: 'fa-check-circle',    text: 'Approuvée',  bg: '#dcfce7', color: '#166534' },
-  rejected:  { icon: 'fa-times-circle',    text: 'Rejetée',    bg: '#fee2e2', color: '#991b1b' },
-  completed: { icon: 'fa-flag-checkered',  text: 'Terminée',   bg: '#dbeafe', color: '#1e40af' },
-  cancelled: { icon: 'fa-ban',             text: 'Annulée',    bg: '#f1f5f9', color: '#64748b' },
+  pending: { icon: 'fa-hourglass-half', text: 'En attente', bg: '#fef9c3', color: '#854d0e' },
+  approved: { icon: 'fa-check-circle', text: 'Approuvée', bg: '#dcfce7', color: '#166534' },
+  rejected: { icon: 'fa-times-circle', text: 'Rejetée', bg: '#fee2e2', color: '#991b1b' },
+  completed: { icon: 'fa-flag-checkered', text: 'Terminée', bg: '#dbeafe', color: '#1e40af' },
+  cancelled: { icon: 'fa-ban', text: 'Annulée', bg: '#f1f5f9', color: '#64748b' },
 };
 
 const BLOCKS = [
-  { key: 'pending',   label: 'En attente',         color: '#f59e0b', bg: '#fef9c3', icon: 'fa-hourglass-half' },
-  { key: 'approved',  label: 'Approuvées',          color: '#16a34a', bg: '#dcfce7', icon: 'fa-check-circle' },
-  { key: 'completed', label: 'Terminées',           color: '#2563eb', bg: '#dbeafe', icon: 'fa-flag-checkered' },
-  { key: 'rejected',  label: 'Rejetées / Annulées', color: '#dc2626', bg: '#fee2e2', icon: 'fa-times-circle' },
+  { key: 'pending', label: 'En attente', color: '#f59e0b', bg: '#fef9c3', icon: 'fa-hourglass-half' },
+  { key: 'approved', label: 'Approuvées', color: '#16a34a', bg: '#dcfce7', icon: 'fa-check-circle' },
+  { key: 'completed', label: 'Terminées', color: '#2563eb', bg: '#dbeafe', icon: 'fa-flag-checkered' },
+  { key: 'rejected', label: 'Rejetées / Annulées', color: '#dc2626', bg: '#fee2e2', icon: 'fa-times-circle' },
 ];
 
 function ElapsedTimer({ startTime }) {
@@ -25,13 +25,13 @@ function ElapsedTimer({ startTime }) {
   useEffect(() => {
     const update = () => {
       const diff = Math.floor((Date.now() - new Date(startTime + 'Z')) / 1000);
-      const d  = Math.floor(diff / 86400);
+      const d = Math.floor(diff / 86400);
       const hh = Math.floor((diff % 86400) / 3600);
       const mm = Math.floor((diff % 3600) / 60);
       const ss = diff % 60;
       setElapsed(d > 0
-        ? `${d}j ${String(hh).padStart(2,'0')}h ${String(mm).padStart(2,'0')}m ${String(ss).padStart(2,'0')}s`
-        : `${String(hh).padStart(2,'0')}h ${String(mm).padStart(2,'0')}m ${String(ss).padStart(2,'0')}s`
+        ? `${d}j ${String(hh).padStart(2, '0')}h ${String(mm).padStart(2, '0')}m ${String(ss).padStart(2, '0')}s`
+        : `${String(hh).padStart(2, '0')}h ${String(mm).padStart(2, '0')}m ${String(ss).padStart(2, '0')}s`
       );
     };
     update();
@@ -92,18 +92,18 @@ function CodeInput({ label, onSubmit, loading, error, placeholder = 'TAS-XXXX' }
 }
 
 export default function BookingsPage() {
-  const { user }   = useAuth();
-  const navigate   = useNavigate();
-  const location   = useLocation();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const [bookings,    setBookings]    = useState([]);
-  const [loading,     setLoading]     = useState(true);
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeBlock, setActiveBlock] = useState(location.state?.block || 'pending');
-  const [reviewFor,   setReviewFor]   = useState(null);
-  const [actionLoad,  setActionLoad]  = useState(null);
-  const [codeLoad,    setCodeLoad]    = useState(null);
-  const [codeError,   setCodeError]   = useState({});
-  const [error,       setError]       = useState(null);
+  const [reviewFor, setReviewFor] = useState(null);
+  const [actionLoad, setActionLoad] = useState(null);
+  const [codeLoad, setCodeLoad] = useState(null);
+  const [codeError, setCodeError] = useState({});
+  const [error, setError] = useState(null);
   const [showBorrowerReviews, setShowBorrowerReviews] = useState({});
 
   useEffect(() => {
@@ -158,10 +158,10 @@ export default function BookingsPage() {
   };
 
   const filtered = bookings.filter(b => {
-    if (activeBlock === 'pending')   return b.status === 'pending';
-    if (activeBlock === 'approved')  return b.status === 'approved';
+    if (activeBlock === 'pending') return b.status === 'pending';
+    if (activeBlock === 'approved') return b.status === 'approved';
     if (activeBlock === 'completed') return b.status === 'completed';
-    if (activeBlock === 'rejected')  return b.status === 'rejected' || b.status === 'cancelled';
+    if (activeBlock === 'rejected') return b.status === 'rejected' || b.status === 'cancelled';
     return false;
   });
 
@@ -324,19 +324,19 @@ export default function BookingsPage() {
                   key={b.key}
                   className={`bp-tab ${isActive ? 'active' : ''}`}
                   onClick={() => setActiveBlock(b.key)}
-                  style={{ 
-                    background: isActive ? b.bg : 'transparent', 
-                    color: isActive ? b.color : '#64748b' 
+                  style={{
+                    background: isActive ? b.bg : 'transparent',
+                    color: isActive ? b.color : '#64748b'
                   }}
                 >
                   <i className={`fas ${b.icon}`} style={{ fontSize: '0.9rem' }}></i>
                   <span>{b.label}</span>
-                  <span style={{ 
-                    background: isActive ? 'rgba(255,255,255,0.5)' : '#f1f5f9', 
-                    color: isActive ? b.color : '#94a3b8', 
-                    padding: '0.1rem 0.5rem', 
-                    borderRadius: '8px', 
-                    fontSize: '0.75rem', 
+                  <span style={{
+                    background: isActive ? 'rgba(255,255,255,0.5)' : '#f1f5f9',
+                    color: isActive ? b.color : '#94a3b8',
+                    padding: '0.1rem 0.5rem',
+                    borderRadius: '8px',
+                    fontSize: '0.75rem',
                     fontWeight: 800,
                     marginLeft: '2px'
                   }}>
@@ -371,9 +371,9 @@ export default function BookingsPage() {
       ) : (
         <div>
           {filtered.map(b => {
-            const isOwner   = user?.id === b.tool?.user_id;
-            const s         = STATUS[b.status];
-            const myReview  = b.reviews?.find(r => r.reviewer_id === user.id);
+            const isOwner = user?.id === b.tool?.user_id;
+            const s = STATUS[b.status];
+            const myReview = b.reviews?.find(r => r.reviewer_id === user.id);
             const hasReview = !!myReview;
             const isOverdue = b.picked_up_at && !b.returned_at && new Date() > new Date(b.end_date + 'Z');
 
@@ -561,7 +561,7 @@ export default function BookingsPage() {
                         <div style={{ textAlign: 'center', paddingRight: '0.75rem', borderRight: '1px solid #e2e8f0' }}>
                           <p style={{ fontWeight: 900, fontSize: '1.2rem', color: '#0f172a', margin: 0 }}>{b.borrower.borrower_rating || 'N/A'}</p>
                           <div style={{ display: 'flex', gap: '1px' }}>
-                            {[1,2,3,4,5].map(i => (
+                            {[1, 2, 3, 4, 5].map(i => (
                               <i key={i} className="fas fa-star" style={{ fontSize: '0.6rem', color: i <= Math.round(b.borrower.borrower_rating || 0) ? '#f59e0b' : '#e2e8f0' }}></i>
                             ))}
                           </div>
