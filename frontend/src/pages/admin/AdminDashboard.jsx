@@ -217,12 +217,12 @@ export default function AdminDashboard() {
 }
 
 const S = {
-  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px,1fr))', gap: '1rem', marginBottom: '1.5rem' },
+  statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 200px),1fr))', gap: '1rem', marginBottom: '1.5rem' },
   statCard: {
     background: '#fff', borderRadius: 14, padding: '1.25rem', border: '1px solid #f1f5f9',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', transition: 'box-shadow 0.2s',
   },
-  twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px,1fr))', gap: '1rem', marginBottom: '1rem' },
+  twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px),1fr))', gap: '1rem', marginBottom: '1rem' },
   card: {
     background: '#fff', borderRadius: 14, padding: '1.25rem', border: '1px solid #f1f5f9',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)', marginBottom: '1rem'
@@ -234,7 +234,7 @@ const S = {
   listItem: { display: 'flex', alignItems: 'center', gap: '0.65rem', padding: '0.6rem 0', borderBottom: '1px solid #f8fafc' },
   badge: { padding: '0.2rem 0.6rem', borderRadius: 20, fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0 },
   empty: { color: '#94a3b8', textAlign: 'center', padding: '1.5rem 0', fontSize: '0.85rem' },
-  toolsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px,1fr))', gap: '0.75rem' },
+  toolsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 140px), 1fr))', gap: '0.75rem' },
   toolCard: { border: '1px solid #f1f5f9', borderRadius: 10, overflow: 'hidden' },
   toolImg: { width: '100%', height: 90, objectFit: 'cover' },
   toolPlaceholder: { height: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc' },

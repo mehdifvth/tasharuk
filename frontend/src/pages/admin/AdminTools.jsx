@@ -109,7 +109,7 @@ export default function AdminTools() {
                     <p style={{ fontSize: '0.9rem' }}>Aucun outil trouvé sur cette page</p>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
                     {filtered.map(t => (
                         <div key={t.id} style={S.card}>
                             {/* Image */}
