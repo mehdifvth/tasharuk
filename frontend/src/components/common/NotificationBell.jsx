@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 
@@ -9,20 +9,37 @@ export default function NotificationBell() {
     const [unread, setUnread] = useState(0);
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
+    const prevUnreadRef = useRef(0);
     const navigate = useNavigate();
-
+    const location = useLocation();
 
     const load = () => {
         api.get('/notifications')
             .then(r => {
                 setNotifications(r.data.notifications);
-                setUnread(r.data.unread);
+                const newUnread = r.data.unread;
+                setUnread(newUnread);
+                
+                // If unread count increases, force a page refresh to update underlying data
+                if (newUnread > prevUnreadRef.current && prevUnreadRef.current !== 0) {
+                    // Refresh the current route to fetch new data
+                    navigate(0); 
+                }
+                prevUnreadRef.current = newUnread;
             })
             .catch(() => { });
     };
 
     useEffect(() => {
-        load();
+        // Initial load
+        api.get('/notifications')
+            .then(r => {
+                setNotifications(r.data.notifications);
+                setUnread(r.data.unread);
+                prevUnreadRef.current = r.data.unread;
+            })
+            .catch(() => { });
+
         const interval = setInterval(load, 10000); // poll 10s
         return () => clearInterval(interval);
     }, []);
@@ -41,6 +58,7 @@ export default function NotificationBell() {
         if (!open && unread > 0) {
             await api.put('/notifications/read');
             setUnread(0);
+            prevUnreadRef.current = 0;
             setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
         }
     };

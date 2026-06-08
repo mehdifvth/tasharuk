@@ -231,7 +231,7 @@ export default function MessagesPage() {
           <div className="msg-header">
             <div className="msg-header-avatar" onClick={() => otherUser && navigate(`/profile/${otherUser.id}`)} style={{ cursor: 'pointer' }}>
               {otherUser ? otherUser.name?.charAt(0).toUpperCase() : '?'}
-              {otherUser?.is_online && <div className="msg-header-status-dot online"></div>}
+              <div className="msg-header-status-dot online"></div>
             </div>
             
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -242,18 +242,14 @@ export default function MessagesPage() {
                 {otherUser ? otherUser.name : 'Conversation'}
               </h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', marginTop: '0.05rem' }}>
-                {otherUser?.is_online && (
-                  <>
-                    <span style={{ 
-                      fontSize: '0.72rem', 
-                      color: '#16a34a', 
-                      fontWeight: 700 
-                    }}>
-                      En ligne
-                    </span>
-                    <span style={{ color: '#cbd5e1', fontSize: '0.6rem' }}>•</span>
-                  </>
-                )}
+                <span style={{ 
+                  fontSize: '0.72rem', 
+                  color: '#16a34a', 
+                  fontWeight: 700 
+                }}>
+                  En ligne
+                </span>
+                <span style={{ color: '#cbd5e1', fontSize: '0.6rem' }}>•</span>
                 <span style={{ color: '#94a3b8', fontSize: '0.7rem', fontWeight: 600 }}>Réservation #{bookingId}</span>
               </div>
             </div>
