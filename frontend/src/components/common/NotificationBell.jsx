@@ -9,7 +9,7 @@ export default function NotificationBell() {
     const [unread, setUnread] = useState(0);
     const [open, setOpen] = useState(false);
     const ref = useRef(null);
-    const prevUnreadRef = useRef(0);
+    const prevUnreadRef = useRef(-1); // -1 indique que c'est le premier chargement
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -20,10 +20,10 @@ export default function NotificationBell() {
                 const newUnread = r.data.unread;
                 setUnread(newUnread);
                 
-                // If unread count increases, force a page refresh to update underlying data
-                if (newUnread > prevUnreadRef.current && prevUnreadRef.current !== 0) {
-                    // Refresh the current route to fetch new data
-                    navigate(0); 
+                // Si ce n'est pas le 1er chargement (-1) ET qu'il y a de nouvelles notifications
+                if (prevUnreadRef.current !== -1 && newUnread > prevUnreadRef.current) {
+                    // Rafraîchissement complet de la page pour mettre à jour les données (réservations, messages, etc.)
+                    window.location.reload(); 
                 }
                 prevUnreadRef.current = newUnread;
             })
@@ -31,15 +31,7 @@ export default function NotificationBell() {
     };
 
     useEffect(() => {
-        // Initial load
-        api.get('/notifications')
-            .then(r => {
-                setNotifications(r.data.notifications);
-                setUnread(r.data.unread);
-                prevUnreadRef.current = r.data.unread;
-            })
-            .catch(() => { });
-
+        load(); // Chargement initial
         const interval = setInterval(load, 10000); // poll 10s
         return () => clearInterval(interval);
     }, []);
