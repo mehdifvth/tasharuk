@@ -207,9 +207,11 @@ export default function ToolDetailPage() {
                             <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#2563eb' }}>{avgRating}</span>
                           </div>
                         )}
-                        <span style={{ fontSize: '0.65rem', color: tool.user?.is_online ? '#16a34a' : '#94a3b8', fontWeight: 700 }}>
-                          {tool.user?.is_online ? 'En ligne' : 'Hors ligne'}
-                        </span>
+                        {tool.user?.is_online && (
+                          <span style={{ fontSize: '0.65rem', color: '#16a34a', fontWeight: 700 }}>
+                            En ligne
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

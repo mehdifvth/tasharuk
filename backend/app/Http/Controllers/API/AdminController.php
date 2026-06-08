@@ -43,7 +43,7 @@ class AdminController extends Controller
     {
         if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
 
-        $users = User::withTrashed()
+        $query = User::withTrashed()
             ->withCount([
                 'reviewsReceived as owner_reviews_received_count' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
                 'reviewsReceived as borrower_reviews_received_count' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
@@ -51,11 +51,46 @@ class AdminController extends Controller
             ->withAvg([
                 'reviewsReceived as owner_rating_avg' => fn($q) => $q->whereHas('booking.tool', fn($t) => $t->whereColumn('user_id', 'users.id')),
                 'reviewsReceived as borrower_rating_avg' => fn($q) => $q->whereHas('booking', fn($b) => $b->whereColumn('borrower_id', 'users.id'))
-            ], 'rating')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ], 'rating');
 
-        return response()->json($users);
+        // Apply filters
+        if ($request->filled('filter')) {
+            $filter = $request->filter;
+            if ($filter === 'admin') {
+                $query->where('is_admin', true);
+            } elseif ($filter === 'owner') {
+                $query->where('is_admin', false)->where('role', 'owner');
+            } elseif ($filter === 'borrower') {
+                $query->where('is_admin', false)->where('role', 'borrower');
+            } elseif ($filter === 'deleted') {
+                $query->whereNotNull('deleted_at');
+            }
+        }
+
+        // Apply search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->orderBy('created_at', 'desc')->paginate(20);
+
+        // Also return counts for each tab
+        $counts = [
+            'all'      => User::withTrashed()->count(),
+            'admin'    => User::withTrashed()->where('is_admin', true)->count(),
+            'owner'    => User::withTrashed()->where('is_admin', false)->where('role', 'owner')->count(),
+            'borrower' => User::withTrashed()->where('is_admin', false)->where('role', 'borrower')->count(),
+            'deleted'  => User::onlyTrashed()->count(),
+        ];
+
+        return response()->json([
+            'pagination' => $users,
+            'counts'     => $counts
+        ]);
     }
 
     /**
@@ -65,10 +100,31 @@ class AdminController extends Controller
     {
         if (!$request->user()->is_admin) return response()->json(['message' => 'Unauthorized'], 403);
 
-        $tools = Tool::withTrashed()
-            ->with(['user', 'category'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        $query = Tool::withTrashed()->with(['user', 'category']);
+
+        // Apply filters
+        if ($request->filled('filter')) {
+            $filter = $request->filter;
+            if ($filter === 'deleted') {
+                $query->whereNotNull('deleted_at');
+            } elseif ($filter === 'all') {
+                $query->whereNull('deleted_at');
+            } else {
+                $query->whereNull('deleted_at')->where('condition', $filter);
+            }
+        }
+
+        // Apply search
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('user', fn($uq) => $uq->where('name', 'like', "%{$search}%"))
+                  ->orWhereHas('category', fn($cq) => $cq->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        $tools = $query->orderBy('created_at', 'desc')->paginate(20);
 
         return response()->json($tools);
     }
@@ -93,7 +149,19 @@ class AdminController extends Controller
 
         $bookings = $query->orderBy('created_at', 'desc')->paginate(20);
 
-        return response()->json($bookings);
+        // Also return counts for each status tab
+        $counts = [
+            'all'       => Booking::count(),
+            'pending'   => Booking::where('status', 'pending')->count(),
+            'approved'  => Booking::where('status', 'approved')->count(),
+            'completed' => Booking::where('status', 'completed')->count(),
+            'cancelled' => Booking::whereIn('status', ['rejected', 'cancelled'])->count(),
+        ];
+
+        return response()->json([
+            'pagination' => $bookings,
+            'counts'     => $counts
+        ]);
     }
 
     /**

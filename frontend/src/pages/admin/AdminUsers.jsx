@@ -18,6 +18,7 @@ const ROLE_STYLE = {
 
 export default function AdminUsers() {
   const [users,    setUsers]    = useState([]);
+  const [counts,   setCounts]   = useState({});
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState('');
   const [filter,   setFilter]   = useState('all');
@@ -25,15 +26,33 @@ export default function AdminUsers() {
   const [page,     setPage]     = useState(1);
   const [lastPage, setLastPage] = useState(1);
 
-  const fetchUsers = (p = 1) => {
+  const fetchUsers = (p = 1, currentFilter = filter, currentSearch = search) => {
     setLoading(true);
-    api.get(`/admin/users?page=${p}`)
-      .then(r => { setUsers(r.data.data); setLastPage(r.data.last_page); setPage(r.data.current_page); })
+    api.get(`/admin/users`, {
+      params: {
+        page: p,
+        filter: currentFilter,
+        search: currentSearch
+      }
+    })
+      .then(r => { 
+        const { pagination, counts } = r.data;
+        setUsers(pagination.data); 
+        setLastPage(pagination.last_page); 
+        setPage(pagination.current_page);
+        setCounts(counts);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchUsers(1); }, []);
+  useEffect(() => { 
+    const delayDebounceFn = setTimeout(() => {
+      fetchUsers(1, filter, search);
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [filter, search]);
 
   const handleDelete  = async (id) => {
     try { await api.delete(`/admin/users/${id}`); setConfirm(null); fetchUsers(page); }
@@ -45,27 +64,6 @@ export default function AdminUsers() {
   };
 
   const getRoleKey = (u) => u.is_admin ? 'admin' : u.role === 'owner' ? 'owner' : 'borrower';
-
-  const getCount = (key) => users.filter(u =>
-    key === 'all'      ? true :
-    key === 'admin'    ? u.is_admin :
-    key === 'owner'    ? !u.is_admin && u.role === 'owner' :
-    key === 'borrower' ? !u.is_admin && u.role === 'borrower' :
-    key === 'deleted'  ? !!u.deleted_at : true
-  ).length;
-
-  const filtered = users.filter(u => {
-    const matchRole =
-      filter === 'all'      ? true :
-      filter === 'admin'    ? u.is_admin :
-      filter === 'owner'    ? !u.is_admin && u.role === 'owner' :
-      filter === 'borrower' ? !u.is_admin && u.role === 'borrower' :
-      filter === 'deleted'  ? !!u.deleted_at : true;
-    const matchSearch =
-      u.name?.toLowerCase().includes(search.toLowerCase()) ||
-      u.email?.toLowerCase().includes(search.toLowerCase());
-    return matchRole && matchSearch;
-  });
 
   return (
     <>
@@ -111,7 +109,7 @@ export default function AdminUsers() {
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Utilisateurs</h2>
-        <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>{users.length} utilisateur(s)</p>
+        <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>{counts.all || 0} utilisateur(s) au total</p>
       </div>
 
       {/* Tabs */}
@@ -128,7 +126,7 @@ export default function AdminUsers() {
                 <i className={`fas ${f.icon}`} style={{ fontSize: '0.82rem' }}></i>
                 {f.label}
                 <span style={{ background: isActive ? 'rgba(255,255,255,0.55)' : '#f1f5f9', color: isActive ? f.color : '#94a3b8', padding: '0.05rem 0.45rem', borderRadius: 8, fontSize: '0.7rem', fontWeight: 800 }}>
-                  {getCount(f.key)}
+                  {counts[f.key] || 0}
                 </span>
               </button>
             );
@@ -153,7 +151,7 @@ export default function AdminUsers() {
           <div style={{ textAlign: 'center', padding: '3rem' }}>
             <i className="fas fa-circle-notch fa-spin" style={{ fontSize: '1.75rem', color: '#6366f1' }}></i>
           </div>
-        ) : filtered.length === 0 ? (
+        ) : users.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
             <i className="fas fa-users" style={{ fontSize: '2rem', marginBottom: '0.75rem', display: 'block', opacity: 0.3 }}></i>
             <p style={{ fontSize: '0.88rem', margin: 0 }}>Aucun utilisateur trouvé</p>
@@ -171,7 +169,7 @@ export default function AdminUsers() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(u => {
+                  {users.map(u => {
                     const role = getRoleKey(u);
                     const rs   = ROLE_STYLE[role];
                     return (
@@ -216,7 +214,7 @@ export default function AdminUsers() {
 
             {/* Mobile cards */}
             <div className="au-cards">
-              {filtered.map(u => {
+              {users.map(u => {
                 const role = getRoleKey(u);
                 const rs   = ROLE_STYLE[role];
                 return (

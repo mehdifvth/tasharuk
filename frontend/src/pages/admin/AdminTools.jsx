@@ -11,9 +11,15 @@ export default function AdminTools() {
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
 
-    const loadTools = (pageNumber = 1) => {
+    const loadTools = (pageNumber = 1, currentFilter = filter, currentSearch = search) => {
         setLoading(true);
-        api.get(`/admin/tools?page=${pageNumber}`)
+        api.get(`/admin/tools`, {
+            params: {
+                page: pageNumber,
+                filter: currentFilter,
+                search: currentSearch
+            }
+        })
             .then(r => {
                 setTools(r.data.data);
                 setLastPage(r.data.last_page);
@@ -23,7 +29,13 @@ export default function AdminTools() {
             .finally(() => setLoading(false));
     };
 
-    useEffect(() => { loadTools(1); }, []);
+    useEffect(() => { 
+        const delayDebounceFn = setTimeout(() => {
+            loadTools(1, filter, search);
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [filter, search]);
 
     const handleDelete = async (id) => {
         try {
@@ -32,23 +44,6 @@ export default function AdminTools() {
             loadTools(page);
         } catch { alert('Erreur lors de la suppression'); }
     };
-
-    const filtered = tools.filter(t => {
-        const matchSearch =
-            t.title?.toLowerCase().includes(search.toLowerCase()) ||
-            t.user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-            t.category?.name?.toLowerCase().includes(search.toLowerCase());
-        
-        let matchFilter = true;
-        if (filter === 'deleted') {
-            matchFilter = !!t.deleted_at;
-        } else if (filter === 'all') {
-            matchFilter = !t.deleted_at;
-        } else {
-            matchFilter = !t.deleted_at && t.condition === filter;
-        }
-        return matchSearch && matchFilter;
-    });
 
     const COND = {
         new: { label: 'Neuf', bg: '#d1fae5', color: '#065f46' },
@@ -103,14 +98,14 @@ export default function AdminTools() {
                 <div style={{ textAlign: 'center', padding: '4rem' }}>
                     <i className="fas fa-spinner fa-spin" style={{ fontSize: '2rem', color: '#6366f1' }}></i>
                 </div>
-            ) : filtered.length === 0 ? (
+            ) : tools.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '4rem', color: '#94a3b8' }}>
                     <i className="fas fa-tools" style={{ fontSize: '2.5rem', marginBottom: '0.75rem', display: 'block' }}></i>
-                    <p style={{ fontSize: '0.9rem' }}>Aucun outil trouvé sur cette page</p>
+                    <p style={{ fontSize: '0.9rem' }}>Aucun outil trouvé</p>
                 </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: '1rem' }}>
-                    {filtered.map(t => (
+                    {tools.map(t => (
                         <div key={t.id} style={S.card}>
                             {/* Image */}
                             <div style={{ position: 'relative' }}>

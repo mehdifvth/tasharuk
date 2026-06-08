@@ -20,6 +20,7 @@ const STATUS_STYLE = {
 
 export default function AdminBookings() {
     const [bookings, setBookings] = useState([]);
+    const [counts, setCounts] = useState({});
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [lastPage, setLastPage] = useState(1);
@@ -30,7 +31,13 @@ export default function AdminBookings() {
         setLoading(true);
         const q = f === 'all' ? '' : `&status=${f}`;
         api.get(`/admin/bookings?page=${p}${q}`)
-            .then(r => { setBookings(r.data.data); setLastPage(r.data.last_page); setPage(r.data.current_page); })
+            .then(r => { 
+                const { pagination, counts } = r.data;
+                setBookings(pagination.data); 
+                setLastPage(pagination.last_page); 
+                setPage(pagination.current_page);
+                setCounts(counts);
+            })
             .catch(console.error)
             .finally(() => setLoading(false));
     };
@@ -44,12 +51,6 @@ export default function AdminBookings() {
         catch (err) { alert(err.response?.data?.message || 'Erreur'); }
         finally { setActionLoad(null); }
     };
-
-    const getCount = (key) => bookings.filter(b =>
-        key === 'all' ? true :
-            key === 'cancelled' ? b.status === 'cancelled' || b.status === 'rejected' :
-                b.status === key
-    ).length;
 
     const showActions = ['all', 'pending'].includes(filter);
 
@@ -96,7 +97,7 @@ export default function AdminBookings() {
             {/* Header */}
             <div style={{ marginBottom: '1.5rem' }}>
                 <h2 style={{ fontWeight: 800, fontSize: '1.4rem', color: '#0f172a', margin: 0 }}>Réservations</h2>
-                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>{bookings.length} réservation(s)</p>
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '0.2rem 0 0' }}>{counts.all || 0} réservation(s) au total</p>
             </div>
 
             {/* Tabs */}
@@ -113,7 +114,7 @@ export default function AdminBookings() {
                                 <i className={`fas ${f.icon}`} style={{ fontSize: '0.82rem' }}></i>
                                 {f.label}
                                 <span style={{ background: isActive ? 'rgba(255,255,255,0.55)' : '#f1f5f9', color: isActive ? f.color : '#94a3b8', padding: '0.05rem 0.45rem', borderRadius: 8, fontSize: '0.7rem', fontWeight: 800 }}>
-                                    {getCount(f.key)}
+                                    {counts[f.key] || 0}
                                 </span>
                             </button>
                         );
