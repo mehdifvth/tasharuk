@@ -105,6 +105,7 @@ export default function BookingsPage() {
   const [codeError, setCodeError] = useState({});
   const [error, setError] = useState(null);
   const [showBorrowerReviews, setShowBorrowerReviews] = useState({});
+  const [returnConfirm, setReturnConfirm] = useState(null);
 
   useEffect(() => {
     if (location.state?.block) setActiveBlock(location.state.block);
@@ -151,9 +152,26 @@ export default function BookingsPage() {
   };
 
   const handleReturn = async (id, code) => {
+    const booking = bookings.find(b => b.id === id);
+    const isEarly = new Date() < new Date(booking.end_date + 'Z');
+
+    if (isEarly) {
+      setReturnConfirm({ id, code, totalPrice: booking.total_price });
+      return;
+    }
+    executeReturn(id, code);
+  };
+
+  const executeReturn = async (id, code) => {
     setCodeLoad(id);
-    try { await api.post(`/bookings/${id}/confirm-return`, { code }); loadBookings(); }
-    catch (err) { setCodeError(p => ({ ...p, [`return_${id}`]: err.response?.data?.message || 'Code incorrect' })); }
+    try { 
+      await api.post(`/bookings/${id}/confirm-return`, { code }); 
+      loadBookings(); 
+      setReturnConfirm(null); 
+    }
+    catch (err) { 
+      setCodeError(p => ({ ...p, [`return_${id}`]: err.response?.data?.message || 'Code incorrect' })); 
+    }
     finally { setCodeLoad(null); }
   };
 
@@ -467,10 +485,15 @@ export default function BookingsPage() {
                               <i className="fas fa-triangle-exclamation"></i> PROLONGATION EN COURS
                             </p>
                           ) : (
-                            <p style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 600, margin: '0.5rem 0 0', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <i className="fas fa-circle-check"></i>
-                              Retour avant le {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
-                            </p>
+                            <>
+                              <p style={{ fontSize: '0.72rem', color: '#16a34a', fontWeight: 600, margin: '0.5rem 0 0', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <i className="fas fa-circle-check"></i>
+                                Retour avant le {new Date(b.end_date + 'Z').toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '')}
+                              </p>
+                              <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '0.3rem 0 0', fontStyle: 'italic' }}>
+                                Note: Le prix minimum facturé est celui de la durée réservée ({parseFloat(b.display_total_price).toFixed(2)} MAD).
+                              </p>
+                            </>
                           )}
                         </div>
                       )}
@@ -636,6 +659,40 @@ export default function BookingsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Early Return Confirmation Modal */}
+      {returnConfirm && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, backdropFilter: 'blur(4px)', padding: '1rem' }}>
+          <div style={{ background: '#fff', borderRadius: 20, padding: '1.5rem', width: '100%', maxWidth: 400, boxShadow: '0 20px 60px rgba(0,0,0,0.15)' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ width: 60, height: 60, borderRadius: '50%', background: '#fef9c3', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                <i className="fas fa-exclamation-triangle" style={{ color: '#d97706', fontSize: '1.5rem' }}></i>
+              </div>
+              <h3 style={{ fontWeight: 800, color: '#0f172a', margin: '0 0 0.5rem', fontSize: '1.1rem' }}>Retour anticipé</h3>
+              <p style={{ color: '#64748b', fontSize: '0.9rem', margin: 0, lineHeight: 1.6 }}>
+                Vous rendez l'outil avant la fin prévue. <br />
+                Conformément aux conditions, vous devrez payer le prix total de la durée réservée : <br />
+                <strong style={{ color: '#0f172a', fontSize: '1.1rem' }}>{parseFloat(returnConfirm.totalPrice).toFixed(2)} MAD</strong>
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button 
+                onClick={() => setReturnConfirm(null)} 
+                style={{ flex: 1, background: '#f8fafc', color: '#374151', border: '1px solid #e2e8f0', borderRadius: 12, padding: '0.75rem', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={() => executeReturn(returnConfirm.id, returnConfirm.code)} 
+                disabled={codeLoad === returnConfirm.id}
+                style={{ flex: 1, background: '#2563eb', color: '#fff', border: 'none', borderRadius: 12, padding: '0.75rem', cursor: 'pointer', fontWeight: 700, fontSize: '0.9rem', boxShadow: '0 4px 12px rgba(37,99,235,0.2)' }}
+              >
+                {codeLoad === returnConfirm.id ? <i className="fas fa-spinner fa-spin"></i> : 'Confirmer le retour'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </>

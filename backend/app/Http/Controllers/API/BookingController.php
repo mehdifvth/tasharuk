@@ -300,14 +300,20 @@ class BookingController extends Controller
             return response()->json(['message' => 'Code incorrect'], 422);
 
         $start    = \Carbon\Carbon::parse($booking->picked_up_at);
-        $end      = now();
-        $hours    = $start->diffInMinutes($end) / 60;
+        $now      = now();
+        $scheduledEnd = \Carbon\Carbon::parse($booking->end_date);
 
-        // Calcul final à l'heure direct
-        $finalPrice = round($hours * $booking->tool->price, 2);
+        // Si retourné AVANT l'heure prévue, on paye quand même la durée complète prévue
+        if ($now->lt($scheduledEnd)) {
+            $finalPrice = $booking->total_price;
+        } else {
+            // Si retourné APRÈS (en retard), on paye le temps réel consommé
+            $hours = $start->diffInMinutes($now) / 60;
+            $finalPrice = round($hours * $booking->tool->price, 2);
+        }
 
         $booking->update([
-            'returned_at' => now(),
+            'returned_at' => $now,
             'status'      => 'completed',
             'final_price' => $finalPrice,
         ]);
