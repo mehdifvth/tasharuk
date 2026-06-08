@@ -107,10 +107,6 @@ export default function BookingsPage() {
   const [showBorrowerReviews, setShowBorrowerReviews] = useState({});
   const [returnConfirm, setReturnConfirm] = useState(null);
 
-  useEffect(() => {
-    if (location.state?.block) setActiveBlock(location.state.block);
-  }, [location.state]);
-
   const loadBookings = useCallback(() => {
     setLoading(true);
     api.get('/bookings')
@@ -119,7 +115,14 @@ export default function BookingsPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadBookings(); }, [loadBookings]);
+  useEffect(() => {
+    if (location.state?.block) {
+      setActiveBlock(location.state.block);
+    }
+    // Forcer le rechargement des données si on clique sur une notification
+    // et qu'on est déjà sur la page des réservations
+    loadBookings();
+  }, [location.state, loadBookings]);
 
   const handleApprove = async (id) => {
     setActionLoad(id);
